@@ -1,8 +1,9 @@
 [application]
 asset_dir = "crates/wolf-ui/assets"
 sub_package = "crates/wolf-ui"
-tailwind_input = "crates/wolf-ui/tailwind.css"
-tailwind_output = "crates/wolf-ui/assets/tailwind.css"
+# Dioxus CLI resolves Tailwind paths from the selected Cargo package directory.
+tailwind_input = "tailwind.css"
+tailwind_output = "assets/dist/styles.css"
 
 [web.app]
 
