@@ -1,0 +1,15 @@
+[workspace]
+members = ["crates/*"]
+default-members = ["crates/wolf-ui"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Baz00k"]
+edition = "2024"
+publish = false
+
+[workspace.dependencies]
+dioxus = { version = "0.7.1", features = ["router"] }
+
+wolf-api = { path = "crates/wolf-api" }

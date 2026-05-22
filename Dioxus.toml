@@ -1,0 +1,25 @@
+[application]
+asset_dir = "crates/wolf-ui/assets"
+sub_package = "crates/wolf-ui"
+tailwind_input = "crates/wolf-ui/tailwind.css"
+tailwind_output = "crates/wolf-ui/assets/tailwind.css"
+
+[web.app]
+
+# HTML title tag content
+title = "wolf-ui-next"
+
+# include `assets` in web platform
+[web.resource]
+
+# Additional CSS style files
+style = []
+
+# Additional JavaScript files
+script = []
+
+[web.resource.dev]
+
+# Javascript code file
+# serve: [dev-server] only
+script = []
