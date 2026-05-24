@@ -20,8 +20,9 @@ pub use endpoints::profiles;
 
 pub use client::WolfApi;
 pub use config::{
-    ClientConfig, DEFAULT_BASE_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_MAX_RETRIES,
-    DEFAULT_READ_TIMEOUT, DEFAULT_REQUEST_TIMEOUT, DEFAULT_UNIX_SOCKET_PATH,
+    ApiTransport, ClientConfig, DEFAULT_BASE_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_MAX_RETRIES,
+    DEFAULT_READ_TIMEOUT, DEFAULT_REQUEST_TIMEOUT, DEFAULT_UNIX_SOCKET_PATH, WOLF_API_BASE_URL_ENV,
+    WOLF_SOCKET_PATH_ENV,
 };
 pub use error::{ApiError, ClientBuildError};
 pub use transport::reqwest_client;
@@ -31,6 +32,18 @@ pub fn client() -> Result<WolfApi, ClientBuildError> {
 }
 
 pub fn client_with_config(config: ClientConfig) -> Result<WolfApi, ClientBuildError> {
+    match config.transport_ref() {
+        ApiTransport::UnixSocket => eprintln!(
+            "Wolf API client connecting via Unix socket: {} (base URL: {})",
+            config.unix_socket_path_ref().display(),
+            config.base_url_ref()
+        ),
+        ApiTransport::Tcp => eprintln!(
+            "Wolf API client connecting via TCP: {}",
+            config.base_url_ref()
+        ),
+    }
+
     let http_client = reqwest_client(&config)?;
     Ok(WolfApi::new(config.into_base_url(), http_client))
 }

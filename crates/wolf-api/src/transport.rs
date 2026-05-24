@@ -1,13 +1,16 @@
-use crate::config::ClientConfig;
+use crate::config::{ApiTransport, ClientConfig};
 
 pub fn reqwest_client(config: &ClientConfig) -> Result<reqwest::Client, reqwest::Error> {
-    reqwest::ClientBuilder::new()
-        .unix_socket(config.unix_socket_path_ref())
+    let builder = reqwest::ClientBuilder::new()
         .connect_timeout(config.connect_timeout_ref())
         .timeout(config.request_timeout_ref())
         .read_timeout(config.read_timeout_ref())
-        .retry(retry_policy(config))
-        .build()
+        .retry(retry_policy(config));
+
+    match config.transport_ref() {
+        ApiTransport::UnixSocket => builder.unix_socket(config.unix_socket_path_ref()).build(),
+        ApiTransport::Tcp => builder.build(),
+    }
 }
 
 fn retry_policy(config: &ClientConfig) -> reqwest::retry::Builder {
@@ -38,5 +41,15 @@ mod tests {
         let config = ClientConfig::new().unix_socket_path("/tmp/nonexistent-wolf.sock");
 
         reqwest_client(&config).expect("client construction does not connect eagerly");
+    }
+
+    #[test]
+    fn configured_tcp_reqwest_client_builds_without_socket_transport() {
+        let config = ClientConfig::new()
+            .transport(ApiTransport::Tcp)
+            .base_url("http://localhost:8080")
+            .unix_socket_path("/tmp/nonexistent-wolf.sock");
+
+        reqwest_client(&config).expect("client construction does not require a socket in TCP mode");
     }
 }
