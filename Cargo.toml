@@ -9,6 +9,21 @@ authors = ["Baz00k"]
 edition = "2024"
 publish = false
 
+[workspace.lints.rust]
+future-incompatible = "warn"
+nonstandard_style = { level = "deny", priority = -1 }
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+redundant_clone = "deny"
+large_enum_variant = "warn"
+needless_collect = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+
 [workspace.dependencies]
 dioxus = { version = "0.7.1", features = ["router"] }
 
