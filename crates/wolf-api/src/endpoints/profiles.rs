@@ -1,4 +1,4 @@
-use crate::{types, ApiError, WolfApi};
+use crate::{ApiError, WolfApi, types};
 
 pub type App = types::RflReflectorWolfCoreEventsAppReflType;
 pub type AppListResponse = types::WolfApiAppListResponse;

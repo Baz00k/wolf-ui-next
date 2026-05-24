@@ -18,7 +18,6 @@ pub mod types {
 
 pub use endpoints::profiles;
 
-
 pub use client::WolfApi;
 pub use config::{
     ClientConfig, DEFAULT_BASE_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_MAX_RETRIES,

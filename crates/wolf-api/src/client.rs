@@ -53,7 +53,6 @@ impl WolfApi {
     }
 }
 
-
 pub(crate) async fn decode_json<T>(response: reqwest::Response) -> Result<T, ApiError>
 where
     T: DeserializeOwned,
