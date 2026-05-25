@@ -25,6 +25,8 @@ unwrap_used = "warn"
 expect_used = "warn"
 
 [workspace.dependencies]
+base64 = "0.22"
 dioxus = { version = "0.7.1", features = ["router"] }
+dioxus-free-icons = { version = "0.10", features = ["hero-icons-solid"] }
 
 wolf-api = { path = "crates/wolf-api" }

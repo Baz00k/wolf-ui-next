@@ -1,4 +1,4 @@
-use serde::de::DeserializeOwned;
+use serde::{Serialize, de::DeserializeOwned};
 
 use crate::{endpoints, error::ApiError, types};
 
@@ -31,6 +31,10 @@ impl WolfApi {
         endpoints::profiles::Profiles::new(self)
     }
 
+    pub fn utils(&self) -> endpoints::Utils<'_> {
+        endpoints::utils::Utils::new(self)
+    }
+
     pub(crate) async fn get_json<T>(&self, path: &str) -> Result<T, ApiError>
     where
         T: DeserializeOwned,
@@ -43,6 +47,25 @@ impl WolfApi {
             .map_err(ApiError::from_reqwest)?;
 
         decode_json(response).await
+    }
+
+    pub(crate) async fn get_bytes_with_query<T>(
+        &self,
+        path: &str,
+        query: &T,
+    ) -> Result<Vec<u8>, ApiError>
+    where
+        T: Serialize + ?Sized,
+    {
+        let response = self
+            .http_client
+            .get(self.url(path))
+            .query(query)
+            .send()
+            .await
+            .map_err(ApiError::from_reqwest)?;
+
+        decode_bytes(response).await
     }
 
     fn url(&self, path: &str) -> String {
@@ -61,6 +84,28 @@ where
 
     if status.is_success() {
         return response.json().await.map_err(ApiError::from_reqwest);
+    }
+
+    let body = response.text().await.map_err(ApiError::from_reqwest)?;
+    if let Ok(error) = serde_json::from_str::<types::WolfApiGenericErrorResponse>(&body) {
+        return Err(ApiError::Wolf {
+            status,
+            message: error.error,
+        });
+    }
+
+    Err(ApiError::Status { status, body })
+}
+
+pub(crate) async fn decode_bytes(response: reqwest::Response) -> Result<Vec<u8>, ApiError> {
+    let status = response.status();
+
+    if status.is_success() {
+        return response
+            .bytes()
+            .await
+            .map(|bytes| bytes.to_vec())
+            .map_err(ApiError::from_reqwest);
     }
 
     let body = response.text().await.map_err(ApiError::from_reqwest)?;

@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 
 mod api;
+mod components;
 mod views;
 
 use api::ApiContext;

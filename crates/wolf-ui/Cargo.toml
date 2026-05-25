@@ -6,7 +6,9 @@ edition.workspace = true
 publish.workspace = true
 
 [dependencies]
+base64.workspace = true
 dioxus.workspace = true
+dioxus-free-icons.workspace = true
 wolf-api.workspace = true
 
 [features]
