@@ -6572,6 +6572,8 @@ dependencies = [
  "dioxus-free-icons",
  "futures-util",
  "gilrs",
+ "serde",
+ "serde_json",
  "tracing",
  "wolf-api",
 ]

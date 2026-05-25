@@ -3,6 +3,7 @@ use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::hi_solid_icons::{HiLockClosed, HiUser};
 
 use crate::components::Skeleton;
+use crate::input::{UiAction, native_action};
 
 #[derive(Clone, PartialEq)]
 pub struct ProfileCardData {
@@ -20,12 +21,14 @@ pub fn ProfileCard(profile: ProfileCardData, autofocus: bool, to: String) -> Ele
         "Open profile"
     };
     let accessible_label = format!("Select {}, {}", profile.name, status_label);
+    let actions = native_action(UiAction::Accept, "Select");
 
     rsx! {
         Link {
             to,
             class: "group relative flex h-96 w-72 shrink-0 flex-col items-center overflow-hidden rounded-4xl border border-border bg-card text-center text-card-foreground shadow-2xl shadow-black/30 outline-none transition duration-200 ease-out hover:-translate-y-1 hover:border-foreground/35 hover:bg-accent focus:-translate-y-1 focus:border-foreground focus:ring-4 focus:ring-ring/20 active:scale-[1.05]",
             "data-focusable": "true",
+            "data-actions": actions,
             aria_label: "{accessible_label}",
             onmounted: move |event: MountedEvent| async move {
                 if autofocus {

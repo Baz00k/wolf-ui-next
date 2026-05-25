@@ -6,8 +6,9 @@ use wolf_api::profiles::{Profile, ProfileListResponse};
 use crate::Route;
 use crate::api::ApiContext;
 use crate::components::{
-    Button, ButtonSize, ProfileCard, ProfileCardSkeleton, Spinner, StatusAlert, StatusAlertVariant,
+    Button, ButtonSize, ProfileCard, ProfileCardSkeleton, StatusAlert, StatusAlertVariant,
 };
+use crate::input::navigate_hint;
 
 const CARD_SKELETON_COUNT: usize = 3;
 
@@ -27,6 +28,7 @@ pub fn Profiles() -> Element {
             section {
                 class: "relative flex min-h-screen flex-col px-8 py-12 sm:px-12 lg:px-20",
                 "data-focus-scope": "true",
+                "data-scope-actions": navigate_hint("Navigate"),
                 ProfilesHeader {}
                 div { class: "-mx-8 flex flex-1 items-center justify-center py-10 sm:-mx-12 lg:-mx-20",
                     match &*profiles.read_unchecked() {

@@ -3,6 +3,19 @@
     window.__wolfUiFocusInstalled = true;
 
     const FOCUSABLE_SELECTOR = '[data-focusable="true"]';
+    const ACTIONS_ATTRIBUTE = "data-actions";
+    const SCOPE_ACTIONS_ATTRIBUTE = "data-scope-actions";
+    const ACTION_TO_HINT = {
+        accept: "accept",
+        cancel: "cancel",
+        menu: "menu",
+        left: "navigate",
+        right: "navigate",
+        up: "navigate",
+        down: "navigate",
+        "page-up": "page-up",
+        "page-down": "page-down",
+    };
 
     function isVisible(element) {
         const style = window.getComputedStyle(element);
@@ -57,6 +70,7 @@
         if (!first) return false;
         first.focus({ preventScroll: true });
         first.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+        dispatchActionHintsChanged(first);
         return true;
     }
 
@@ -92,8 +106,85 @@
         if (!best) return false;
         best.focus({ preventScroll: true });
         best.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+        dispatchActionHintsChanged(best);
         return true;
     }
+
+    function actionHintsFor(element) {
+        const scope = scopeFor(element);
+        const hints = new Map();
+
+        collectActionHints(scope, hints, SCOPE_ACTIONS_ATTRIBUTE);
+        if (element && element !== scope) {
+            collectActionHints(element, hints, ACTIONS_ATTRIBUTE);
+        }
+
+        return Array.from(hints.values());
+    }
+
+    function collectActionHints(element, hints, attributeName) {
+        const encodedHints = element?.getAttribute?.(attributeName);
+        if (!encodedHints) return;
+
+        let parsedHints = [];
+        try {
+            parsedHints = JSON.parse(encodedHints);
+        } catch (error) {
+            console.warn(`Invalid ${attributeName}`, error);
+            return;
+        }
+
+        if (!Array.isArray(parsedHints)) return;
+
+        for (const hint of parsedHints) {
+            if (!hint?.action || !hint?.label) continue;
+            hints.set(hint.action, hint);
+        }
+    }
+
+    function activeAction(action) {
+        const hintAction = ACTION_TO_HINT[action] ?? action;
+        return actionHintsFor(document.activeElement).find((hint) => hint.action === hintAction) ?? null;
+    }
+
+    function dispatchRustAction(action) {
+        const hint = activeAction(action);
+        if (!hint?.handler) return false;
+        document.dispatchEvent(new CustomEvent("wolf-ui-action", { detail: hint }));
+        return true;
+    }
+
+    function dispatchActionHintsChanged(element = document.activeElement) {
+        document.dispatchEvent(
+            new CustomEvent("wolf-ui-action-hints-changed", {
+                detail: actionHintsFor(element?.matches?.(FOCUSABLE_SELECTOR) ? element : null),
+            }),
+        );
+    }
+
+    document.addEventListener("focusin", (event) => {
+        dispatchActionHintsChanged(event.target);
+    });
+
+    document.addEventListener("focusout", () => {
+        queueMicrotask(() => dispatchActionHintsChanged(document.activeElement));
+    });
+
+    new MutationObserver(() => {
+        queueMicrotask(() => {
+            ensureFocusableActiveElement();
+            dispatchActionHintsChanged(document.activeElement);
+        });
+    }).observe(document.body, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: [ACTIONS_ATTRIBUTE, SCOPE_ACTIONS_ATTRIBUTE, "data-focus-scope", "data-focusable"],
+    });
+
+    window.__wolfUiActionHints = () => actionHintsFor(document.activeElement);
+
+    dispatchActionHintsChanged(document.activeElement);
 
     function activateFocused() {
         const active = document.activeElement;
@@ -109,6 +200,7 @@
         switch (action) {
             case "accept":
                 ensureFocusableActiveElement();
+                if (dispatchRustAction(action)) break;
                 activateFocused();
                 break;
             case "left":
@@ -122,15 +214,19 @@
                 moveFocus(action);
                 break;
             case "page-up":
+                if (dispatchRustAction(action)) break;
                 window.scrollBy({ top: -window.innerHeight * 0.8, behavior: "smooth" });
                 break;
             case "page-down":
+                if (dispatchRustAction(action)) break;
                 window.scrollBy({ top: window.innerHeight * 0.8, behavior: "smooth" });
                 break;
             case "cancel":
+                if (dispatchRustAction(action)) break;
                 document.dispatchEvent(new CustomEvent("wolf-ui-cancel"));
                 break;
             case "menu":
+                if (dispatchRustAction(action)) break;
                 document.dispatchEvent(new CustomEvent("wolf-ui-menu"));
                 break;
         }

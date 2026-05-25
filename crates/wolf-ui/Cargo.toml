@@ -11,6 +11,8 @@ dioxus.workspace = true
 dioxus-free-icons.workspace = true
 futures-util.workspace = true
 gilrs.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 tracing.workspace = true
 wolf-api.workspace = true
 

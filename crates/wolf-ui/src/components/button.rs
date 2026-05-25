@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::input::{UiAction, native_action};
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum ButtonVariant {
@@ -44,11 +46,13 @@ pub fn Button(
         ButtonSize::Lg => "h-11 rounded-xl px-8",
         ButtonSize::Icon => "h-10 w-10",
     };
+    let actions = native_action(UiAction::Accept, "Select");
 
     rsx! {
         button {
             class: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium outline-none transition-colors focus:ring-2 focus:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 {variant_class} {size_class} {class}",
             "data-focusable": "true",
+            "data-actions": actions,
             onclick: move |event| {
                 if let Some(handler) = onclick {
                     handler.call(event);

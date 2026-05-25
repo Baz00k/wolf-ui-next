@@ -97,10 +97,10 @@ pub fn use_gamepad_input(dispatcher: UnboundedSender<InputEvent>) {
                             update_axis(&mut dpad, &mut stick, axis, value);
                             let next_direction = active_direction(&dpad, &stick);
 
-                            if next_direction != previous_direction {
-                                if let Some(action) = repeat.update(next_direction) {
-                                    send_action(&dispatcher, family, action);
-                                }
+                            if next_direction != previous_direction
+                                && let Some(action) = repeat.update(next_direction)
+                            {
+                                send_action(&dispatcher, family, action);
                             }
                         }
                         EventType::Connected => {
