@@ -24,8 +24,10 @@ pub fn Profiles() -> Element {
     rsx! {
         div { class: "min-h-screen overflow-hidden bg-background text-foreground",
             div { class: "pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_100%,oklch(1_0_0/0.1),transparent_42%),linear-gradient(180deg,oklch(1_0_0/0.02),transparent_45%)]" }
-            section { class: "relative flex min-h-screen flex-col px-8 py-12 sm:px-12 lg:px-20",
-                ProfilesHeader { is_loading: profiles.read_unchecked().is_none() }
+            section {
+                class: "relative flex min-h-screen flex-col px-8 py-12 sm:px-12 lg:px-20",
+                "data-focus-scope": "true",
+                ProfilesHeader {}
                 div { class: "-mx-8 flex flex-1 items-center justify-center py-10 sm:-mx-12 lg:-mx-20",
                     match &*profiles.read_unchecked() {
                         Some(Ok(response)) => rsx! {
@@ -53,16 +55,10 @@ pub fn Profiles() -> Element {
 }
 
 #[component]
-fn ProfilesHeader(is_loading: bool) -> Element {
+fn ProfilesHeader() -> Element {
     rsx! {
         header { class: "flex flex-col items-center justify-center gap-4 text-center",
             h1 { class: "text-4xl font-bold tracking-tight sm:text-6xl", "Who's playing?" }
-            if is_loading {
-                div { class: "flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-muted-foreground",
-                    Spinner { class: "h-4 w-4" }
-                    "Loading profiles"
-                }
-            }
         }
     }
 }

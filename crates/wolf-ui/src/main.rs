@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 
 mod api;
 mod components;
+mod input;
 mod views;
 
 use api::ApiContext;
@@ -32,6 +33,7 @@ enum Route {
 }
 
 const STYLES_CSS: Asset = asset!("/assets/dist/styles.css");
+const FOCUS_NAVIGATION_JS: Asset = asset!("/assets/focus-navigation.js");
 
 fn main() {
     dioxus::launch(App);
@@ -43,6 +45,9 @@ fn App() -> Element {
 
     rsx! {
         document::Stylesheet { href: STYLES_CSS }
-        Router::<Route> {}
+        script { src: FOCUS_NAVIGATION_JS }
+        input::InputProvider {
+            Router::<Route> {}
+        }
     }
 }

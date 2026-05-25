@@ -9,6 +9,9 @@ publish.workspace = true
 base64.workspace = true
 dioxus.workspace = true
 dioxus-free-icons.workspace = true
+futures-util.workspace = true
+gilrs.workspace = true
+tracing.workspace = true
 wolf-api.workspace = true
 
 [features]

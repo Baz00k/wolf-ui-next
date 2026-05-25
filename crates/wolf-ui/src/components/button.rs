@@ -47,7 +47,8 @@ pub fn Button(
 
     rsx! {
         button {
-            class: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 {variant_class} {size_class} {class}",
+            class: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium outline-none transition-colors focus:ring-2 focus:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 {variant_class} {size_class} {class}",
+            "data-focusable": "true",
             onclick: move |event| {
                 if let Some(handler) = onclick {
                     handler.call(event);

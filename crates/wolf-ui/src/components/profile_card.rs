@@ -24,17 +24,18 @@ pub fn ProfileCard(profile: ProfileCardData, autofocus: bool, to: String) -> Ele
     rsx! {
         Link {
             to,
-            class: "group relative flex h-96 w-72 shrink-0 flex-col items-center overflow-hidden rounded-4xl border border-border bg-card text-center text-card-foreground shadow-2xl shadow-black/30 outline-none transition duration-200 ease-out hover:-translate-y-1 hover:border-foreground/35 hover:bg-accent focus-visible:-translate-y-1 focus-visible:border-foreground focus-visible:ring-4 focus-visible:ring-ring/20 active:scale-[1.05]",
+            class: "group relative flex h-96 w-72 shrink-0 flex-col items-center overflow-hidden rounded-4xl border border-border bg-card text-center text-card-foreground shadow-2xl shadow-black/30 outline-none transition duration-200 ease-out hover:-translate-y-1 hover:border-foreground/35 hover:bg-accent focus:-translate-y-1 focus:border-foreground focus:ring-4 focus:ring-ring/20 active:scale-[1.05]",
+            "data-focusable": "true",
             aria_label: "{accessible_label}",
             onmounted: move |event: MountedEvent| async move {
                 if autofocus {
                     let _ = event.data().set_focus(true).await;
                 }
             },
-            div { class: "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,oklch(1_0_0/0.08),transparent_36%)] opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100" }
+            div { class: "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,oklch(1_0_0/0.08),transparent_36%)] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" }
             div { class: "flex flex-1 items-center justify-center pt-12",
                 div {
-                    class: "flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground transition group-hover:bg-secondary group-hover:text-secondary-foreground group-focus-visible:bg-secondary group-focus-visible:text-secondary-foreground",
+                    class: "flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground transition group-hover:bg-secondary group-hover:text-secondary-foreground group-focus:bg-secondary group-focus:text-secondary-foreground",
                     if let Some(avatar_src) = profile.avatar_src.as_ref() {
                         img {
                             class: "h-full w-full object-cover",

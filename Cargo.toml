@@ -28,5 +28,8 @@ expect_used = "warn"
 base64 = "0.22"
 dioxus = { version = "0.7.1", features = ["router"] }
 dioxus-free-icons = { version = "0.10", features = ["hero-icons-solid"] }
+futures-util = "0.3"
+gilrs = "0.11"
+tracing = "0.1"
 
 wolf-api = { path = "crates/wolf-api" }
