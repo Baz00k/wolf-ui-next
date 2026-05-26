@@ -1,17 +1,14 @@
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use dioxus::prelude::*;
 use gilrs::{Axis, Button, EventType, Gamepad, GamepadId, Gilrs};
 
+use crate::input::repeat::DirectionRepeat;
 use crate::input::{InputEvent, UiAction};
 
 const STICK_DEADZONE: f32 = 0.45;
 const INPUT_TICK: Duration = Duration::from_millis(16);
-const DPAD_INITIAL_REPEAT_DELAY: Duration = Duration::from_millis(280);
-const DPAD_REPEAT_DELAY: Duration = Duration::from_millis(110);
-const STICK_INITIAL_REPEAT_DELAY: Duration = Duration::from_millis(480);
-const STICK_REPEAT_DELAY: Duration = Duration::from_millis(220);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GamepadFamily {
@@ -145,68 +142,6 @@ pub fn use_gamepad_input(dispatcher: UnboundedSender<InputEvent>) {
 }
 
 #[derive(Default)]
-struct DirectionRepeat {
-    direction: Option<DirectionalAction>,
-    next_repeat: Option<Instant>,
-}
-
-impl DirectionRepeat {
-    fn update(&mut self, direction: Option<DirectionalAction>) -> Option<UiAction> {
-        if self.direction == direction {
-            return None;
-        }
-
-        self.direction = direction;
-        self.next_repeat = direction.map(|direction| Instant::now() + direction.initial_delay());
-        direction.map(DirectionalAction::action)
-    }
-
-    fn tick(&mut self) -> Option<UiAction> {
-        let direction = self.direction?;
-        let next_repeat = self.next_repeat?;
-
-        if Instant::now() < next_repeat {
-            return None;
-        }
-
-        self.next_repeat = Some(Instant::now() + direction.repeat_delay());
-        Some(direction.action())
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum DirectionSource {
-    Dpad,
-    Stick,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-struct DirectionalAction {
-    source: DirectionSource,
-    action: UiAction,
-}
-
-impl DirectionalAction {
-    fn action(self) -> UiAction {
-        self.action
-    }
-
-    fn initial_delay(self) -> Duration {
-        match self.source {
-            DirectionSource::Dpad => DPAD_INITIAL_REPEAT_DELAY,
-            DirectionSource::Stick => STICK_INITIAL_REPEAT_DELAY,
-        }
-    }
-
-    fn repeat_delay(self) -> Duration {
-        match self.source {
-            DirectionSource::Dpad => DPAD_REPEAT_DELAY,
-            DirectionSource::Stick => STICK_REPEAT_DELAY,
-        }
-    }
-}
-
-#[derive(Default)]
 struct DirectionState {
     up: bool,
     down: bool,
@@ -298,18 +233,8 @@ fn send_action(dispatcher: &UnboundedSender<InputEvent>, family: GamepadFamily, 
     });
 }
 
-fn active_direction(dpad: &DirectionState, stick: &StickState) -> Option<DirectionalAction> {
-    if let Some(action) = dpad.direction() {
-        Some(DirectionalAction {
-            source: DirectionSource::Dpad,
-            action,
-        })
-    } else {
-        stick.direction().map(|action| DirectionalAction {
-            source: DirectionSource::Stick,
-            action,
-        })
-    }
+fn active_direction(dpad: &DirectionState, stick: &StickState) -> Option<UiAction> {
+    dpad.direction().or_else(|| stick.direction())
 }
 
 fn active_family(gilrs: &Gilrs, active_gamepad_id: Option<GamepadId>) -> Option<GamepadFamily> {
