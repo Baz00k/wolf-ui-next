@@ -1,5 +1,3 @@
-use base64::Engine;
-use base64::engine::general_purpose::STANDARD;
 use dioxus::prelude::*;
 use wolf_api::profiles::{Profile, ProfileListResponse};
 
@@ -8,6 +6,7 @@ use crate::api::ApiContext;
 use crate::components::{
     Button, ButtonSize, ProfileCard, ProfileCardSkeleton, StatusAlert, StatusAlertVariant,
 };
+use crate::domain::image_loader::load_image_src;
 use crate::input::navigate_hint;
 
 const CARD_SKELETON_COUNT: usize = 3;
@@ -60,7 +59,7 @@ pub fn Profiles() -> Element {
 fn ProfilesHeader() -> Element {
     rsx! {
         header { class: "flex flex-col items-center justify-center gap-4 text-center",
-            h1 { class: "text-4xl font-bold tracking-tight sm:text-6xl", "Who's playing?" }
+            h1 { class: "text-4xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl", "Who's playing?" }
         }
     }
 }
@@ -69,8 +68,8 @@ fn ProfilesHeader() -> Element {
 fn ProfilesLoading() -> Element {
     rsx! {
         div { class: "w-full overflow-x-auto [scrollbar-width:none]",
-            div { class: "mx-auto flex w-max min-w-fit snap-x snap-mandatory gap-7 px-8 py-8 sm:px-12 lg:px-20",
-                div { class: "flex min-w-[calc(100vw-4rem)] justify-center gap-7 sm:min-w-[calc(100vw-6rem)] lg:min-w-[calc(100vw-10rem)]",
+            div { class: "mx-auto flex w-max min-w-fit snap-x snap-mandatory gap-5 px-8 py-8 md:gap-6 md:px-12 xl:gap-7 xl:px-20 2xl:gap-10 2xl:px-28",
+                div { class: "flex min-w-[calc(100vw-4rem)] justify-center gap-5 md:min-w-[calc(100vw-6rem)] md:gap-6 xl:min-w-[calc(100vw-10rem)] xl:gap-7 2xl:min-w-[calc(100vw-14rem)] 2xl:gap-10",
                     for _ in 0..CARD_SKELETON_COUNT {
                         ProfileCardSkeleton {}
                     }
@@ -105,10 +104,10 @@ fn ProfilesContent(response: ProfileListResponse) -> Element {
     rsx! {
         div { class: "w-full overflow-x-auto [scrollbar-width:none]",
             div {
-                class: "mx-auto flex w-max min-w-fit snap-x snap-mandatory gap-7 px-8 py-8 sm:px-12 lg:px-20",
+                class: "mx-auto flex w-max min-w-fit snap-x snap-mandatory gap-5 px-8 py-8 md:gap-6 md:px-12 xl:gap-7 xl:px-20 2xl:gap-10 2xl:px-28",
                 role: "list",
                 aria_label: "Profiles",
-                div { class: "flex min-w-[calc(100vw-4rem)] justify-center gap-7 sm:min-w-[calc(100vw-6rem)] lg:min-w-[calc(100vw-10rem)]",
+                div { class: "flex min-w-[calc(100vw-4rem)] justify-center gap-5 md:min-w-[calc(100vw-6rem)] md:gap-6 xl:min-w-[calc(100vw-10rem)] xl:gap-7 2xl:min-w-[calc(100vw-14rem)] 2xl:gap-10",
                     for (index, profile) in response.profiles.iter().cloned().enumerate() {
                         div { class: "snap-center", role: "listitem",
                             ProfileCardLoader {
@@ -130,22 +129,7 @@ fn ProfileCardLoader(profile: Profile, autofocus: bool) -> Element {
     let avatar = use_resource(move || {
         let icon_path = icon_path.clone();
 
-        async move {
-            if icon_path.is_empty() {
-                return None;
-            }
-
-            if is_absolute_url(&icon_path) {
-                return Some(icon_path);
-            }
-
-            ApiContext::consume()
-                .utils()
-                .icon(&icon_path)
-                .await
-                .ok()
-                .map(|bytes| format!("data:image/png;base64,{}", STANDARD.encode(bytes)))
-        }
+        async move { load_image_src(&ApiContext::consume(), &icon_path).await }
     });
 
     let mut profile = profile_card_data(profile);
@@ -158,10 +142,6 @@ fn ProfileCardLoader(profile: Profile, autofocus: bool) -> Element {
             to: Route::ProfileApps { profile_id }.to_string(),
         }
     }
-}
-
-fn is_absolute_url(value: &str) -> bool {
-    value.starts_with("http://") || value.starts_with("https://")
 }
 
 fn profile_card_data(profile: Profile) -> crate::components::profile_card::ProfileCardData {

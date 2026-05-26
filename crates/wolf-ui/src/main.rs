@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 
 mod api;
 mod components;
+mod domain;
 mod input;
 mod views;
 
@@ -33,6 +34,7 @@ enum Route {
 }
 
 const STYLES_CSS: Asset = asset!("/assets/dist/styles.css");
+const SCROLL_ANIMATION_JS: Asset = asset!("/assets/scroll-animation.js");
 const FOCUS_NAVIGATION_JS: Asset = asset!("/assets/focus-navigation.js");
 
 fn main() {
@@ -45,6 +47,7 @@ fn App() -> Element {
 
     rsx! {
         document::Stylesheet { href: STYLES_CSS }
+        script { src: SCROLL_ANIMATION_JS }
         script { src: FOCUS_NAVIGATION_JS }
         input::InputProvider {
             Router::<Route> {}

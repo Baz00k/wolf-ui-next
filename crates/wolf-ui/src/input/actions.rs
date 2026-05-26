@@ -66,6 +66,13 @@ pub fn action_hints(hints: impl IntoIterator<Item = ActionHint>) -> String {
     })
 }
 
+pub fn action_hint_from_json(value: &str) -> ActionHint {
+    serde_json::from_str::<Vec<ActionHint>>(value)
+        .ok()
+        .and_then(|mut actions| actions.pop())
+        .unwrap_or_else(|| ActionHint::new(UiHint::Accept, "Action"))
+}
+
 pub fn native_action(action: UiAction, label: impl Into<String>) -> String {
     action_hints([ActionHint::new(UiHint::from(action), label)])
 }

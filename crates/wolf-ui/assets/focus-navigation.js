@@ -26,9 +26,17 @@
     }
 
     function scopeFor(element) {
+        const trap = activeFocusTrap();
+        if (trap) return trap;
+
         return (
             element?.closest?.("[data-focus-scope]") ?? document.querySelector("[data-focus-scope]") ?? document.body
         );
+    }
+
+    function activeFocusTrap() {
+        const traps = Array.from(document.querySelectorAll("[data-focus-trap='true']")).filter(isVisible);
+        return traps.at(-1) ?? null;
     }
 
     function candidatesIn(scope) {
@@ -65,11 +73,24 @@
         }
     }
 
+    function focusAndScrollElement(element, options = {}) {
+        if (!element) return false;
+
+        element.focus({ preventScroll: true });
+        window.__wolfUiScrollIntoHorizontalView?.(element, options);
+        return true;
+    }
+
+    window.__wolfUiFocusElement = focusAndScrollElement;
+    window.__wolfUiFocusSelector = (selector, options = {}) => {
+        const element = document.querySelector(selector);
+        return focusAndScrollElement(element, options);
+    };
+
     function focusFirst(scope) {
         const first = candidatesIn(scope)[0];
         if (!first) return false;
-        first.focus({ preventScroll: true });
-        first.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+        focusAndScrollElement(first);
         dispatchActionHintsChanged(first);
         return true;
     }
@@ -104,8 +125,7 @@
         }
 
         if (!best) return false;
-        best.focus({ preventScroll: true });
-        best.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+        focusAndScrollElement(best);
         dispatchActionHintsChanged(best);
         return true;
     }
@@ -163,6 +183,12 @@
     }
 
     document.addEventListener("focusin", (event) => {
+        const trap = activeFocusTrap();
+        if (trap && !trap.contains(event.target)) {
+            focusFirst(trap);
+            return;
+        }
+
         dispatchActionHintsChanged(event.target);
     });
 

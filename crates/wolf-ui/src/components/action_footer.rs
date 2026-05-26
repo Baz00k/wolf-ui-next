@@ -78,7 +78,7 @@ fn keyboard_label(action: UiHint) -> &'static str {
     match action {
         UiHint::Accept => "Enter",
         UiHint::Cancel => "Esc",
-        UiHint::Menu => "Menu",
+        UiHint::Menu => "F",
         UiHint::Navigate => "Arrows",
         UiHint::PageUp => "PgUp",
         UiHint::PageDown => "PgDn",
@@ -89,7 +89,7 @@ fn xbox_label(action: UiHint) -> &'static str {
     match action {
         UiHint::Accept => "A",
         UiHint::Cancel => "B",
-        UiHint::Menu => "Menu",
+        UiHint::Menu => "Y",
         UiHint::Navigate => "D-pad",
         UiHint::PageUp => "LB",
         UiHint::PageDown => "RB",
@@ -100,7 +100,7 @@ fn playstation_label(action: UiHint) -> &'static str {
     match action {
         UiHint::Accept => "Cross",
         UiHint::Cancel => "Circle",
-        UiHint::Menu => "Options",
+        UiHint::Menu => "Triangle",
         UiHint::Navigate => "D-pad",
         UiHint::PageUp => "L1",
         UiHint::PageDown => "R1",
@@ -111,7 +111,7 @@ fn switch_label(action: UiHint) -> &'static str {
     match action {
         UiHint::Accept => "A",
         UiHint::Cancel => "B",
-        UiHint::Menu => "Plus",
+        UiHint::Menu => "X",
         UiHint::Navigate => "D-pad",
         UiHint::PageUp => "L",
         UiHint::PageDown => "R",

@@ -261,6 +261,7 @@ fn dpad_action(button: Button) -> Option<UiAction> {
 fn button_action(family: GamepadFamily, button: Button) -> Option<UiAction> {
     match button {
         Button::Start => Some(UiAction::Menu),
+        Button::North => Some(UiAction::Menu),
         Button::South if family == GamepadFamily::Switch => Some(UiAction::Cancel),
         Button::East if family == GamepadFamily::Switch => Some(UiAction::Accept),
         Button::South => Some(UiAction::Accept),

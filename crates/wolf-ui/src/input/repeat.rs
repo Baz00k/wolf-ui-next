@@ -3,7 +3,7 @@ use std::time::{Duration, Instant};
 use crate::input::UiAction;
 
 pub(crate) const INPUT_INITIAL_REPEAT_DELAY: Duration = Duration::from_millis(500);
-pub(crate) const INPUT_REPEAT_DELAY: Duration = Duration::from_millis(200);
+pub(crate) const INPUT_REPEAT_DELAY: Duration = Duration::from_millis(175);
 
 #[derive(Default)]
 pub(crate) struct DirectionRepeat {

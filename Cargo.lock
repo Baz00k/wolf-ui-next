@@ -6553,6 +6553,7 @@ dependencies = [
 name = "wolf-api"
 version = "0.1.0"
 dependencies = [
+ "futures-util",
  "openapi-to-rust",
  "prettyplease",
  "reqwest 0.13.3",

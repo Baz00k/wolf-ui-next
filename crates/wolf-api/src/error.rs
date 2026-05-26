@@ -18,6 +18,8 @@ pub enum ApiError {
     Wolf { status: StatusCode, message: String },
     #[error("failed to decode Wolf API response: {0}")]
     Decode(reqwest::Error),
+    #[error("failed to decode Wolf API event: {0}")]
+    EventDecode(serde_json::Error),
 }
 
 impl ApiError {
@@ -29,5 +31,9 @@ impl ApiError {
         } else {
             Self::Transport(error)
         }
+    }
+
+    pub(crate) fn from_serde_json(error: serde_json::Error) -> Self {
+        Self::EventDecode(error)
     }
 }

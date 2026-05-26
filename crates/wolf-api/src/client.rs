@@ -31,6 +31,18 @@ impl WolfApi {
         endpoints::profiles::Profiles::new(self)
     }
 
+    pub fn lobbies(&self) -> endpoints::Lobbies<'_> {
+        endpoints::lobbies::Lobbies::new(self)
+    }
+
+    pub fn docker(&self) -> endpoints::Docker<'_> {
+        endpoints::docker::Docker::new(self)
+    }
+
+    pub fn events(&self) -> endpoints::Events<'_> {
+        endpoints::events::Events::new(self)
+    }
+
     pub fn utils(&self) -> endpoints::Utils<'_> {
         endpoints::utils::Utils::new(self)
     }
@@ -68,7 +80,7 @@ impl WolfApi {
         decode_bytes(response).await
     }
 
-    fn url(&self, path: &str) -> String {
+    pub(crate) fn url(&self, path: &str) -> String {
         let mut url = String::with_capacity(self.base_url.len() + path.len());
         url.push_str(&self.base_url);
         url.push_str(path);

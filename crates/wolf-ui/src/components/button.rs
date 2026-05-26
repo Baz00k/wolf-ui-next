@@ -26,6 +26,8 @@ pub fn Button(
     #[props(default = ButtonVariant::Default)] variant: ButtonVariant,
     #[props(default = ButtonSize::Default)] size: ButtonSize,
     #[props(default)] class: String,
+    #[props(default = "Select".to_string())] action_label: String,
+    #[props(default)] autofocus: bool,
     #[props(default)] onclick: Option<EventHandler<MouseEvent>>,
     children: Element,
 ) -> Element {
@@ -46,7 +48,7 @@ pub fn Button(
         ButtonSize::Lg => "h-11 rounded-xl px-8",
         ButtonSize::Icon => "h-10 w-10",
     };
-    let actions = native_action(UiAction::Accept, "Select");
+    let actions = native_action(UiAction::Accept, action_label);
 
     rsx! {
         button {
@@ -56,6 +58,11 @@ pub fn Button(
             onclick: move |event| {
                 if let Some(handler) = onclick {
                     handler.call(event);
+                }
+            },
+            onmounted: move |event: MountedEvent| async move {
+                if autofocus {
+                    let _ = event.data().set_focus(true).await;
                 }
             },
             {children}
