@@ -1,25 +1,24 @@
-use std::collections::HashMap;
+use std::time::Duration;
 
 use dioxus::prelude::*;
+use tokio::time::sleep;
 use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::AppListResponse;
 
 use crate::components::{
-    AppActionDialog, AppCard, AppCardData, AppCardSkeleton, AppStatusTone, Button, ButtonSize,
-    StatusAlert, StatusAlertVariant,
+    AppActionDialog, AppCardData, AppsContent, AppsHeader, AppsLoading, Button, ButtonSize,
+    SelectedAppMeta, StatusAlert, StatusAlertVariant,
 };
+use crate::domain::app_actions::{ActionStatuses, error_status, run_app_action};
 use crate::domain::apps::{
-    AppFilter, app_actions, filter_label, listen_for_lobby_events, load_apps_state,
-    selected_app_data, sorted_apps,
+    AppFilter, app_actions, listen_for_lobby_events, load_apps_state, selected_app_data,
 };
 use crate::input::{
     ActionHint, UiAction, UiHint, action_hint_from_json, action_hints, use_ui_action,
 };
 
-const LOADING_CARD_COUNT: usize = 5;
-const APP_CAROUSEL_CLASS: &str =
-    "w-full snap-x snap-mandatory overflow-x-auto overflow-y-visible [scrollbar-width:none]";
-const APP_CAROUSEL_TRACK_CLASS: &str = "mx-auto flex min-w-max items-center gap-5 px-[calc(50vw-7rem)] py-16 md:px-[calc(50vw-8rem)] lg:gap-6 lg:px-[calc(50vw-9rem)] xl:gap-7 xl:px-[calc(50vw-10rem)] 2xl:px-[calc(50vw-12rem)]";
+const ACTIVE_POLL_DELAY: Duration = Duration::from_secs(15);
+const BACKGROUND_POLL_DELAY: Duration = Duration::from_mins(1);
 
 #[component]
 pub fn ProfileApps(profile_id: String) -> Element {
@@ -28,7 +27,8 @@ pub fn ProfileApps(profile_id: String) -> Element {
     let navigator = use_navigator();
     let selected_index = use_signal(|| 0usize);
     let filter = use_signal(|| AppFilter::Default);
-    let action_app = use_signal(|| None::<AppCardData>);
+    let mut action_app = use_signal(|| None::<AppCardData>);
+    let action_statuses = use_signal(ActionStatuses::new);
     let mut lobbies = use_signal(Vec::<Lobby>::new);
     let mut pending_focus_index = use_signal(|| None::<usize>);
 
@@ -44,7 +44,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
     });
     let filter_focus_action = use_ui_action(UiAction::Menu, "Filters", move || {
         let _ = document::eval(
-            "document.querySelector('[data-filter-button=\"true\"]')?.focus({ preventScroll: true });",
+            "document.querySelector('#apps-filter button')?.focus({ preventScroll: true });",
         );
     });
     let scope_actions = action_hints([
@@ -77,6 +77,15 @@ pub fn ProfileApps(profile_id: String) -> Element {
         });
     });
 
+    use_effect(move || {
+        spawn(async move {
+            loop {
+                sleep(next_poll_delay().await).await;
+                apps.restart();
+            }
+        });
+    });
+
     rsx! {
         div { class: "min-h-screen overflow-hidden bg-background text-foreground",
             div { class: "pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,oklch(0.75_0.12_250/0.12),transparent_34%),linear-gradient(180deg,oklch(1_0_0/0.04),transparent_45%)]" }
@@ -93,12 +102,16 @@ pub fn ProfileApps(profile_id: String) -> Element {
                         Some(Ok(state)) => rsx! {
                             AppsContent {
                                 response: AppListResponse { success: true, apps: state.apps.clone() },
+                                profile_id: profile_id.clone(),
                                 lobbies: lobbies(),
                                 images: state.images.clone(),
                                 covers: state.covers.clone(),
                                 filter: filter(),
                                 selected_index,
-                                action_app,
+                                on_app_click: move |(index, app)| {
+                                    action_app.set(Some(app));
+                                    scroll_to_app(index);
+                                },
                             }
                         },
                         Some(Err(error)) => rsx! {
@@ -120,7 +133,8 @@ pub fn ProfileApps(profile_id: String) -> Element {
                 match &*apps.read_unchecked() {
                     Some(Ok(state)) => rsx! {
                         SelectedAppMeta {
-                            app: selected_app_data(&state.apps, &lobbies(), &state.images, &state.covers, filter(), selected_index()),
+                            app: selected_app_data(&profile_id, &state.apps, &lobbies(), &state.images, &state.covers, filter(), selected_index()),
+                            action_statuses: action_statuses(),
                         }
                     },
                     _ => rsx! {},
@@ -130,7 +144,10 @@ pub fn ProfileApps(profile_id: String) -> Element {
                 AppActionDialog {
                     actions: app_actions(&app),
                     app: app.clone(),
-                    onselect: move |_| close_modal(action_app, selected_index()),
+                    onselect: move |action| {
+                        start_profile_app_action(profile_id.clone(), app.clone(), action, action_statuses, apps);
+                        close_modal(action_app, selected_index());
+                    },
                     onclose: move |_| close_modal(action_app, selected_index()),
                 }
             }
@@ -138,140 +155,29 @@ pub fn ProfileApps(profile_id: String) -> Element {
     }
 }
 
-#[component]
-fn AppsHeader(
-    mut filter: Signal<AppFilter>,
-    mut selected_index: Signal<usize>,
-    mut pending_focus_index: Signal<Option<usize>>,
-) -> Element {
-    rsx! {
-        header { class: "flex items-start justify-between gap-4",
-            div {
-                h1 { class: "text-2xl font-bold tracking-tight sm:text-4xl lg:text-5xl", "Applications" }
+fn start_profile_app_action(
+    profile_id: String,
+    app: AppCardData,
+    action: crate::components::AppAction,
+    mut action_statuses: Signal<ActionStatuses>,
+    mut apps: Resource<Result<crate::domain::apps::AppsState, String>>,
+) {
+    let app_id = app.id.clone();
+    action_statuses.write().remove(&app_id);
+    spawn(async move {
+        match run_app_action(profile_id, app, action, action_statuses).await {
+            Ok(_) => {
+                action_statuses.write().remove(&app_id);
+                apps.restart();
             }
-            div { class: "rounded-full border border-border bg-card/70 p-1 font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground shadow-lg shadow-black/20",
-                for item in [AppFilter::Default, AppFilter::Available, AppFilter::Alphabetical] {
-                    button {
-                        class: filter_chip_class(filter() == item),
-                        "data-focusable": "true",
-                        "data-filter-button": "true",
-                        "aria-pressed": if filter() == item { "true" } else { "false" },
-                        "data-actions": action_hints([ActionHint::new(UiHint::Accept, filter_label(item))]),
-                        onclick: move |_| {
-                            selected_index.set(0);
-                            filter.set(item);
-                            pending_focus_index.set(Some(0));
-                        },
-                        "{filter_label(item)}"
-                    }
-                }
+            Err(error) => {
+                action_statuses
+                    .write()
+                    .insert(app_id.clone(), error_status(app_id, error));
+                apps.restart();
             }
         }
-    }
-}
-
-#[component]
-fn AppsLoading() -> Element {
-    rsx! {
-        div { class: APP_CAROUSEL_CLASS,
-            div { class: APP_CAROUSEL_TRACK_CLASS,
-                for _ in 0..LOADING_CARD_COUNT {
-                    AppCardSkeleton {}
-                }
-            }
-        }
-        LoadingAppMeta {}
-    }
-}
-
-#[component]
-fn AppsContent(
-    response: AppListResponse,
-    lobbies: Vec<Lobby>,
-    images: HashMap<String, bool>,
-    covers: HashMap<String, String>,
-    filter: AppFilter,
-    mut selected_index: Signal<usize>,
-    mut action_app: Signal<Option<AppCardData>>,
-) -> Element {
-    if !response.success {
-        return rsx! {
-            StatusAlert {
-                title: "Apps unavailable".to_string(),
-                message: "Wolf returned an unsuccessful app response. Try again once the service is ready.".to_string(),
-                variant: StatusAlertVariant::Error,
-            }
-        };
-    }
-
-    let apps = sorted_apps(response.apps, &lobbies, &images, &covers, filter);
-    if apps.is_empty() {
-        return rsx! {
-            StatusAlert {
-                title: "No apps found".to_string(),
-                message: "Add apps to this Wolf profile before launching a Moonlight session.".to_string(),
-                variant: StatusAlertVariant::Info,
-            }
-        };
-    }
-
-    if selected_index() >= apps.len() {
-        selected_index.set(apps.len().saturating_sub(1));
-    }
-
-    rsx! {
-        div { class: APP_CAROUSEL_CLASS,
-            div {
-                class: APP_CAROUSEL_TRACK_CLASS,
-                role: "list",
-                aria_label: "Applications",
-                for (index, app) in apps.iter().cloned().enumerate() {
-                    div { role: "listitem", key: "{app.id}",
-                        AppCard {
-                            app: app.clone(),
-                            index,
-                            selected: selected_index() == index,
-                            autofocus: index == 0,
-                            onfocus: move |_| selected_index.set(index),
-                            onclick: move |_| {
-                                selected_index.set(index);
-                                action_app.set(Some(app.clone()));
-                                scroll_to_app(index);
-                            },
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-#[component]
-fn LoadingAppMeta() -> Element {
-    rsx! {
-        div { class: "pointer-events-none flex h-28 shrink-0 flex-col items-center justify-center gap-3 px-6 text-center",
-            div { class: "h-9 w-48 animate-pulse rounded-full bg-muted sm:h-10 sm:w-56 lg:h-11 lg:w-64" }
-            div { class: "h-8 w-36 animate-pulse rounded-full border border-border bg-card/70" }
-        }
-    }
-}
-
-#[component]
-fn SelectedAppMeta(app: Option<AppCardData>) -> Element {
-    let Some(app) = app else {
-        return rsx! {};
-    };
-    let badge_class = status_badge_class(app.status.tone);
-
-    rsx! {
-        div { class: "pointer-events-none flex h-24 shrink-0 flex-col items-center justify-center gap-3 px-6 text-center lg:h-28",
-            h2 { class: "max-w-[80vw] truncate text-3xl font-black tracking-tight md:text-4xl xl:text-5xl 2xl:text-6xl", "{app.title}" }
-            div { class: "inline-flex items-center gap-3 rounded-full border px-4 py-2 font-mono text-xs font-bold uppercase tracking-widest shadow-2xl shadow-black/30 {badge_class}",
-                span { class: "h-2 w-2 rounded-full bg-current shadow-[0_0_16px_currentColor]" }
-                span { "{app.status.label}" }
-            }
-        }
-    }
+    });
 }
 
 fn close_modal(mut action_app: Signal<Option<AppCardData>>, selected_index: usize) {
@@ -293,17 +199,14 @@ fn scroll_to_app(index: usize) {
     ));
 }
 
-fn filter_chip_class(active: bool) -> &'static str {
-    if active {
-        "inline-flex rounded-full bg-primary px-3 py-2 text-primary-foreground outline-none ring-0 focus:ring-2 focus:ring-ring/50"
-    } else {
-        "inline-flex rounded-full px-3 py-2 outline-none ring-0 transition hover:bg-accent hover:text-accent-foreground focus:ring-2 focus:ring-ring/50"
-    }
-}
-
-fn status_badge_class(tone: AppStatusTone) -> &'static str {
-    match tone {
-        AppStatusTone::Ready => "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
-        AppStatusTone::Warning => "border-yellow-300/30 bg-yellow-300/10 text-yellow-200",
+async fn next_poll_delay() -> Duration {
+    let mut eval = document::eval(
+        r#"
+        dioxus.send(document.visibilityState === "visible" && document.hasFocus());
+        "#,
+    );
+    match eval.recv::<bool>().await {
+        Ok(true) => ACTIVE_POLL_DELAY,
+        Ok(false) | Err(_) => BACKGROUND_POLL_DELAY,
     }
 }

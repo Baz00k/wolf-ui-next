@@ -28,6 +28,8 @@ pub fn Button(
     #[props(default)] class: String,
     #[props(default = "Select".to_string())] action_label: String,
     #[props(default)] autofocus: bool,
+    #[props(default)] disabled: bool,
+    #[props(default)] aria_pressed: Option<String>,
     #[props(default)] onclick: Option<EventHandler<MouseEvent>>,
     children: Element,
 ) -> Element {
@@ -55,6 +57,8 @@ pub fn Button(
             class: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium outline-none transition-colors focus:ring-2 focus:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 {variant_class} {size_class} {class}",
             "data-focusable": "true",
             "data-actions": actions,
+            aria_pressed,
+            disabled,
             onclick: move |event| {
                 if let Some(handler) = onclick {
                     handler.call(event);

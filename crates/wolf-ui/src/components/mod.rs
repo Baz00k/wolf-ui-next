@@ -4,7 +4,9 @@ pub mod app_card;
 pub mod button;
 pub mod card;
 pub mod dialog;
+pub mod profile_apps;
 pub mod profile_card;
+pub mod selected_app_meta;
 pub mod skeleton;
 pub mod spinner;
 pub mod status_alert;
@@ -18,7 +20,9 @@ pub use app_card::{
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::{Card, CardContent, CardFooter, CardHeader};
 pub use dialog::{Dialog, DialogDescription, DialogHeader, DialogTitle};
+pub use profile_apps::{AppsContent, AppsHeader, AppsLoading};
 pub use profile_card::{ProfileCard, ProfileCardSkeleton};
+pub use selected_app_meta::SelectedAppMeta;
 pub use skeleton::Skeleton;
 #[allow(unused_imports)]
 pub use spinner::Spinner;

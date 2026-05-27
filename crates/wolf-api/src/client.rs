@@ -1,6 +1,9 @@
 use serde::{Serialize, de::DeserializeOwned};
+use std::time::Duration;
 
 use crate::{endpoints, error::ApiError, types};
+
+const STREAM_REQUEST_TIMEOUT: Duration = Duration::from_hours(12);
 
 #[derive(Clone, Debug)]
 pub struct WolfApi {
@@ -35,6 +38,10 @@ impl WolfApi {
         endpoints::lobbies::Lobbies::new(self)
     }
 
+    pub fn sessions(&self) -> endpoints::Sessions<'_> {
+        endpoints::sessions::Sessions::new(self)
+    }
+
     pub fn docker(&self) -> endpoints::Docker<'_> {
         endpoints::docker::Docker::new(self)
     }
@@ -59,6 +66,48 @@ impl WolfApi {
             .map_err(ApiError::from_reqwest)?;
 
         decode_json(response).await
+    }
+
+    pub(crate) async fn post_json<B, T>(&self, path: &str, body: &B) -> Result<T, ApiError>
+    where
+        B: Serialize + ?Sized,
+        T: DeserializeOwned,
+    {
+        let response = self
+            .http_client
+            .post(self.url(path))
+            .json(body)
+            .send()
+            .await
+            .map_err(ApiError::from_reqwest)?;
+
+        decode_json(response).await
+    }
+
+    pub(crate) async fn post_stream<B>(
+        &self,
+        path: &str,
+        body: &B,
+    ) -> Result<reqwest::Response, ApiError>
+    where
+        B: Serialize + ?Sized,
+    {
+        let response = self
+            .http_client
+            .post(self.url(path))
+            .json(body)
+            .timeout(STREAM_REQUEST_TIMEOUT)
+            .send()
+            .await
+            .map_err(ApiError::from_reqwest)?;
+        let status = response.status();
+
+        if status.is_success() {
+            return Ok(response);
+        }
+
+        let body = response.text().await.map_err(ApiError::from_reqwest)?;
+        Err(ApiError::Status { status, body })
     }
 
     pub(crate) async fn get_bytes_with_query<T>(

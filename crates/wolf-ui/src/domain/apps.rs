@@ -77,6 +77,7 @@ pub(crate) async fn listen_for_lobby_events(profile_id: String, lobbies: Signal<
 }
 
 pub(crate) fn sorted_apps(
+    profile_id: &str,
     apps: Vec<App>,
     lobbies: &[Lobby],
     images: &HashMap<String, bool>,
@@ -85,7 +86,7 @@ pub(crate) fn sorted_apps(
 ) -> Vec<AppCardData> {
     let mut apps = apps
         .into_iter()
-        .map(|app| app_card_data(app, lobbies, images, covers))
+        .map(|app| app_card_data(profile_id, app, lobbies, images, covers))
         .collect::<Vec<_>>();
 
     match filter {
@@ -100,6 +101,7 @@ pub(crate) fn sorted_apps(
 }
 
 pub(crate) fn selected_app_data(
+    profile_id: &str,
     apps: &[App],
     lobbies: &[Lobby],
     images: &HashMap<String, bool>,
@@ -107,7 +109,7 @@ pub(crate) fn selected_app_data(
     filter: AppFilter,
     index: usize,
 ) -> Option<AppCardData> {
-    sorted_apps(apps.to_vec(), lobbies, images, covers, filter)
+    sorted_apps(profile_id, apps.to_vec(), lobbies, images, covers, filter)
         .into_iter()
         .nth(index)
 }
@@ -115,6 +117,10 @@ pub(crate) fn selected_app_data(
 pub(crate) fn app_actions(app: &AppCardData) -> Vec<AppAction> {
     if app.status.kind == AppStatusKind::MissingImage {
         return vec![AppAction::Download];
+    }
+
+    if app.status.kind == AppStatusKind::Playing {
+        return vec![AppAction::Connect, AppAction::Stop, AppAction::CheckUpdate];
     }
 
     vec![
@@ -170,7 +176,13 @@ async fn image_availability(api: &wolf_api::WolfApi, apps: &[App]) -> HashMap<St
         });
 
     let checks = images.into_iter().map(|image| async move {
-        let exists = api.docker().image_exists(&image).await.unwrap_or(true);
+        let exists = match api.docker().image_exists(&image).await {
+            Ok(exists) => exists,
+            Err(error) => {
+                tracing::warn!(image, %error, "failed to inspect Docker image");
+                true
+            }
+        };
         (image, exists)
     });
 
@@ -195,6 +207,7 @@ async fn cover_images(api: &wolf_api::WolfApi, apps: &[App]) -> HashMap<String, 
 }
 
 fn app_card_data(
+    profile_id: &str,
     app: App,
     lobbies: &[Lobby],
     images: &HashMap<String, bool>,
@@ -206,7 +219,9 @@ fn app_card_data(
         .and_then(|image| images.get(image))
         .copied()
         .unwrap_or(true);
-    let running = lobbies.iter().any(|lobby| is_app_lobby(&app, lobby));
+    let running = lobbies
+        .iter()
+        .any(|lobby| is_app_lobby(profile_id, &app, lobby, false));
     let status = if running {
         AppStatus {
             kind: AppStatusKind::Playing,
@@ -229,16 +244,19 @@ fn app_card_data(
 
     AppCardData {
         id: app.id.clone(),
-        title: app.title,
+        title: app.title.clone(),
         runner: runner_label(&app.runner).to_string(),
+        source: app.clone(),
         status,
         supports_hdr: app.support_hdr,
         cover_src: covers.get(&app.id).cloned(),
     }
 }
 
-fn is_app_lobby(app: &App, lobby: &Lobby) -> bool {
-    lobby.name == app.title || runner_matches(&app.runner, &lobby.runner)
+pub(crate) fn is_app_lobby(profile_id: &str, app: &App, lobby: &Lobby, multi_user: bool) -> bool {
+    lobby.started_by_profile_id == profile_id
+        && lobby.multi_user == multi_user
+        && (lobby.name == app.title || runner_matches(&app.runner, &lobby.runner))
 }
 
 fn runner_matches(
@@ -258,7 +276,7 @@ fn runner_matches(
     }
 }
 
-fn docker_image(app: &App) -> Option<String> {
+pub(crate) fn docker_image(app: &App) -> Option<String> {
     docker_runner(app).map(|runner| runner.image.clone())
 }
 

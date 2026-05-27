@@ -25,11 +25,12 @@ pub struct AppStatus {
     pub tone: AppStatusTone,
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq)]
 pub struct AppCardData {
     pub id: String,
     pub title: String,
     pub runner: String,
+    pub source: wolf_api::profiles::App,
     pub status: AppStatus,
     pub supports_hdr: bool,
     pub cover_src: Option<String>,

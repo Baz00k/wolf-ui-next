@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use dioxus_free_icons::Icon;
-use dioxus_free_icons::icons::hi_solid_icons::{HiDownload, HiPlay, HiRefresh, HiUserGroup, HiX};
+use dioxus_free_icons::icons::hi_solid_icons::{
+    HiDownload, HiPlay, HiRefresh, HiStop, HiUserGroup, HiX,
+};
 
 use crate::components::{
     Button, ButtonSize, ButtonVariant, Card, CardContent, CardFooter, CardHeader, Dialog,
@@ -11,7 +13,9 @@ use crate::input::{UiAction, use_ui_action};
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum AppAction {
     Start,
+    Connect,
     StartCoop,
+    Stop,
     CheckUpdate,
     Download,
 }
@@ -77,29 +81,42 @@ fn ActionRow(
             action_label: label.clone(),
             autofocus,
             onclick: move |_| onselect.call(action),
-            match action {
-                AppAction::Start => rsx! {
-                    Icon { icon: HiPlay, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(label.clone()) }
-                },
-                AppAction::StartCoop => rsx! {
-                    Icon { icon: HiUserGroup, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(label.clone()) }
-                },
-                AppAction::CheckUpdate => rsx! {
-                    Icon { icon: HiRefresh, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(label.clone()) }
-                },
-                AppAction::Download => rsx! {
-                    Icon { icon: HiDownload, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(label.clone()) }
-                },
-            }
+            ActionIcon { action, tone: tone.clone(), title: label.clone() }
             "{label}"
         }
+    }
+}
+
+#[component]
+fn ActionIcon(action: AppAction, tone: String, title: String) -> Element {
+    match action {
+        AppAction::Start => rsx! {
+            Icon { icon: HiPlay, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+        },
+        AppAction::Connect => rsx! {
+            Icon { icon: HiPlay, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+        },
+        AppAction::StartCoop => rsx! {
+            Icon { icon: HiUserGroup, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+        },
+        AppAction::Stop => rsx! {
+            Icon { icon: HiStop, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+        },
+        AppAction::CheckUpdate => rsx! {
+            Icon { icon: HiRefresh, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+        },
+        AppAction::Download => rsx! {
+            Icon { icon: HiDownload, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+        },
     }
 }
 
 fn action_label(action: AppAction) -> &'static str {
     match action {
         AppAction::Start => "Start",
+        AppAction::Connect => "Connect",
         AppAction::StartCoop => "Start Co-op",
+        AppAction::Stop => "Stop",
         AppAction::CheckUpdate => "Check for Update",
         AppAction::Download => "Download",
     }
@@ -107,8 +124,9 @@ fn action_label(action: AppAction) -> &'static str {
 
 fn action_tone(action: AppAction) -> &'static str {
     match action {
-        AppAction::Start => "text-emerald-400",
+        AppAction::Start | AppAction::Connect => "text-emerald-400",
         AppAction::StartCoop => "text-blue-400",
+        AppAction::Stop => "text-red-400",
         AppAction::CheckUpdate | AppAction::Download => "text-yellow-300",
     }
 }
