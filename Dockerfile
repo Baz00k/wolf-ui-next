@@ -99,6 +99,18 @@ ENV PUID=0 \
 COPY --from=builder /app/dist/app /opt/wolf-ui
 RUN ln -s /opt/wolf-ui/wolf-ui /usr/local/bin/wolf-ui
 COPY --chmod=777 container-overlay/ /
+RUN <<_WRAP_WEBKIT_HELPERS
+set -e
+for helper in /usr/lib/*/webkit2gtk-4.1/WebKitWebProcess \
+              /usr/lib/*/webkit2gtk-4.1/WebKitNetworkProcess \
+              /usr/lib/*/webkit2gtk-4.1/WebKitGPUProcess; do
+    if [ -x "$helper" ] && [ ! -e "$helper.real" ]; then
+        mv "$helper" "$helper.real"
+        cp /usr/local/bin/webkit-helper-wrapper.sh "$helper"
+        chmod 755 "$helper"
+    fi
+done
+_WRAP_WEBKIT_HELPERS
 
 ARG IMAGE_SOURCE
 ARG IMAGE_REVISION
