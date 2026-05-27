@@ -38,7 +38,17 @@ const SCROLL_ANIMATION_JS: Asset = asset!("/assets/scroll-animation.js");
 const FOCUS_NAVIGATION_JS: Asset = asset!("/assets/focus-navigation.js");
 
 fn main() {
-    dioxus::launch(App);
+    let mut window = dioxus::desktop::WindowBuilder::new().with_title("Wolf UI");
+
+    if !cfg!(debug_assertions) {
+        window = window.with_decorations(false).with_fullscreen(Some(
+            dioxus::desktop::tao::window::Fullscreen::Borderless(None),
+        ));
+    }
+
+    dioxus::LaunchBuilder::desktop()
+        .with_cfg(dioxus::desktop::Config::new().with_window(window))
+        .launch(App);
 }
 
 #[component]
