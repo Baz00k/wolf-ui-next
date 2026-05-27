@@ -1,0 +1,7 @@
+.git
+.github
+.zed
+target
+**/target
+crates/wolf-ui/assets/dist
+Dockerfile

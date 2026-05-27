@@ -24,6 +24,10 @@ needless_collect = "warn"
 unwrap_used = "warn"
 expect_used = "warn"
 
+[profile.desktop-release]
+inherits = "release"
+strip = false
+
 [workspace.dependencies]
 base64 = "0.22"
 dioxus = { version = "0.7.1", features = ["router"] }
