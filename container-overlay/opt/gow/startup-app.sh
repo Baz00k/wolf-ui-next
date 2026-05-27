@@ -8,4 +8,5 @@ gow_log "Display backend: GDK_BACKEND=${GDK_BACKEND} WAYLAND_DISPLAY=${WAYLAND_D
 
 source /opt/gow/launch-comp.sh
 
-launcher wolf-ui
+cd /opt/wolf-ui
+launcher ./wolf-ui

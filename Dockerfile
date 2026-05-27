@@ -69,13 +69,8 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 set -e
 dx build --desktop --release --package wolf-ui --locked
 mkdir -p /app/dist
-for binary in target/*/desktop-release/wolf-ui target/desktop-release/wolf-ui; do
-    if [ -x "$binary" ]; then
-        install -Dm755 "$binary" /app/dist/wolf-ui
-        break
-    fi
-done
-test -x /app/dist/wolf-ui
+cp -a target/dx/wolf-ui/release/linux/app /app/dist/app
+test -x /app/dist/app/wolf-ui
 _BUILD_APP
 
 FROM ${BASE_APP_IMAGE} AS runtime
@@ -101,7 +96,8 @@ ENV PUID=0 \
     UNAME=root \
     GDK_BACKEND=wayland
 
-COPY --from=builder /app/dist/wolf-ui /usr/local/bin/wolf-ui
+COPY --from=builder /app/dist/app /opt/wolf-ui
+RUN ln -s /opt/wolf-ui/wolf-ui /usr/local/bin/wolf-ui
 COPY --chmod=777 container-overlay/ /
 
 ARG IMAGE_SOURCE
