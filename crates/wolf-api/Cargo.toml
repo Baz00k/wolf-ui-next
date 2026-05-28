@@ -9,6 +9,7 @@ publish.workspace = true
 path = "src/lib.rs"
 
 [dependencies]
+tracing.workspace = true
 futures-util.workspace = true
 reqwest = { version = "0.13", default-features = false, features = ["json", "query", "stream"] }
 serde = { version = "1", features = ["derive"] }

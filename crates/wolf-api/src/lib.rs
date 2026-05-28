@@ -33,12 +33,12 @@ pub fn client() -> Result<WolfApi, ClientBuildError> {
 
 pub fn client_with_config(config: ClientConfig) -> Result<WolfApi, ClientBuildError> {
     match config.transport_ref() {
-        ApiTransport::UnixSocket => eprintln!(
+        ApiTransport::UnixSocket => tracing::info!(
             "Wolf API client connecting via Unix socket: {} (base URL: {})",
             config.unix_socket_path_ref().display(),
             config.base_url_ref()
         ),
-        ApiTransport::Tcp => eprintln!(
+        ApiTransport::Tcp => tracing::info!(
             "Wolf API client connecting via TCP: {}",
             config.base_url_ref()
         ),
