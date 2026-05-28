@@ -46,7 +46,9 @@ fn main() {
         ));
     }
 
-    let mut config = dioxus::desktop::Config::new().with_window(window);
+    let mut config = dioxus::desktop::Config::new()
+        .with_window(window)
+        .with_background_color((0, 0, 0, 255));
 
     if !cfg!(debug_assertions) {
         config = config.with_on_window(|window, _| {
