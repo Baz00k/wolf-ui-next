@@ -76,3 +76,27 @@
         cursor: pointer;
     }
 }
+
+@layer utilities {
+    .wolf-ambient-background {
+        background-image:
+            radial-gradient(
+                in oklab circle at 50% 105%,
+                oklch(0.62 0.08 255 / 0.15) 0%,
+                oklch(0.42 0.04 255 / 0.01) 35%,
+                transparent 50%
+            ),
+            linear-gradient(180deg in oklab, oklch(1 0 0 / 0.06) 0%, oklch(1 0 0 / 0.025) 20%, transparent 34%);
+    }
+
+    .wolf-ambient-background-center {
+        background-image:
+            radial-gradient(
+                in oklab circle at 50% 50%,
+                oklch(0.62 0.08 255 / 0.15) 0%,
+                oklch(0.42 0.04 255 / 0.01) 40%,
+                transparent 50%
+            ),
+            linear-gradient(180deg in oklab, oklch(1 0 0 / 0.06) 0%, oklch(1 0 0 / 0.025) 20%, transparent 34%);
+    }
+}

@@ -36,7 +36,6 @@ pub fn ProfileCard(profile: ProfileCardData, autofocus: bool, to: String) -> Ele
                 }
             },
             Card { class: "relative flex h-full w-full flex-col items-center overflow-hidden shadow-black/30 transition duration-200 ease-out group-hover:border-foreground/35 group-hover:bg-accent group-focus:border-foreground group-focus:ring-4 group-focus:ring-ring/20".to_string(),
-                div { class: "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,oklch(1_0_0/0.08),transparent_36%)] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100" }
                 div { class: "flex flex-1 items-center justify-center pt-8 md:pt-10 lg:pt-12 2xl:pt-16",
                     div {
                         class: "flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground transition group-hover:bg-secondary group-hover:text-secondary-foreground group-focus:bg-secondary group-focus:text-secondary-foreground md:h-28 md:w-28 lg:h-32 lg:w-32 xl:h-36 xl:w-36 2xl:h-44 2xl:w-44",

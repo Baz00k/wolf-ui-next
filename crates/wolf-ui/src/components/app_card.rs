@@ -51,7 +51,6 @@ pub fn AppCard(
     } else {
         "scale-90 hover:scale-95"
     };
-    let glow_class = if selected { "opacity-100" } else { "opacity-0" };
     let accessible_label = format!("{} app, {}, open actions", app.title, app.status.label);
     let show_runner = app.runner != "Docker";
 
@@ -70,8 +69,6 @@ pub fn AppCard(
                 }
             },
             Card { class: app_card_class(selected).to_string(),
-                div { class: "pointer-events-none absolute -inset-10 -z-10 rounded-4xl bg-[radial-gradient(circle_at_50%_65%,oklch(1_0_0/0.22),transparent_62%)] blur-2xl transition-opacity duration-300 {glow_class}" }
-                div { class: "pointer-events-none absolute inset-0 overflow-hidden rounded-4xl bg-[radial-gradient(circle_at_50%_10%,oklch(1_0_0/0.16),transparent_38%),linear-gradient(180deg,oklch(1_0_0/0.04),transparent_60%)] transition-opacity duration-300 {glow_class}" }
                 div { class: "pointer-events-none absolute inset-x-4 top-4 z-10 flex items-center justify-between text-xs font-semibold uppercase tracking-widest text-muted-foreground md:inset-x-5 md:top-5 xl:inset-x-6 xl:top-6",
                     if show_runner {
                         span { "{app.runner}" }
@@ -110,7 +107,7 @@ pub fn AppCard(
 
 fn app_card_class(selected: bool) -> &'static str {
     if selected {
-        "relative h-full w-full overflow-visible border-foreground text-card-foreground opacity-100 shadow-[0_2.5rem_4rem_oklch(0_0_0/0.55),0_0_3.5rem_oklch(1_0_0/0.18)] transition-[transform,opacity,border-color,box-shadow,background-color] duration-300 ease-out group-focus:ring-4 group-focus:ring-ring/25"
+        "relative h-full w-full overflow-visible border-foreground text-card-foreground opacity-100 shadow-[0_2.5rem_4rem_oklch(0_0_0/0.55)] transition-[transform,opacity,border-color,box-shadow,background-color] duration-300 ease-out group-focus:ring-4 group-focus:ring-ring/25"
     } else {
         "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-70 shadow-black/30 transition-[transform,opacity,border-color,box-shadow,background-color] duration-300 ease-out group-focus:ring-4 group-focus:ring-ring/25"
     }

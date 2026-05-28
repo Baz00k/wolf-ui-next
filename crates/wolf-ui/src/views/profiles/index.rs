@@ -23,7 +23,7 @@ pub fn Profiles() -> Element {
 
     rsx! {
         div { class: "min-h-screen overflow-hidden bg-background text-foreground",
-            div { class: "pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_100%,oklch(1_0_0/0.1),transparent_42%),linear-gradient(180deg,oklch(1_0_0/0.02),transparent_45%)]" }
+            div { class: "pointer-events-none fixed inset-0 wolf-ambient-background" }
             section {
                 class: "relative flex min-h-screen flex-col px-8 py-12 sm:px-12 lg:px-20",
                 "data-focus-scope": "true",

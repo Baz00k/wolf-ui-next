@@ -88,7 +88,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
 
     rsx! {
         div { class: "min-h-screen overflow-hidden bg-background text-foreground",
-            div { class: "pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,oklch(0.75_0.12_250/0.12),transparent_34%),linear-gradient(180deg,oklch(1_0_0/0.04),transparent_45%)]" }
+            div { class: "pointer-events-none fixed inset-0 wolf-ambient-background-center" }
             section {
                 class: "relative flex min-h-screen flex-col px-6 pb-28 pt-8 sm:px-10 lg:px-16",
                 "data-focus-scope": "true",
