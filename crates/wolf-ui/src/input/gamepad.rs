@@ -63,7 +63,7 @@ pub fn use_gamepad_input(dispatcher: UnboundedSender<InputEvent>) {
                                 {
                                     send_action(&dispatcher, family, action);
                                 }
-                            } else if let Some(action) = button_action(family, button) {
+                            } else if let Some(action) = button_action(button) {
                                 send_action(&dispatcher, family, action);
                             }
                         }
@@ -74,9 +74,7 @@ pub fn use_gamepad_input(dispatcher: UnboundedSender<InputEvent>) {
                                 {
                                     send_action(&dispatcher, family, action);
                                 }
-                            } else if let Some(action) =
-                                button_changed_action(family, button, value)
-                            {
+                            } else if let Some(action) = button_changed_action(button, value) {
                                 send_action(&dispatcher, family, action);
                             }
                         }
@@ -258,24 +256,20 @@ fn dpad_action(button: Button) -> Option<UiAction> {
     }
 }
 
-fn button_action(family: GamepadFamily, button: Button) -> Option<UiAction> {
+fn button_action(button: Button) -> Option<UiAction> {
     match button {
-        Button::Start => Some(UiAction::Menu),
-        Button::North => Some(UiAction::Menu),
-        Button::South if family == GamepadFamily::Switch => Some(UiAction::Cancel),
-        Button::East if family == GamepadFamily::Switch => Some(UiAction::Accept),
+        Button::Start | Button::North => Some(UiAction::Menu),
         Button::South => Some(UiAction::Accept),
         Button::East => Some(UiAction::Cancel),
         _ => None,
     }
 }
-
-fn button_changed_action(family: GamepadFamily, button: Button, value: f32) -> Option<UiAction> {
+fn button_changed_action(button: Button, value: f32) -> Option<UiAction> {
     if value < 0.5 {
         return None;
     }
 
-    button_action(family, button)
+    button_action(button)
 }
 
 fn update_axis(dpad: &mut DirectionState, stick: &mut StickState, axis: Axis, value: f32) {
@@ -338,4 +332,28 @@ fn log_gamepad(label: &str, gamepad: Gamepad) {
         gamepad.product_id(),
         gamepad.uuid(),
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn nintendo_switch_controller_uses_gilrs_action_buttons() {
+        assert_eq!(
+            classify_gamepad("Nintendo Switch Pro Controller"),
+            GamepadFamily::Switch,
+        );
+        assert_eq!(button_action(Button::South), Some(UiAction::Accept));
+        assert_eq!(button_action(Button::East), Some(UiAction::Cancel));
+    }
+
+    #[test]
+    fn analog_button_changes_only_fire_on_press_threshold() {
+        assert_eq!(button_changed_action(Button::South, 0.49), None);
+        assert_eq!(
+            button_changed_action(Button::South, 0.5),
+            Some(UiAction::Accept)
+        );
+    }
 }
