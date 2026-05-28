@@ -46,8 +46,22 @@ fn main() {
         ));
     }
 
+    let mut config = dioxus::desktop::Config::new().with_window(window);
+
+    if !cfg!(debug_assertions) {
+        config = config.with_on_window(|window, _| {
+            let monitor = window
+                .current_monitor()
+                .or_else(|| window.available_monitors().next());
+
+            if let Some(monitor) = monitor {
+                window.set_inner_size(monitor.size());
+            }
+        });
+    }
+
     dioxus::LaunchBuilder::desktop()
-        .with_cfg(dioxus::desktop::Config::new().with_window(window))
+        .with_cfg(config)
         .launch(App);
 }
 
