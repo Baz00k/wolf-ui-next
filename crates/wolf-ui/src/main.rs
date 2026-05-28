@@ -69,10 +69,6 @@ fn main() {
 fn App() -> Element {
     ApiContext::provide();
 
-    use_effect(|| {
-        log_startup_screen_info();
-    });
-
     rsx! {
         document::Stylesheet { href: STYLES_CSS }
         script { src: SCROLL_ANIMATION_JS }
@@ -81,61 +77,4 @@ fn App() -> Element {
             Router::<Route> {}
         }
     }
-}
-
-fn log_startup_screen_info() {
-    let window = dioxus::desktop::window();
-    let inner_size = window.inner_size();
-    let outer_size = window.outer_size();
-    let scale_factor = window.scale_factor();
-    let fullscreen = window.fullscreen();
-
-    tracing::debug!(
-        target: "wolf-ui-screen",
-        "window inner={}x{} outer={}x{} scale_factor={} fullscreen={:?}",
-        inner_size.width,
-        inner_size.height,
-        outer_size.width,
-        outer_size.height,
-        scale_factor,
-        fullscreen,
-    );
-
-    match window.current_monitor() {
-        Some(monitor) => log_monitor("current_monitor", &monitor),
-        None => tracing::debug!(
-            target: "wolf-ui-screen",
-            "current_monitor=None"
-        ),
-    }
-
-    match window.primary_monitor() {
-        Some(monitor) => log_monitor("primary_monitor", &monitor),
-        None => tracing::debug!(
-            target: "wolf-ui-screen",
-            "primary_monitor=None"
-        ),
-    }
-
-    for (index, monitor) in window.available_monitors().enumerate() {
-        log_monitor(&format!("available_monitor[{index}]"), &monitor);
-    }
-}
-
-fn log_monitor(label: &str, monitor: &dioxus::desktop::tao::monitor::MonitorHandle) {
-    let size = monitor.size();
-    let position = monitor.position();
-    let scale_factor = monitor.scale_factor();
-
-    tracing::debug!(
-        target: "wolf-ui-screen",
-        "{} name={:?} size={}x{} position={},{} scale_factor={}",
-        label,
-        monitor.name(),
-        size.width,
-        size.height,
-        position.x,
-        position.y,
-        scale_factor,
-    );
 }
