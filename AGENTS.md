@@ -1,267 +1,85 @@
-You are an expert [0.7 Dioxus](https://dioxuslabs.com/learn/0.7) assistant. Dioxus 0.7 changes every api in dioxus. Only use this up to date documentation. `cx`, `Scope`, and `use_state` are gone
+# Wolf UI Next
 
-Provide concise code examples with detailed descriptions
+Wolf UI is the launcher and first-screen experience for [Games on Whales](https://games-on-whales.github.io/) when a new Moonlight session starts.
 
-# Dioxus Dependency
+It is the thing users see before they play. If it feels slow, awkward, unreadable, or hostile to their controller, the whole streaming session feels broken before the game even launches.
 
-You can add Dioxus to your `Cargo.toml` like this:
+We are replacing the old Godot-based Wolf UI with a Rust + Dioxus application that feels native, modern, fast, and invisible in the right ways.
 
-```toml
-[dependencies]
-dioxus = { version = "0.7.1" }
+## Who we are building for
 
-[features]
-default = ["web", "webview", "server"]
-web = ["dioxus/web"]
-webview = ["dioxus/desktop"]
-server = ["dioxus/server"]
-```
+- People starting a Moonlight session from a TV, handheld, phone, tablet, desktop, browser, or whatever device they happen to have.
+- People using an Xbox controller, PlayStation controller, Switch controller, keyboard, mouse, touchscreen, remote, or some messy combination of them.
+- People sitting ten feet from the screen who still need to read, navigate, recover from mistakes, and launch a game without thinking about the UI.
+- People who do not care that Wolf UI exists. They want to pick up a controller and play.
+- Admins who need Wolf UI to be reliable and cheap to keep running because every active session gets one.
 
-# Launching your application
+The player comes first. The admin comes second. The implementation comes after both.
 
-You need to create a main function that sets up the Dioxus runtime and mounts your root component.
+## Product goal
 
-```rust
-use dioxus::prelude::*;
+Make session startup feel seamless.
 
-fn main() {
-	dioxus::launch(App);
-}
+Wolf UI should get out of the user's way as quickly as possible while still being clear, beautiful, and forgiving.
+The best version of this app makes the user feel like the device, controller, stream, and game library are one coherent system.
 
-#[component]
-fn App() -> Element {
-	rsx! { "Hello, Dioxus!" }
-}
-```
+This is not a generic desktop app. It is a 10-foot, responsive, input-agnostic game launcher for streamed games.
 
-Then serve with `dx serve`:
+## Design principles
 
-```sh
-curl -sSL http://dioxus.dev/install.sh | sh
-dx serve
-```
+### It must feel native everywhere
 
-# UI with RSX
+Do not design only for the machine you are sitting at. A change is not good enough unless it still makes sense on TVs, phones, desktops, handhelds, touchscreens, and controllers.
 
-```rust
-rsx! {
-	div {
-		class: "container", // Attribute
-		color: "red", // Inline styles
-		width: if condition { "100%" }, // Conditional attributes
-		"Hello, Dioxus!"
-	}
-	// Prefer loops over iterators
-	for i in 0..5 {
-		div { "{i}" } // use elements or components directly in loops
-	}
-	if condition {
-		div { "Condition is true!" } // use elements or components directly in conditionals
-	}
+Native does not mean copying platform chrome. It means respecting the user's current device, input method, distance from the screen, and expectations.
 
-	{children} // Expressions are wrapped in brace
-	{(0..5).map(|i| rsx! { span { "Item {i}" } })} // Iterators must be wrapped in braces
-}
-```
+### Every input path is first-class
 
-# Assets
+Gamepad, keyboard, mouse, touch, and remote navigation must stay coherent with each other. Focus state is product state. Hover-only, mouse-only, and keyboard-only affordances are bugs unless there is an equivalent path for the other inputs.
 
-The asset macro can be used to link to local files to use in your project. All links start with `/` and are relative to the root of your project.
+A user should be able to pick up any controller and continue without re-learning the screen.
 
-```rust
-rsx! {
-	img {
-		src: asset!("/assets/image.png"),
-		alt: "An image",
-	}
-}
-```
+### Readability beats density
 
-## Styles
+This is a 10-foot UI. Prefer clear hierarchy, strong contrast, predictable spacing, and obvious focus over compact information. If a screen only works at monitor distance, it does not work.
 
-The `document::Stylesheet` component will inject the stylesheet into the `<head>` of the document
+### Fast is a feature
 
-```rust
-rsx! {
-	document::Stylesheet {
-		href: asset!("/assets/styles.css"),
-	}
-}
-```
+The launcher must feel instant. Avoid unnecessary loading, animation, layout instability, blocking work, allocation, cloning, polling, and background activity. Wolf UI may keep running even when it is not visible; idle resource usage matters.
 
-# Components
+### The UI should disappear
 
-Components are the building blocks of apps
+Do not add ceremony. Do not make users manage the launcher. Help them recognize the game they want, launch it, and recover cleanly if something goes wrong.
 
-- Component are functions annotated with the `#[component]` macro.
-- The function name must start with a capital letter or contain an underscore.
-- A component re-renders only under two conditions:
-    1.  Its props change (as determined by `PartialEq`).
-    2.  An internal reactive state it depends on is updated.
+### Prefer obvious behavior
 
-```rust
-#[component]
-fn Input(mut value: Signal<String>) -> Element {
-	rsx! {
-		input {
-            value,
-			oninput: move |e| {
-				*value.write() = e.value();
-			},
-			onkeydown: move |e| {
-				if e.key() == Key::Enter {
-					value.write().clear();
-				}
-			},
-		}
-	}
-}
-```
+The best interaction is the one users predict without reading. If two implementations are technically valid, choose the one that makes the product model simpler.
 
-Each component accepts function arguments (props)
+## Engineering posture
 
-- Props must be owned values, not references. Use `String` and `Vec<T>` instead of `&str` or `&[T]`.
-- Props must implement `PartialEq` and `Clone`.
-- To make props reactive and copy, you can wrap the type in `ReadOnlySignal`. Any reactive state like memos and resources that read `ReadOnlySignal` props will automatically re-run when the prop changes.
+- Use Rust as the backbone, not as decoration. Model state and transitions so invalid UI states are hard to represent.
+- Keep Dioxus details local to UI boundaries where possible. Product behavior should be understandable without reading framework trivia.
+- Reuse existing patterns before inventing new ones. Parallel focus systems, styling conventions, or API shapes are bugs.
+- Delete code that is no longer pulling its weight.
+- Prefer boring, explicit code over clever abstractions. Add abstraction only when it removes real duplication in product concepts.
+- Avoid hidden work. Background tasks, timers, resources, and subscriptions must have a reason to exist and a clear lifetime.
+- Treat performance as UX. Do not allocate, clone, parse, fetch, or re-render when a smaller change would do.
+- Test behavior that can break: navigation, focus movement, input parity, loading/error states, and state transitions.
 
-# State
+## How agents should think here
 
-A signal is a wrapper around a value that automatically tracks where it's read and written. Changing a signal's value causes code that relies on the signal to rerun.
+Before changing code, ask:
 
-## Local State
+- Does this make launching a game faster, clearer, or more reliable?
+- Does it work with gamepad, keyboard, mouse, touch, and remote-style navigation?
+- Does it remain readable at TV distance and usable on small screens?
+- Does it reduce or preserve resource usage while idle?
+- Does it fit the existing mental model of the app?
 
-The `use_signal` hook creates state that is local to a single component. You can call the signal like a function (e.g. `my_signal()`) to clone the value, or use `.read()` to get a reference. `.write()` gets a mutable reference to the value.
+If the answer is no, push back or propose a better route. Do not be afraid to challenge the user when a requested implementation would make the product worse.
+Be concrete: explain what breaks and offer the simpler product-shaped solution.
 
-Use `use_memo` to create a memoized value that recalculates when its dependencies change. Memos are useful for expensive calculations that you don't want to repeat unnecessarily.
+## Useful references
 
-```rust
-#[component]
-fn Counter() -> Element {
-	let mut count = use_signal(|| 0);
-	let mut doubled = use_memo(move || count() * 2); // doubled will re-run when count changes because it reads the signal
-
-	rsx! {
-		h1 { "Count: {count}" } // Counter will re-render when count changes because it reads the signal
-		h2 { "Doubled: {doubled}" }
-		button {
-			onclick: move |_| *count.write() += 1, // Writing to the signal rerenders Counter
-			"Increment"
-		}
-		button {
-			onclick: move |_| count.with_mut(|count| *count += 1), // use with_mut to mutate the signal
-			"Increment with with_mut"
-		}
-	}
-}
-```
-
-## Context API
-
-The Context API allows you to share state down the component tree. A parent provides the state using `use_context_provider`, and any child can access it with `use_context`
-
-```rust
-#[component]
-fn App() -> Element {
-	let mut theme = use_signal(|| "light".to_string());
-	use_context_provider(|| theme); // Provide a type to children
-	rsx! { Child {} }
-}
-
-#[component]
-fn Child() -> Element {
-	let theme = use_context::<Signal<String>>(); // Consume the same type
-	rsx! {
-		div {
-			"Current theme: {theme}"
-		}
-	}
-}
-```
-
-# Async
-
-For state that depends on an asynchronous operation (like a network request), Dioxus provides a hook called `use_resource`. This hook manages the lifecycle of the async task and provides the result to your component.
-
-- The `use_resource` hook takes an `async` closure. It re-runs this closure whenever any signals it depends on (reads) are updated
-- The `Resource` object returned can be in several states when read:
-
-1. `None` if the resource is still loading
-2. `Some(value)` if the resource has successfully loaded
-
-```rust
-let mut dog = use_resource(move || async move {
-	// api request
-});
-
-match dog() {
-	Some(dog_info) => rsx! { Dog { dog_info } },
-	None => rsx! { "Loading..." },
-}
-```
-
-# Routing
-
-All possible routes are defined in a single Rust `enum` that derives `Routable`. Each variant represents a route and is annotated with `#[route("/path")]`. Dynamic Segments can capture parts of the URL path as parameters by using `:name` in the route string. These become fields in the enum variant.
-
-The `Router<Route> {}` component is the entry point that manages rendering the correct component for the current URL.
-
-You can use the `#[layout(NavBar)]` to create a layout shared between pages and place an `Outlet<Route> {}` inside your layout component. The child routes will be rendered in the outlet.
-
-```rust
-#[derive(Routable, Clone, PartialEq)]
-enum Route {
-	#[layout(NavBar)] // This will use NavBar as the layout for all routes
-		#[route("/")]
-		Home {},
-		#[route("/blog/:id")] // Dynamic segment
-		BlogPost { id: i32 },
-}
-
-#[component]
-fn NavBar() -> Element {
-	rsx! {
-		a { href: "/", "Home" }
-		Outlet<Route> {} // Renders Home or BlogPost
-	}
-}
-
-#[component]
-fn App() -> Element {
-	rsx! { Router::<Route> {} }
-}
-```
-
-```toml
-dioxus = { version = "0.7.1", features = ["router"] }
-```
-
-# Fullstack
-
-Fullstack enables server rendering and ipc calls. It uses Cargo features (`server` and a client feature like `web`) to split the code into a server and client binaries.
-
-```toml
-dioxus = { version = "0.7.1", features = ["fullstack"] }
-```
-
-## Server Functions
-
-Use the `#[post]` / `#[get]` macros to define an `async` function that will only run on the server. On the server, this macro generates an API endpoint. On the client, it generates a function that makes an HTTP request to that endpoint.
-
-```rust
-#[post("/api/double/:path/&query")]
-async fn double_server(number: i32, path: String, query: i32) -> Result<i32, ServerFnError> {
-	tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-	Ok(number * 2)
-}
-```
-
-## Hydration
-
-Hydration is the process of making a server-rendered HTML page interactive on the client. The server sends the initial HTML, and then the client-side runs, attaches event listeners, and takes control of future rendering.
-
-### Errors
-
-The initial UI rendered by the component on the client must be identical to the UI rendered on the server.
-
-- Use the `use_server_future` hook instead of `use_resource`. It runs the future on the server, serializes the result, and sends it to the client, ensuring the client has the data immediately for its first render.
-- Any code that relies on browser-specific APIs (like accessing `localStorage`) must be run _after_ hydration. Place this code inside a `use_effect` hook.
+- Dioxus documentation: https://dioxuslabs.com/learn/0.7/
+- Games on Whales / Wolf documentation: https://games-on-whales.github.io/wolf/stable/
