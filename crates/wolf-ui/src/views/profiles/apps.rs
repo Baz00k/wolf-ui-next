@@ -42,20 +42,20 @@ pub fn ProfileApps(profile_id: String) -> Element {
     let back_action = use_ui_action(UiAction::Cancel, "Back", move || {
         navigator.go_back();
     });
-    let filter_focus_action = use_ui_action(UiAction::Menu, "Filters", move || {
+    let sort_focus_action = use_ui_action(UiAction::Menu, "Sort", move || {
         let _ = document::eval(
             "document.querySelector('#apps-filter button')?.focus({ preventScroll: true });",
         );
     });
     let scope_actions = action_hints([
         action_hint_from_json(&back_action),
-        action_hint_from_json(&filter_focus_action),
+        action_hint_from_json(&sort_focus_action),
         ActionHint::new(UiHint::Navigate, "Navigate"),
     ]);
     let carousel_actions = action_hints([
         ActionHint::new(UiHint::Navigate, "Navigate"),
         action_hint_from_json(&back_action),
-        action_hint_from_json(&filter_focus_action),
+        action_hint_from_json(&sort_focus_action),
     ]);
 
     let mut apps = use_resource(move || {
