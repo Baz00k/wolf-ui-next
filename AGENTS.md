@@ -66,7 +66,7 @@ The best interaction is the one users predict without reading. If two implementa
 - Treat performance as UX. Do not allocate, clone, parse, fetch, or re-render when a smaller change would do.
 - Test behavior that can break: navigation, focus movement, input parity, loading/error states, and state transitions.
 
-## How agents should think here
+## How agents should think
 
 Before changing code, ask:
 
@@ -78,6 +78,11 @@ Before changing code, ask:
 
 If the answer is no, push back or propose a better route. Do not be afraid to challenge the user when a requested implementation would make the product worse.
 Be concrete: explain what breaks and offer the simpler product-shaped solution.
+
+## Runtime
+
+This app will always run in a Docker container. This is the only supported environment.
+Do not add any code that adds compatibility with other runtimes.
 
 ## Useful references
 
