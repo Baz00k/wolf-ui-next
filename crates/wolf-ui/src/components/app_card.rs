@@ -46,17 +46,21 @@ pub fn AppCard(
     onclick: EventHandler<MouseEvent>,
 ) -> Element {
     let actions = native_action(UiAction::Accept, "Actions");
-    let scale_class = if selected {
-        "scale-100 hover:scale-105"
-    } else {
-        "scale-90 hover:scale-95"
-    };
     let accessible_label = format!("{} app, {}, open actions", app.title, app.status.label);
     let show_runner = app.runner != "Docker";
+    let is_unavailable = app.status.kind == AppStatusKind::MissingImage;
+    let is_playing = app.status.kind == AppStatusKind::Playing;
+
+    let card_state_class = if selected {
+        "border-foreground text-card-foreground opacity-100 shadow-[0_2.5rem_4rem_oklch(0_0_0/0.55)] group-focus:ring-ring/25"
+    } else {
+        "border-border/70 text-muted-foreground opacity-70 shadow-black/30 group-focus:ring-ring/25"
+    };
 
     rsx! {
         button {
-            class: "group relative h-72 w-56 shrink-0 snap-center scroll-mx-10 border-0 p-0 text-left outline-none transition-transform duration-300 ease-out active:scale-95 md:h-80 md:w-64 lg:h-96 lg:w-72 xl:h-[28rem] xl:w-80 2xl:h-[34rem] 2xl:w-96 {scale_class}",
+            class: "group relative h-72 w-56 shrink-0 snap-center scroll-mx-10 border-0 p-0 text-left outline-none transition-transform duration-300 ease-out active:scale-95 md:h-80 md:w-64 lg:h-96 lg:w-72 xl:h-[28rem] xl:w-80 2xl:h-[34rem] 2xl:w-96",
+            class: if selected { "scale-100 hover:scale-105" } else { "scale-90 hover:scale-95" },
             "data-focusable": "true",
             "data-app-index": "{index}",
             "data-actions": actions,
@@ -68,7 +72,7 @@ pub fn AppCard(
                     let _ = event.data().set_focus(true).await;
                 }
             },
-            Card { class: app_card_class(selected).to_string(),
+            Card { class: format!("relative h-full w-full overflow-visible transition-[transform,opacity,border-color,box-shadow,background-color] duration-300 ease-out group-focus:ring-4 {card_state_class}"),
                 div { class: "pointer-events-none absolute inset-x-4 top-4 z-10 flex items-center justify-between text-xs font-semibold uppercase tracking-widest text-muted-foreground md:inset-x-5 md:top-5 xl:inset-x-6 xl:top-6",
                     if show_runner {
                         span { "{app.runner}" }
@@ -82,7 +86,8 @@ pub fn AppCard(
                 div { class: "relative flex h-full items-center justify-center overflow-hidden rounded-4xl",
                     if let Some(cover_src) = app.cover_src.as_ref() {
                         img {
-                            class: "absolute inset-0 h-full w-full rounded-4xl object-cover",
+                            class: "absolute inset-0 h-full w-full rounded-4xl object-cover transition-[filter] duration-300",
+                            class: if is_unavailable { "grayscale brightness-40" },
                             src: cover_src.clone(),
                             alt: "{app.title}",
                             loading: "lazy",
@@ -99,17 +104,28 @@ pub fn AppCard(
                             }
                         }
                     }
+                    if is_unavailable {
+                        StatusBadge { label: "Not installed" }
+                    }
+                    if is_playing {
+                        StatusBadge { label: "Playing", pulse: true }
+                    }
                 }
             }
         }
     }
 }
 
-fn app_card_class(selected: bool) -> &'static str {
-    if selected {
-        "relative h-full w-full overflow-visible border-foreground text-card-foreground opacity-100 shadow-[0_2.5rem_4rem_oklch(0_0_0/0.55)] transition-[transform,opacity,border-color,box-shadow,background-color] duration-300 ease-out group-focus:ring-4 group-focus:ring-ring/25"
-    } else {
-        "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-70 shadow-black/30 transition-[transform,opacity,border-color,box-shadow,background-color] duration-300 ease-out group-focus:ring-4 group-focus:ring-ring/25"
+#[component]
+fn StatusBadge(label: &'static str, #[props(default)] pulse: bool) -> Element {
+    rsx! {
+        div { class: "pointer-events-none absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 backdrop-blur-sm md:bottom-5",
+            span {
+                class: "h-2 w-2 rounded-full",
+                class: if pulse { "animate-pulse bg-emerald-400 shadow-lg shadow-emerald-400/50" } else { "bg-muted-foreground" },
+            }
+            span { class: "text-xs font-semibold uppercase tracking-widest text-muted-foreground", "{label}" }
+        }
     }
 }
 

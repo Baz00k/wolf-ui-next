@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use dioxus::prelude::*;
 
-use crate::components::{AppCardData, AppStatusTone, Spinner};
+use crate::components::{AppCardData, Spinner};
 use crate::domain::app_actions::{ActionStatus, ActionStatusKind};
 
 #[component]
@@ -13,16 +13,11 @@ pub fn SelectedAppMeta(
     let Some(app) = app else {
         return rsx! {};
     };
-    let badge_class = status_badge_class(app.status.tone);
     let action_status = action_statuses.get(&app.id).cloned();
 
     rsx! {
         div { class: "pointer-events-none flex min-h-36 shrink-0 flex-col items-center justify-start gap-3 px-6 text-center lg:min-h-40",
             h2 { class: "max-w-[80vw] truncate text-3xl font-black tracking-tight md:text-4xl xl:text-5xl 2xl:text-6xl", "{app.title}" }
-            div { class: "inline-flex items-center gap-3 rounded-full border px-4 py-2 font-mono text-xs font-bold uppercase tracking-widest shadow-2xl shadow-black/30 {badge_class}",
-                span { class: "h-2 w-2 rounded-full bg-current shadow-[0_0_16px_currentColor]" }
-                span { "{app.status.label}" }
-            }
             ActionProgress { status: action_status }
         }
     }
@@ -59,12 +54,5 @@ fn ActionProgress(status: Option<ActionStatus>) -> Element {
                 }
             }
         }
-    }
-}
-
-fn status_badge_class(tone: AppStatusTone) -> &'static str {
-    match tone {
-        AppStatusTone::Ready => "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
-        AppStatusTone::Warning => "border-yellow-300/30 bg-yellow-300/10 text-yellow-200",
     }
 }
