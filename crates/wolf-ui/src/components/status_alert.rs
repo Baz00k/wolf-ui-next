@@ -8,7 +8,7 @@ pub enum StatusAlertVariant {
 
 #[component]
 pub fn StatusAlert(
-    title: String,
+    #[props(default)] title: Option<String>,
     message: String,
     #[props(default = StatusAlertVariant::Info)] variant: StatusAlertVariant,
     children: Element,
@@ -22,9 +22,11 @@ pub fn StatusAlert(
 
     rsx! {
         section {
-            class: "mx-auto flex w-full max-w-2xl flex-col items-center gap-5 rounded-4xl border px-8 py-10 text-center shadow-2xl shadow-black/30 {tone}",
+            class: "mx-auto flex w-full max-w-2xl flex-col items-center gap-4 rounded-4xl border px-8 py-8 text-center shadow-2xl shadow-black/30 {tone}",
             role: if variant == StatusAlertVariant::Error { "alert" } else { "status" },
-            h2 { class: "text-3xl font-semibold tracking-tight", "{title}" }
+            if let Some(title) = title {
+                h2 { class: "text-3xl font-semibold tracking-tight", "{title}" }
+            }
             p { class: "max-w-xl text-base leading-7 text-muted-foreground", "{message}" }
             {children}
         }

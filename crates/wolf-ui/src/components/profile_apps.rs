@@ -5,8 +5,8 @@ use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::AppListResponse;
 
 use crate::components::{
-    AppCard, AppCardData, AppCardSkeleton, Button, ButtonSize, ButtonVariant, StatusAlert,
-    StatusAlertVariant,
+    AppCard, AppCardData, AppCardSkeleton, Button, ButtonSize, ButtonVariant,
+    SessionShutdownControl, StatusAlert, StatusAlertVariant,
 };
 use crate::domain::apps::{AppFilter, filter_label, sorted_apps};
 
@@ -23,11 +23,14 @@ pub fn AppsHeader(
     pending_focus_index: Signal<Option<usize>>,
 ) -> Element {
     rsx! {
-        header { class: "flex items-start justify-between gap-4",
-            div {
+        header { id: "apps-top-bar", class: "grid grid-cols-[1fr_auto] items-start gap-4", "data-focus-region": "top-bar",
+            div { class: "min-w-0",
                 h1 { class: "text-2xl font-bold tracking-tight sm:text-4xl lg:text-5xl", "Applications" }
             }
-            AppsFilter { filter, selected_index, pending_focus_index }
+            div { class: "flex min-w-0 items-center justify-end gap-3 sm:gap-4",
+                AppsFilter { filter, selected_index, pending_focus_index }
+                SessionShutdownControl {}
+            }
         }
     }
 }
@@ -106,7 +109,7 @@ pub fn AppsContent(
     if !response.success {
         return rsx! {
             StatusAlert {
-                title: "Apps unavailable".to_string(),
+                title: Some("Apps unavailable".to_string()),
                 message: "Wolf returned an unsuccessful app response. Try again once the service is ready.".to_string(),
                 variant: StatusAlertVariant::Error,
             }
@@ -124,7 +127,7 @@ pub fn AppsContent(
     if apps.is_empty() {
         return rsx! {
             StatusAlert {
-                title: "No apps found".to_string(),
+                title: Some("No apps found".to_string()),
                 message: "Add apps to this Wolf profile before launching a Moonlight session.".to_string(),
                 variant: StatusAlertVariant::Info,
             }

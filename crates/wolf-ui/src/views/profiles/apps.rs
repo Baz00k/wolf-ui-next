@@ -91,12 +91,14 @@ pub fn ProfileApps(profile_id: String) -> Element {
             div { class: "pointer-events-none fixed inset-0 wolf-ambient-background-center" }
             section {
                 class: "relative flex min-h-screen flex-col px-6 pb-28 pt-8 sm:px-10 lg:px-16",
+                "data-focus-root": "true",
                 "data-focus-scope": "true",
                 "data-scope-actions": scope_actions,
                 AppsHeader { filter, selected_index, pending_focus_index }
                 div {
                     class: "-mx-6 flex min-h-0 flex-1 items-center justify-center overflow-visible sm:-mx-10 lg:-mx-16",
                     "data-focus-scope": "true",
+                    "data-focus-region": "main",
                     "data-scope-actions": carousel_actions,
                     match &*apps.read_unchecked() {
                         Some(Ok(state)) => rsx! {
@@ -116,7 +118,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
                         },
                         Some(Err(error)) => rsx! {
                             StatusAlert {
-                                title: "Apps unavailable".to_string(),
+                                title: Some("Apps unavailable".to_string()),
                                 message: format!("Wolf did not return the app list. {error}"),
                                 variant: StatusAlertVariant::Error,
                                 Button {

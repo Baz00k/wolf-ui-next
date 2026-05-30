@@ -4,7 +4,8 @@ use wolf_api::profiles::{Profile, ProfileListResponse};
 use crate::Route;
 use crate::api::ApiContext;
 use crate::components::{
-    Button, ButtonSize, ProfileCard, ProfileCardSkeleton, StatusAlert, StatusAlertVariant,
+    Button, ButtonSize, ProfileCard, ProfileCardSkeleton, SessionShutdownControl, StatusAlert,
+    StatusAlertVariant,
 };
 use crate::domain::image_loader::load_image_src;
 use crate::input::navigate_hint;
@@ -26,17 +27,18 @@ pub fn Profiles() -> Element {
             div { class: "pointer-events-none fixed inset-0 wolf-ambient-background" }
             section {
                 class: "relative flex min-h-screen flex-col px-8 py-12 sm:px-12 lg:px-20",
+                "data-focus-root": "true",
                 "data-focus-scope": "true",
                 "data-scope-actions": navigate_hint("Navigate"),
                 ProfilesHeader {}
-                div { class: "-mx-8 flex flex-1 items-center justify-center py-10 sm:-mx-12 lg:-mx-20",
+                div { class: "-mx-8 flex flex-1 items-center justify-center py-10 sm:-mx-12 lg:-mx-20", "data-focus-scope": "true", "data-focus-region": "main", "data-scope-actions": navigate_hint("Navigate"),
                     match &*profiles.read_unchecked() {
                         Some(Ok(response)) => rsx! {
                             ProfilesContent { response: response.clone() }
                         },
                         Some(Err(error)) => rsx! {
                             StatusAlert {
-                                title: "Profiles unavailable".to_string(),
+                                title: Some("Profiles unavailable".to_string()),
                                 message: format!("Wolf did not return the profiles list. {error}"),
                                 variant: StatusAlertVariant::Error,
                                 Button {
@@ -58,8 +60,10 @@ pub fn Profiles() -> Element {
 #[component]
 fn ProfilesHeader() -> Element {
     rsx! {
-        header { class: "flex flex-col items-center justify-center gap-4 text-center",
+        header { class: "grid grid-cols-[1fr_auto_1fr] items-start gap-4 text-center", "data-focus-region": "top-bar",
+            div {}
             h1 { class: "text-4xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl", "Who's playing?" }
+            div { class: "justify-self-end", SessionShutdownControl {} }
         }
     }
 }
@@ -84,7 +88,7 @@ fn ProfilesContent(response: ProfileListResponse) -> Element {
     if !response.success {
         return rsx! {
             StatusAlert {
-                title: "Profiles unavailable".to_string(),
+                title: Some("Profiles unavailable".to_string()),
                 message: "Wolf returned an unsuccessful profiles response. Try again once the service is ready.".to_string(),
                 variant: StatusAlertVariant::Error,
             }
@@ -94,7 +98,7 @@ fn ProfilesContent(response: ProfileListResponse) -> Element {
     if response.profiles.is_empty() {
         return rsx! {
             StatusAlert {
-                title: "No profiles found".to_string(),
+                title: Some("No profiles found".to_string()),
                 message: "Create a Wolf profile before launching a Moonlight session.".to_string(),
                 variant: StatusAlertVariant::Info,
             }

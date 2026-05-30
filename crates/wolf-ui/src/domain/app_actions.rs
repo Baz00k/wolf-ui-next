@@ -10,6 +10,7 @@ use wolf_api::types::{
 use crate::api::ApiContext;
 use crate::components::{AppAction, AppCardData};
 use crate::domain::apps::{docker_image, is_app_lobby};
+use crate::domain::session::current_session_id;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ActionStatusKind {
@@ -66,7 +67,7 @@ async fn start_app(
     );
 
     let api = ApiContext::consume();
-    let session_id = session_id()?;
+    let session_id = current_session_id()?;
     let session = api
         .sessions()
         .by_client_id(&session_id)
@@ -183,7 +184,7 @@ async fn connect_app(
     );
 
     let api = ApiContext::consume();
-    let session_id = session_id()?;
+    let session_id = current_session_id()?;
     let lobby = running_lobby(&api, profile_id, app, false)
         .await?
         .ok_or_else(|| "No running lobby found for this app.".to_string())?;
@@ -308,13 +309,6 @@ fn partial_client_settings(
         run_uid: Some(settings.run_uid),
         v_scroll_acceleration: Some(settings.v_scroll_acceleration),
     }
-}
-
-fn session_id() -> Result<String, String> {
-    std::env::var("WOLF_SESSION_ID")
-        .ok()
-        .filter(|session_id| !session_id.trim().is_empty())
-        .ok_or_else(|| "WOLF_SESSION_ID is not set.".to_string())
 }
 
 fn fallback_session() -> wolf_api::sessions::Session {

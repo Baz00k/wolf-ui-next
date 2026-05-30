@@ -7,6 +7,7 @@ pub mod dialog;
 pub mod profile_apps;
 pub mod profile_card;
 pub mod selected_app_meta;
+pub mod session_controls;
 pub mod skeleton;
 pub mod spinner;
 pub mod status_alert;
@@ -23,6 +24,7 @@ pub use dialog::{Dialog, DialogDescription, DialogHeader, DialogTitle};
 pub use profile_apps::{AppsContent, AppsHeader, AppsLoading};
 pub use profile_card::{ProfileCard, ProfileCardSkeleton};
 pub use selected_app_meta::SelectedAppMeta;
+pub use session_controls::SessionShutdownControl;
 pub use skeleton::Skeleton;
 #[allow(unused_imports)]
 pub use spinner::Spinner;
