@@ -41,9 +41,7 @@ fn main() {
     let mut window = dioxus::desktop::WindowBuilder::new().with_title("Wolf UI");
 
     if !cfg!(debug_assertions) {
-        window = window.with_decorations(false).with_fullscreen(Some(
-            dioxus::desktop::tao::window::Fullscreen::Borderless(None),
-        ));
+        window = window.with_decorations(false);
     }
 
     let mut config = dioxus::desktop::Config::new()
@@ -52,13 +50,9 @@ fn main() {
 
     if !cfg!(debug_assertions) {
         config = config.with_on_window(|window, _| {
-            let monitor = window
-                .current_monitor()
-                .or_else(|| window.available_monitors().next());
-
-            if let Some(monitor) = monitor {
-                window.set_inner_size(monitor.size());
-            }
+            window.set_fullscreen(Some(dioxus::desktop::tao::window::Fullscreen::Borderless(
+                None,
+            )));
         });
     }
 
