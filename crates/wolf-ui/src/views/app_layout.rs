@@ -10,7 +10,7 @@ pub fn AppLayout() -> Element {
             div { class: "h-full",
                 Outlet::<Route> {}
             }
-            ActionFooter { class: "fixed bottom-8 left-0 right-0 px-8" }
+            ActionFooter { class: "fixed bottom-12 left-0 right-0 px-6" }
         }
     }
 }
