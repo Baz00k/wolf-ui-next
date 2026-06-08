@@ -94,7 +94,6 @@ pub fn ProfileApps(profile_id: String) -> Element {
 
     rsx! {
         div { class: "h-full flex flex-col bg-background text-foreground p-8",
-            div { class: "pointer-events-none fixed inset-0 wolf-ambient-background-center" }
             AppsHeader { filter, selected_index, pending_focus_index }
             section {
                 class: "relative grow flex flex-col justify-center",

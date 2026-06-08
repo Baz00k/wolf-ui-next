@@ -24,7 +24,6 @@ pub fn Profiles() -> Element {
 
     rsx! {
         div { class: "h-full",
-            div { class: "pointer-events-none fixed inset-0 wolf-ambient-background" }
             section {
                 class: "relative flex h-full flex-col px-8 py-12 sm:px-12 lg:px-20",
                 ProfilesHeader {}
