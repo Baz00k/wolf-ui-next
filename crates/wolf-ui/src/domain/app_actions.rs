@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use dioxus::prelude::*;
 use wolf_api::types::{
     RflReflectorWolfCoreEventsAppReflTypeRunner, RflReflectorWolfCoreEventsLobbyReflType,
@@ -12,37 +10,18 @@ use crate::components::{AppAction, AppCardData};
 use crate::domain::apps::{docker_image, is_app_lobby};
 use crate::domain::session::current_session_id;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(crate) enum ActionStatusKind {
-    Loading,
-    Progress,
-    Success,
-    Error,
-}
-
-#[derive(Clone, PartialEq)]
-pub(crate) struct ActionStatus {
-    pub kind: ActionStatusKind,
-    pub app_id: String,
-    pub message: String,
-    pub progress: Option<f64>,
-}
-
-pub(crate) type ActionStatuses = HashMap<String, ActionStatus>;
-
 pub(crate) async fn run_app_action(
     profile_id: String,
     app: AppCardData,
     action: AppAction,
-    statuses: Signal<ActionStatuses>,
 ) -> Result<bool, String> {
     match action {
-        AppAction::Start => start_app(profile_id, &app, false, statuses).await,
-        AppAction::Connect => connect_app(&profile_id, &app, statuses).await,
-        AppAction::StartCoop => start_app(profile_id, &app, true, statuses).await,
-        AppAction::Stop => stop_app(&profile_id, &app, statuses).await,
-        AppAction::CheckUpdate => pull_image(&app, true, statuses).await,
-        AppAction::Download => pull_image(&app, false, statuses).await,
+        AppAction::Start => start_app(profile_id, &app, false).await,
+        AppAction::Connect => connect_app(&profile_id, &app).await,
+        AppAction::StartCoop => start_app(profile_id, &app, true).await,
+        AppAction::Stop => stop_app(&profile_id, &app).await,
+        AppAction::CheckUpdate => pull_image(&app, true).await,
+        AppAction::Download => pull_image(&app, false).await,
     }
 }
 
@@ -50,22 +29,7 @@ async fn start_app(
     profile_id: String,
     app: &AppCardData,
     multi_user: bool,
-    mut statuses: Signal<ActionStatuses>,
 ) -> Result<bool, String> {
-    set_status(
-        &mut statuses,
-        action_status(
-            ActionStatusKind::Loading,
-            &app.id,
-            if multi_user {
-                "Creating co-op lobby..."
-            } else {
-                "Starting lobby..."
-            },
-            None,
-        ),
-    );
-
     let api = ApiContext::consume();
     let session_id = current_session_id()?;
     let session = api
@@ -93,58 +57,21 @@ async fn start_app(
         }
     };
 
-    set_status(
-        &mut statuses,
-        action_status(ActionStatusKind::Loading, &app.id, "Joining lobby...", None),
-    );
     api.lobbies()
         .join(lobby_id, session_id, None)
         .await
         .map_err(|error| error.to_string())?;
-
-    set_status(
-        &mut statuses,
-        action_status(ActionStatusKind::Success, &app.id, "Lobby joined.", None),
-    );
     Ok(true)
 }
 
-async fn pull_image(
-    app: &AppCardData,
-    check_update: bool,
-    mut statuses: Signal<ActionStatuses>,
-) -> Result<bool, String> {
+async fn pull_image(app: &AppCardData, _check_update: bool) -> Result<bool, String> {
     let image =
         docker_image(&app.source).ok_or_else(|| "This app has no Docker image.".to_string())?;
-    let label = if check_update {
-        "Checking for image updates..."
-    } else {
-        "Downloading image..."
-    };
-    set_status(
-        &mut statuses,
-        action_status(ActionStatusKind::Progress, &app.id, label, Some(0.0)),
-    );
 
-    let progress_app_id = app.id.clone();
     let api = ApiContext::consume();
     let downloaded = api
         .docker()
-        .pull_image(&image, move |progress| {
-            set_status(
-                &mut statuses,
-                action_status(
-                    ActionStatusKind::Progress,
-                    &progress_app_id,
-                    if progress >= 100.0 {
-                        "Finalizing image..."
-                    } else {
-                        label
-                    },
-                    Some(progress),
-                ),
-            );
-        })
+        .pull_image(&image, |_| {})
         .await
         .map_err(|error| error.to_string())?;
 
@@ -156,33 +83,10 @@ async fn pull_image(
     if !exists {
         return Err("Wolf reported pull success, but the image is still missing.".to_string());
     }
-
-    set_status(
-        &mut statuses,
-        action_status(
-            ActionStatusKind::Success,
-            &app.id,
-            if downloaded {
-                "Image updated."
-            } else {
-                "Image already up to date."
-            },
-            Some(100.0),
-        ),
-    );
     Ok(downloaded)
 }
 
-async fn connect_app(
-    profile_id: &str,
-    app: &AppCardData,
-    mut statuses: Signal<ActionStatuses>,
-) -> Result<bool, String> {
-    set_status(
-        &mut statuses,
-        action_status(ActionStatusKind::Loading, &app.id, "Connecting...", None),
-    );
-
+async fn connect_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
     let api = ApiContext::consume();
     let session_id = current_session_id()?;
     let lobby = running_lobby(&api, profile_id, app, false)
@@ -192,24 +96,10 @@ async fn connect_app(
         .join(lobby.id, session_id, None)
         .await
         .map_err(|error| error.to_string())?;
-
-    set_status(
-        &mut statuses,
-        action_status(ActionStatusKind::Success, &app.id, "Connected.", None),
-    );
     Ok(true)
 }
 
-async fn stop_app(
-    profile_id: &str,
-    app: &AppCardData,
-    mut statuses: Signal<ActionStatuses>,
-) -> Result<bool, String> {
-    set_status(
-        &mut statuses,
-        action_status(ActionStatusKind::Loading, &app.id, "Stopping...", None),
-    );
-
+async fn stop_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
     let api = ApiContext::consume();
     let lobby = running_lobby(&api, profile_id, app, false)
         .await?
@@ -218,11 +108,6 @@ async fn stop_app(
         .stop(lobby.id, None)
         .await
         .map_err(|error| error.to_string())?;
-
-    set_status(
-        &mut statuses,
-        action_status(ActionStatusKind::Success, &app.id, "Stopped.", None),
-    );
     Ok(true)
 }
 
@@ -325,31 +210,4 @@ fn fallback_session() -> wolf_api::sessions::Session {
         video_refresh_rate: 60,
         video_width: 1920,
     }
-}
-
-pub(crate) fn error_status(app_id: String, message: String) -> ActionStatus {
-    ActionStatus {
-        kind: ActionStatusKind::Error,
-        app_id,
-        message,
-        progress: None,
-    }
-}
-
-fn action_status(
-    kind: ActionStatusKind,
-    app_id: &str,
-    message: &str,
-    progress: Option<f64>,
-) -> ActionStatus {
-    ActionStatus {
-        kind,
-        app_id: app_id.to_string(),
-        message: message.to_string(),
-        progress,
-    }
-}
-
-fn set_status(statuses: &mut Signal<ActionStatuses>, status: ActionStatus) {
-    statuses.write().insert(status.app_id.clone(), status);
 }

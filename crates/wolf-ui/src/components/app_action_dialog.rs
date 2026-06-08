@@ -6,11 +6,11 @@ use dioxus_free_icons::icons::hi_solid_icons::{
 
 use crate::components::{
     Button, ButtonSize, ButtonVariant, Card, CardContent, CardFooter, CardHeader, Dialog,
-    DialogDescription, DialogHeader, DialogTitle, app_card::AppCardData,
+    DialogDescription, DialogHeader, DialogTitle, Spinner, app_card::AppCardData,
 };
 use crate::input::{UiAction, use_ui_action};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AppAction {
     Start,
     Connect,
@@ -24,10 +24,17 @@ pub enum AppAction {
 pub fn AppActionDialog(
     app: AppCardData,
     actions: Vec<AppAction>,
-    onselect: EventHandler<AppAction>,
+    mut action_runner: Action<(AppCardData, AppAction), ()>,
+    onerror: EventHandler<AppAction>,
     onclose: EventHandler<()>,
 ) -> Element {
-    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || onclose.call(()));
+    let loading_action = use_signal(|| None::<AppAction>);
+    let is_loading = loading_action().is_some();
+    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || {
+        if loading_action().is_none() {
+            onclose.call(());
+        }
+    });
 
     rsx! {
         Dialog { label: "Actions for {app.title}".to_string(), scope_actions: close_actions,
@@ -45,7 +52,21 @@ pub fn AppActionDialog(
                             tone: action_tone(action).to_string(),
                             autofocus: index == 0,
                             action,
-                            onselect,
+                            loading: loading_action() == Some(action),
+                            disabled: is_loading,
+                            onselect: {
+                                let app = app.clone();
+                                move |action| {
+                                    start_dialog_action(
+                                        app.clone(),
+                                        action,
+                                        loading_action,
+                                        action_runner,
+                                        onerror,
+                                        onclose,
+                                    );
+                                }
+                            },
                         }
                     }
                 }
@@ -55,6 +76,7 @@ pub fn AppActionDialog(
                         size: ButtonSize::Lg,
                         class: "h-14 w-full rounded-2xl text-base text-muted-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
                         action_label: "Cancel".to_string(),
+                        disabled: is_loading,
                         onclick: move |_| onclose.call(()),
                         Icon { icon: HiX, class: "mr-2 h-5 w-5", width: None, height: None, title: Some("Cancel".to_string()) }
                         "Cancel"
@@ -65,12 +87,44 @@ pub fn AppActionDialog(
     }
 }
 
+fn start_dialog_action(
+    app: AppCardData,
+    action: AppAction,
+    mut loading_action: Signal<Option<AppAction>>,
+    mut action_runner: Action<(AppCardData, AppAction), ()>,
+    onerror: EventHandler<AppAction>,
+    onclose: EventHandler<()>,
+) {
+    if loading_action().is_some() {
+        return;
+    }
+
+    loading_action.set(Some(action));
+    action_runner.reset();
+
+    spawn(async move {
+        action_runner.call(app, action).await;
+        let result = action_runner
+            .value()
+            .unwrap_or_else(|| Err(std::io::Error::other("Action did not complete.").into()));
+        loading_action.set(None);
+
+        if result.is_err() {
+            onerror.call(action);
+        }
+
+        onclose.call(());
+    });
+}
+
 #[component]
 fn ActionRow(
     label: String,
     tone: String,
     autofocus: bool,
     action: AppAction,
+    loading: bool,
+    disabled: bool,
     onselect: EventHandler<AppAction>,
 ) -> Element {
     rsx! {
@@ -80,8 +134,13 @@ fn ActionRow(
             class: "h-16 w-full justify-start rounded-2xl border border-transparent px-5 text-left text-lg font-bold hover:border-foreground/30 focus:border-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
             action_label: label.clone(),
             autofocus,
+            disabled,
             onclick: move |_| onselect.call(action),
-            ActionIcon { action, tone: tone.clone(), title: label.clone() }
+            if loading {
+                Spinner { class: "h-5 w-5".to_string() }
+            } else {
+                ActionIcon { action, tone: tone.clone(), title: label.clone() }
+            }
             "{label}"
         }
     }

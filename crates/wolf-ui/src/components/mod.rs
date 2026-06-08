@@ -6,11 +6,11 @@ pub mod card;
 pub mod dialog;
 pub mod profile_apps;
 pub mod profile_card;
-pub mod selected_app_meta;
 pub mod session_controls;
 pub mod skeleton;
 pub mod spinner;
 pub mod status_alert;
+pub mod toast;
 
 pub use action_footer::ActionFooter;
 #[allow(unused_imports)]
@@ -23,9 +23,12 @@ pub use card::{Card, CardContent, CardFooter, CardHeader};
 pub use dialog::{Dialog, DialogDescription, DialogHeader, DialogTitle};
 pub use profile_apps::{AppsContent, AppsHeader, AppsLoading};
 pub use profile_card::{ProfileCard, ProfileCardSkeleton};
-pub use selected_app_meta::SelectedAppMeta;
 pub use session_controls::SessionShutdownControl;
 pub use skeleton::Skeleton;
 #[allow(unused_imports)]
 pub use spinner::Spinner;
 pub use status_alert::{StatusAlert, StatusAlertVariant};
+#[allow(unused_imports)]
+pub use toast::{
+    Toast, ToastContext, ToastOptions, ToastVariant, ToastViewport, use_toast_provider, use_toasts,
+};

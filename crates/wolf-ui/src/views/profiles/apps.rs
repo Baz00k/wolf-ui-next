@@ -6,10 +6,10 @@ use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::AppListResponse;
 
 use crate::components::{
-    AppActionDialog, AppCardData, AppsContent, AppsHeader, AppsLoading, Button, ButtonSize,
-    SelectedAppMeta, StatusAlert, StatusAlertVariant,
+    AppAction, AppActionDialog, AppCardData, AppsContent, AppsHeader, AppsLoading, Button,
+    ButtonSize, StatusAlert, StatusAlertVariant, ToastOptions, use_toasts,
 };
-use crate::domain::app_actions::{ActionStatuses, error_status, run_app_action};
+use crate::domain::app_actions::run_app_action;
 use crate::domain::apps::{
     AppFilter, app_actions, listen_for_lobby_events, load_apps_state, selected_app_data,
 };
@@ -28,9 +28,9 @@ pub fn ProfileApps(profile_id: String) -> Element {
     let selected_index = use_signal(|| 0usize);
     let filter = use_signal(|| AppFilter::Default);
     let mut action_app = use_signal(|| None::<AppCardData>);
-    let action_statuses = use_signal(ActionStatuses::new);
     let mut lobbies = use_signal(Vec::<Lobby>::new);
     let mut pending_focus_index = use_signal(|| None::<usize>);
+    let toasts = use_toasts();
 
     use_effect(move || {
         if let Some(index) = pending_focus_index() {
@@ -52,11 +52,22 @@ pub fn ProfileApps(profile_id: String) -> Element {
         action_hint_from_json(&back_action),
         action_hint_from_json(&sort_focus_action),
     ]);
-
     let mut apps = use_resource(move || {
         let profile_id = resource_profile_id.clone();
 
         async move { load_apps_state(profile_id).await }
+    });
+    let action_profile_id = profile_id.clone();
+    let action_runner = use_action(move |app: AppCardData, action: AppAction| {
+        let profile_id = action_profile_id.clone();
+        async move {
+            let result = run_app_action(profile_id, app, action)
+                .await
+                .map(|_| ())
+                .map_err(std::io::Error::other);
+            apps.restart();
+            result
+        }
     });
 
     use_effect(move || {
@@ -102,7 +113,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
                                 covers: state.covers.clone(),
                                 filter: filter(),
                                 selected_index,
-                                on_app_click: move |(index, app)| {
+                                on_app_click: move |(index, app): (usize, AppCardData)| {
                                     action_app.set(Some(app));
                                     scroll_to_app(index);
                                 },
@@ -126,9 +137,10 @@ pub fn ProfileApps(profile_id: String) -> Element {
                 }
                 match &*apps.read_unchecked() {
                     Some(Ok(state)) => rsx! {
-                        SelectedAppMeta {
-                            app: selected_app_data(&profile_id, &state.apps, &lobbies(), &state.images, &state.covers, filter(), selected_index()),
-                            action_statuses: action_statuses(),
+                        div { class: "pointer-events-none flex shrink-0 flex-col items-center justify-start p-4 text-center",
+                            if let Some(app) = selected_app_data(&profile_id, &state.apps, &lobbies(), &state.images, &state.covers, filter(), selected_index()) {
+                                h2 { class: "max-w-[80vw] truncate text-3xl font-black tracking-tight md:text-4xl xl:text-5xl 2xl:text-6xl p-1", "{app.title}" }
+                            }
                         }
                     },
                     _ => rsx! {},
@@ -138,9 +150,13 @@ pub fn ProfileApps(profile_id: String) -> Element {
                 AppActionDialog {
                     actions: app_actions(&app),
                     app: app.clone(),
-                    onselect: move |action| {
-                        start_profile_app_action(profile_id.clone(), app.clone(), action, action_statuses, apps);
-                        close_modal(action_app, selected_index());
+                    action_runner,
+                    onerror: move |action| {
+                        let mut toasts = toasts;
+                        toasts.show(
+                            format!("{} failed. Try again.", action_label(action)),
+                            ToastOptions::error(),
+                        );
                     },
                     onclose: move |_| close_modal(action_app, selected_index()),
                 }
@@ -149,29 +165,15 @@ pub fn ProfileApps(profile_id: String) -> Element {
     }
 }
 
-fn start_profile_app_action(
-    profile_id: String,
-    app: AppCardData,
-    action: crate::components::AppAction,
-    mut action_statuses: Signal<ActionStatuses>,
-    mut apps: Resource<Result<crate::domain::apps::AppsState, String>>,
-) {
-    let app_id = app.id.clone();
-    action_statuses.write().remove(&app_id);
-    spawn(async move {
-        match run_app_action(profile_id, app, action, action_statuses).await {
-            Ok(_) => {
-                action_statuses.write().remove(&app_id);
-                apps.restart();
-            }
-            Err(error) => {
-                action_statuses
-                    .write()
-                    .insert(app_id.clone(), error_status(app_id, error));
-                apps.restart();
-            }
-        }
-    });
+fn action_label(action: AppAction) -> &'static str {
+    match action {
+        AppAction::Start => "Start",
+        AppAction::Connect => "Connect",
+        AppAction::StartCoop => "Start Co-op",
+        AppAction::Stop => "Stop",
+        AppAction::CheckUpdate => "Check for update",
+        AppAction::Download => "Download",
+    }
 }
 
 fn close_modal(mut action_app: Signal<Option<AppCardData>>, selected_index: usize) {
