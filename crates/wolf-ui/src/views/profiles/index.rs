@@ -23,15 +23,16 @@ pub fn Profiles() -> Element {
     });
 
     rsx! {
-        div { class: "min-h-screen overflow-hidden bg-background text-foreground",
+        div { class: "h-full",
             div { class: "pointer-events-none fixed inset-0 wolf-ambient-background" }
             section {
-                class: "relative flex min-h-screen flex-col px-8 py-12 sm:px-12 lg:px-20",
-                "data-focus-root": "true",
-                "data-focus-scope": "true",
-                "data-scope-actions": navigate_hint("Navigate"),
+                class: "relative flex h-full flex-col px-8 py-12 sm:px-12 lg:px-20",
                 ProfilesHeader {}
-                div { class: "-mx-8 flex flex-1 items-center justify-center py-10 sm:-mx-12 lg:-mx-20", "data-focus-scope": "true", "data-focus-region": "main", "data-scope-actions": navigate_hint("Navigate"),
+                div {
+                    class: "-mx-8 flex flex-1 items-center justify-center py-10 sm:-mx-12 lg:-mx-20",
+                    "data-focus-scope": "true",
+                    "data-focus-region": "main",
+                    "data-scope-actions": navigate_hint("Navigate"),
                     match &*profiles.read_unchecked() {
                         Some(Ok(response)) => rsx! {
                             ProfilesContent { response: response.clone() }
@@ -60,7 +61,10 @@ pub fn Profiles() -> Element {
 #[component]
 fn ProfilesHeader() -> Element {
     rsx! {
-        header { class: "grid grid-cols-[1fr_auto_1fr] items-start gap-4 text-center", "data-focus-region": "top-bar",
+        header {
+            class: "grid grid-cols-[1fr_auto_1fr] items-start gap-4 text-center",
+            "data-focus-scope": "true",
+            "data-focus-region": "top-bar",
             div {}
             h1 { class: "text-4xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl", "Who's playing?" }
             div { class: "justify-self-end", SessionShutdownControl {} }
@@ -71,7 +75,7 @@ fn ProfilesHeader() -> Element {
 #[component]
 fn ProfilesLoading() -> Element {
     rsx! {
-        div { class: "w-full overflow-x-auto [scrollbar-width:none]",
+        div { class: "scrollbar-hide w-full overflow-x-auto",
             div { class: "mx-auto flex w-max min-w-fit snap-x snap-mandatory gap-5 px-8 py-8 md:gap-6 md:px-12 xl:gap-7 xl:px-20 2xl:gap-10 2xl:px-28",
                 div { class: "flex min-w-[calc(100vw-4rem)] justify-center gap-5 md:min-w-[calc(100vw-6rem)] md:gap-6 xl:min-w-[calc(100vw-10rem)] xl:gap-7 2xl:min-w-[calc(100vw-14rem)] 2xl:gap-10",
                     for _ in 0..CARD_SKELETON_COUNT {
@@ -106,7 +110,7 @@ fn ProfilesContent(response: ProfileListResponse) -> Element {
     }
 
     rsx! {
-        div { class: "w-full overflow-x-auto [scrollbar-width:none]",
+        div { class: "scrollbar-hide w-full overflow-x-auto",
             div {
                 class: "mx-auto flex w-max min-w-fit snap-x snap-mandatory gap-5 px-8 py-8 md:gap-6 md:px-12 xl:gap-7 xl:px-20 2xl:gap-10 2xl:px-28",
                 role: "list",

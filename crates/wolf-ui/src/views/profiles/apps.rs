@@ -47,11 +47,6 @@ pub fn ProfileApps(profile_id: String) -> Element {
             "document.querySelector('#apps-filter button')?.focus({ preventScroll: true });",
         );
     });
-    let scope_actions = action_hints([
-        action_hint_from_json(&back_action),
-        action_hint_from_json(&sort_focus_action),
-        ActionHint::new(UiHint::Navigate, "Navigate"),
-    ]);
     let carousel_actions = action_hints([
         ActionHint::new(UiHint::Navigate, "Navigate"),
         action_hint_from_json(&back_action),
@@ -87,16 +82,13 @@ pub fn ProfileApps(profile_id: String) -> Element {
     });
 
     rsx! {
-        div { class: "min-h-screen overflow-hidden bg-background text-foreground",
+        div { class: "h-full flex flex-col bg-background text-foreground p-8",
             div { class: "pointer-events-none fixed inset-0 wolf-ambient-background-center" }
+            AppsHeader { filter, selected_index, pending_focus_index }
             section {
-                class: "relative flex min-h-screen flex-col px-6 pb-28 pt-8 sm:px-10 lg:px-16",
-                "data-focus-root": "true",
-                "data-focus-scope": "true",
-                "data-scope-actions": scope_actions,
-                AppsHeader { filter, selected_index, pending_focus_index }
+                class: "relative grow flex flex-col justify-center",
                 div {
-                    class: "-mx-6 flex min-h-0 flex-1 items-center justify-center overflow-visible sm:-mx-10 lg:-mx-16",
+                    class: "flex shrink items-center justify-center -mx-6 sm:-mx-10 lg:-mx-16",
                     "data-focus-scope": "true",
                     "data-focus-region": "main",
                     "data-scope-actions": carousel_actions,

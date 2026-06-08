@@ -9,9 +9,10 @@ use crate::components::{
     SessionShutdownControl, StatusAlert, StatusAlertVariant,
 };
 use crate::domain::apps::{AppFilter, filter_label, sorted_apps};
+use crate::input::navigate_hint;
 
 pub const APP_CAROUSEL_CLASS: &str =
-    "w-full snap-x snap-mandatory overflow-x-auto overflow-y-visible [scrollbar-width:none]";
+    "w-full snap-x snap-mandatory overflow-x-auto overflow-y-visible scrollbar-hide";
 pub const APP_CAROUSEL_TRACK_CLASS: &str = "mx-auto flex min-w-max items-center gap-5 px-[calc(50vw-7rem)] py-16 md:px-[calc(50vw-8rem)] lg:gap-6 lg:px-[calc(50vw-9rem)] xl:gap-7 xl:px-[calc(50vw-10rem)] 2xl:px-[calc(50vw-12rem)]";
 
 const LOADING_CARD_COUNT: usize = 5;
@@ -23,7 +24,12 @@ pub fn AppsHeader(
     pending_focus_index: Signal<Option<usize>>,
 ) -> Element {
     rsx! {
-        header { id: "apps-top-bar", class: "grid grid-cols-[1fr_auto] items-start gap-4", "data-focus-region": "top-bar",
+        header {
+            id: "apps-top-bar",
+            class: "grid grid-cols-[1fr_auto] items-start gap-4",
+            "data-focus-scope": "true",
+            "data-focus-region": "top-bar",
+            "data-scope-actions": navigate_hint("Navigate"),
             div { class: "min-w-0",
                 h1 { class: "text-2xl font-bold tracking-tight sm:text-4xl lg:text-5xl", "Applications" }
             }

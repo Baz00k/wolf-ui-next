@@ -4,7 +4,7 @@ use crate::input::{
 use dioxus::prelude::*;
 
 #[component]
-pub fn ActionFooter(#[props(default)] class: String) -> Element {
+pub fn ActionFooter() -> Element {
     let mut hints = use_signal(Vec::<InputActionHint>::new);
 
     use_effect(move || {
@@ -27,14 +27,10 @@ pub fn ActionFooter(#[props(default)] class: String) -> Element {
     let input_source = use_input_source();
     let hints = hints();
 
-    if hints.is_empty() {
-        return rsx! {};
-    }
-
     let source = input_source();
 
     rsx! {
-        footer { class: "pointer-events-none relative z-10 flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-border/30 bg-card/90 py-2 text-base font-medium text-muted-foreground sm:justify-end {class}",
+        footer { class: "h-14 pointer-events-none z-500 flex w-full flex-wrap items-center justify-end gap-x-6 gap-y-2 border-t border-border/30 bg-card/90 px-8 text-base font-medium text-muted-foreground",
             for hint in hints {
                 ActionHint { source, hint }
             }
