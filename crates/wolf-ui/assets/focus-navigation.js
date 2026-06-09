@@ -227,8 +227,12 @@
 
     function actionHintsFor(element) {
         const scope = scopeFor(element);
+        const rootScope = rootScopeFor(scope);
         const hints = new Map();
 
+        if (rootScope !== scope) {
+            collectActionHints(rootScope, hints, SCOPE_ACTIONS_ATTRIBUTE);
+        }
         collectActionHints(scope, hints, SCOPE_ACTIONS_ATTRIBUTE);
         if (element && element !== scope) {
             collectActionHints(element, hints, ACTIONS_ATTRIBUTE);

@@ -24,7 +24,6 @@ const BACKGROUND_POLL_DELAY: Duration = Duration::from_mins(1);
 pub fn ProfileApps(profile_id: String) -> Element {
     let resource_profile_id = profile_id.clone();
     let events_profile_id = profile_id.clone();
-    let navigator = use_navigator();
     let selected_index = use_signal(|| 0usize);
     let filter = use_signal(|| AppFilter::Default);
     let mut action_app = use_signal(|| None::<AppCardData>);
@@ -39,9 +38,6 @@ pub fn ProfileApps(profile_id: String) -> Element {
         }
     });
 
-    let back_action = use_ui_action(UiAction::Cancel, "Back", move || {
-        navigator.go_back();
-    });
     let sort_focus_action = use_ui_action(UiAction::Menu, "Sort", move || {
         let _ = document::eval(
             "document.querySelector('#apps-filter button')?.focus({ preventScroll: true });",
@@ -49,7 +45,6 @@ pub fn ProfileApps(profile_id: String) -> Element {
     });
     let carousel_actions = action_hints([
         ActionHint::new(UiHint::Navigate, "Navigate"),
-        action_hint_from_json(&back_action),
         action_hint_from_json(&sort_focus_action),
     ]);
     let mut apps = use_resource(move || {
