@@ -66,13 +66,6 @@ pub fn action_hints(hints: impl IntoIterator<Item = ActionHint>) -> String {
     })
 }
 
-pub fn action_hint_from_json(value: &str) -> ActionHint {
-    serde_json::from_str::<Vec<ActionHint>>(value)
-        .ok()
-        .and_then(|mut actions| actions.pop())
-        .unwrap_or_else(|| ActionHint::new(UiHint::Accept, "Action"))
-}
-
 pub fn native_action(action: UiAction, label: impl Into<String>) -> String {
     action_hints([ActionHint::new(UiHint::from(action), label)])
 }
@@ -84,8 +77,16 @@ pub fn navigate_hint(label: impl Into<String>) -> String {
 pub fn use_ui_action(
     action: UiAction,
     label: impl Into<String>,
-    mut handler: impl FnMut() + 'static,
+    handler: impl FnMut() + 'static,
 ) -> String {
+    action_hints([use_ui_action_hint(action, label, handler)])
+}
+
+pub fn use_ui_action_hint(
+    action: UiAction,
+    label: impl Into<String>,
+    mut handler: impl FnMut() + 'static,
+) -> ActionHint {
     let registry = use_context::<ActionRegistry>();
     let callback = use_callback(move |()| handler());
     let handler_id = use_hook({
@@ -98,11 +99,11 @@ pub fn use_ui_action(
         move || registry.unregister(&handler_id)
     });
 
-    action_hints([ActionHint {
+    ActionHint {
         action: UiHint::from(action),
         label: label.into(),
         handler: Some(handler_id),
-    }])
+    }
 }
 
 pub(super) fn use_action_bridge(registry: ActionRegistry) {

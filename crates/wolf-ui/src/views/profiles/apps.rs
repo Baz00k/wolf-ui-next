@@ -13,9 +13,7 @@ use crate::domain::app_actions::run_app_action;
 use crate::domain::apps::{
     AppFilter, app_actions, listen_for_lobby_events, load_apps_state, selected_app_data,
 };
-use crate::input::{
-    ActionHint, UiAction, UiHint, action_hint_from_json, action_hints, use_ui_action,
-};
+use crate::input::{ActionHint, UiAction, UiHint, action_hints, use_ui_action_hint};
 
 const ACTIVE_POLL_DELAY: Duration = Duration::from_secs(15);
 const BACKGROUND_POLL_DELAY: Duration = Duration::from_mins(1);
@@ -38,14 +36,14 @@ pub fn ProfileApps(profile_id: String) -> Element {
         }
     });
 
-    let sort_focus_action = use_ui_action(UiAction::Menu, "Sort", move || {
+    let sort_focus_action = use_ui_action_hint(UiAction::Menu, "Sort", move || {
         let _ = document::eval(
             "document.querySelector('#apps-filter button')?.focus({ preventScroll: true });",
         );
     });
     let carousel_actions = action_hints([
         ActionHint::new(UiHint::Navigate, "Navigate"),
-        action_hint_from_json(&sort_focus_action),
+        sort_focus_action,
     ]);
     let mut apps = use_resource(move || {
         let profile_id = resource_profile_id.clone();

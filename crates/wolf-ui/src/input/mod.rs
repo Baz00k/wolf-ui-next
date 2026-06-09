@@ -5,7 +5,7 @@ mod repeat;
 mod types;
 
 pub use actions::{
-    ActionHint, action_hint_from_json, action_hints, native_action, navigate_hint, use_ui_action,
+    ActionHint, action_hints, native_action, navigate_hint, use_ui_action, use_ui_action_hint,
 };
 pub use gamepad::{GamepadFamily, InputSource};
 pub use provider::{InputProvider, use_input_source};
