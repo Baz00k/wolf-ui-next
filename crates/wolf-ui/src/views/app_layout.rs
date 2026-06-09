@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
 
 use crate::Route;
-use crate::components::{ActionFooter, ToastViewport};
+use crate::components::ActionFooter;
+use crate::components::primitives::ToastViewport;
 use crate::input::{UiAction, use_ui_action};
 
 #[component]

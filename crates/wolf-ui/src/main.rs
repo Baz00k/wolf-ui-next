@@ -64,7 +64,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     ApiContext::provide();
-    components::use_toast_provider();
+    components::primitives::use_toast_provider();
 
     rsx! {
         document::Stylesheet { href: STYLES_CSS }

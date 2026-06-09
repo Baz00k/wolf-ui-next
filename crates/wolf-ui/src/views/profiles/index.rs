@@ -3,10 +3,8 @@ use wolf_api::profiles::{Profile, ProfileListResponse};
 
 use crate::Route;
 use crate::api::ApiContext;
-use crate::components::{
-    Button, ButtonSize, ProfileCard, ProfileCardSkeleton, SessionShutdownControl, StatusAlert,
-    StatusAlertVariant,
-};
+use crate::components::primitives::{Button, ButtonSize, StatusAlert, StatusAlertVariant};
+use crate::components::{ProfileCard, ProfileCardSkeleton, SessionShutdownControl};
 use crate::domain::image_loader::load_image_src;
 use crate::input::navigate_hint;
 

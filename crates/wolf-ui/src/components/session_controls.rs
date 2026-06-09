@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::hi_solid_icons::HiLogout;
 
-use crate::components::{
+use crate::components::primitives::{
     Button, ButtonSize, ButtonVariant, Card, CardContent, CardFooter, CardHeader, Dialog,
     DialogHeader, DialogTitle, Spinner, StatusAlert, StatusAlertVariant,
 };

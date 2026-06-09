@@ -4,9 +4,10 @@ use dioxus_free_icons::icons::hi_solid_icons::{
     HiDownload, HiPlay, HiRefresh, HiStop, HiUserGroup, HiX,
 };
 
-use crate::components::{
+use crate::components::app_card::AppCardData;
+use crate::components::primitives::{
     Button, ButtonSize, ButtonVariant, Card, CardContent, CardFooter, CardHeader, Dialog,
-    DialogDescription, DialogHeader, DialogTitle, Spinner, app_card::AppCardData,
+    DialogDescription, DialogHeader, DialogTitle, Spinner,
 };
 use crate::input::{UiAction, use_ui_action};
 

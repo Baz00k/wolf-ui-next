@@ -5,9 +5,11 @@ use tokio::time::sleep;
 use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::AppListResponse;
 
+use crate::components::primitives::{
+    Button, ButtonSize, StatusAlert, StatusAlertVariant, ToastOptions, use_toasts,
+};
 use crate::components::{
-    AppAction, AppActionDialog, AppCardData, AppsContent, AppsHeader, AppsLoading, Button,
-    ButtonSize, StatusAlert, StatusAlertVariant, ToastOptions, use_toasts,
+    AppAction, AppActionDialog, AppCardData, AppsContent, AppsHeader, AppsLoading,
 };
 use crate::domain::app_actions::run_app_action;
 use crate::domain::apps::{

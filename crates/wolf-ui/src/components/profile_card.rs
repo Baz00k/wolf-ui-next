@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::hi_solid_icons::{HiLockClosed, HiUser};
 
-use crate::components::{Card, Skeleton};
+use crate::components::primitives::{Card, Skeleton};
 use crate::input::{UiAction, native_action};
 
 #[derive(Clone, PartialEq)]

@@ -5,7 +5,7 @@ use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::hi_solid_icons::HiX;
 use tokio::time::sleep;
 
-use crate::components::{Button, ButtonSize, ButtonVariant};
+use crate::components::primitives::{Button, ButtonSize, ButtonVariant};
 
 const DEFAULT_AUTO_HIDE: Duration = Duration::from_secs(5);
 

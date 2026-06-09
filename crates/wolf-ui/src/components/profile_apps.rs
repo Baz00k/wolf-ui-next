@@ -4,10 +4,10 @@ use dioxus::prelude::*;
 use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::AppListResponse;
 
-use crate::components::{
-    AppCard, AppCardData, AppCardSkeleton, Button, ButtonSize, ButtonVariant,
-    SessionShutdownControl, StatusAlert, StatusAlertVariant,
+use crate::components::primitives::{
+    Button, ButtonSize, ButtonVariant, StatusAlert, StatusAlertVariant,
 };
+use crate::components::{AppCard, AppCardData, AppCardSkeleton, SessionShutdownControl};
 use crate::domain::apps::{AppFilter, filter_label, sorted_apps};
 use crate::input::navigate_hint;
 
