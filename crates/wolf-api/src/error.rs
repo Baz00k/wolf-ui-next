@@ -24,9 +24,13 @@ pub enum ApiError {
 
 impl ApiError {
     pub(crate) fn from_reqwest(error: reqwest::Error) -> Self {
-        if error.is_timeout() {
+        let is_timeout = error.is_timeout();
+        let is_decode = error.is_decode();
+        let error = error.without_url();
+
+        if is_timeout {
             Self::Timeout
-        } else if error.is_decode() {
+        } else if is_decode {
             Self::Decode(error)
         } else {
             Self::Transport(error)

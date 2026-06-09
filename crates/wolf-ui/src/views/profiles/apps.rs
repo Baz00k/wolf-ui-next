@@ -113,10 +113,10 @@ pub fn ProfileApps(profile_id: String) -> Element {
                                 },
                             }
                         },
-                        Some(Err(error)) => rsx! {
+                        Some(Err(message)) => rsx! {
                             StatusAlert {
                                 title: Some("Apps unavailable".to_string()),
-                                message: format!("Wolf did not return the app list. {error}"),
+                                message: message.clone(),
                                 variant: StatusAlertVariant::Error,
                                 Button {
                                     size: ButtonSize::Lg,

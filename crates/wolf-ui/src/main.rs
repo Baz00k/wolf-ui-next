@@ -38,6 +38,8 @@ const SCROLL_ANIMATION_JS: Asset = asset!("/assets/scroll-animation.js");
 const FOCUS_NAVIGATION_JS: Asset = asset!("/assets/focus-navigation.js");
 
 fn main() {
+    init_logging();
+
     let mut window = dioxus::desktop::WindowBuilder::new().with_title("Wolf UI");
 
     if !cfg!(debug_assertions) {
@@ -59,6 +61,18 @@ fn main() {
     dioxus::LaunchBuilder::desktop()
         .with_cfg(config)
         .launch(App);
+}
+
+fn init_logging() {
+    use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
+
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("wolf_ui=info,wolf_api=info"));
+
+    tracing_subscriber::registry()
+        .with(env_filter)
+        .with(fmt::layer().with_target(true))
+        .init();
 }
 
 #[component]

@@ -13,11 +13,9 @@ const CARD_SKELETON_COUNT: usize = 3;
 #[component]
 pub fn Profiles() -> Element {
     let mut profiles = use_resource(move || async move {
-        ApiContext::consume()
-            .profiles()
-            .list()
-            .await
-            .map_err(|error| error.to_string())
+        ApiContext::consume().profiles().list().await.map_err(|_| {
+            "Profiles could not be loaded. Check that Wolf is running, then try again.".to_string()
+        })
     });
 
     rsx! {
@@ -34,10 +32,10 @@ pub fn Profiles() -> Element {
                         Some(Ok(response)) => rsx! {
                             ProfilesContent { response: response.clone() }
                         },
-                        Some(Err(error)) => rsx! {
+                        Some(Err(message)) => rsx! {
                             StatusAlert {
                                 title: Some("Profiles unavailable".to_string()),
-                                message: format!("Wolf did not return the profiles list. {error}"),
+                                message: message.clone(),
                                 variant: StatusAlertVariant::Error,
                                 Button {
                                     size: ButtonSize::Lg,

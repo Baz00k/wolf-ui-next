@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use dioxus::prelude::*;
-use futures_util::StreamExt;
 use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::App;
 use wolf_api::types::{RflReflectorWolfCoreEventsAppReflTypeRunner, WolfConfigAppDockerTagged};
@@ -27,16 +26,12 @@ pub(crate) struct AppsState {
 
 pub(crate) async fn load_apps_state(profile_id: String) -> Result<AppsState, String> {
     let api = ApiContext::consume();
-    let response = api
-        .profiles()
-        .apps(&profile_id)
-        .await
-        .map_err(|error| error.to_string())?;
-    let lobby_response = api
-        .lobbies()
-        .list()
-        .await
-        .map_err(|error| error.to_string())?;
+    let response = api.profiles().apps(&profile_id).await.map_err(|_| {
+        "Apps could not be loaded. Check that Wolf is running, then try again.".to_string()
+    })?;
+    let lobby_response = api.lobbies().list().await.map_err(|_| {
+        "Apps could not be loaded. Check that Wolf is running, then try again.".to_string()
+    })?;
     let images = image_availability(&api, &response.apps).await;
     let covers = cover_images(&api, &response.apps).await;
 
@@ -49,31 +44,10 @@ pub(crate) async fn load_apps_state(profile_id: String) -> Result<AppsState, Str
 }
 
 pub(crate) async fn listen_for_lobby_events(profile_id: String, lobbies: Signal<Vec<Lobby>>) {
-    let Ok(response) = ApiContext::consume().events().connect().await else {
-        return;
-    };
-    let mut stream = response.bytes_stream();
-    let mut buffer = String::new();
-    let mut event_type = String::new();
-    let mut data = String::new();
-
-    while let Some(Ok(chunk)) = stream.next().await {
-        buffer.push_str(&String::from_utf8_lossy(&chunk));
-        while let Some(index) = buffer.find('\n') {
-            let line = buffer[..index].trim_end_matches('\r').to_string();
-            buffer.replace_range(..=index, "");
-
-            if line.is_empty() {
-                apply_sse_event(&profile_id, &event_type, &data, lobbies);
-                event_type.clear();
-                data.clear();
-            } else if let Some(value) = line.strip_prefix("event: ") {
-                event_type = value.to_string();
-            } else if let Some(value) = line.strip_prefix("data: ") {
-                data.push_str(value);
-            }
-        }
-    }
+    let _ = ApiContext::consume()
+        .events()
+        .listen(|event| apply_wolf_event(&profile_id, event, lobbies))
+        .await;
 }
 
 pub(crate) fn sorted_apps(
@@ -138,16 +112,11 @@ pub(crate) fn filter_label(filter: AppFilter) -> &'static str {
     }
 }
 
-fn apply_sse_event(
+fn apply_wolf_event(
     profile_id: &str,
-    event_type: &str,
-    data: &str,
+    event: wolf_api::events::WolfEvent,
     mut lobbies: Signal<Vec<Lobby>>,
 ) {
-    let Ok(event) = wolf_api::events::parse_event(event_type.to_string(), data.to_string()) else {
-        return;
-    };
-
     match event {
         wolf_api::events::WolfEvent::LobbyCreated(lobby)
             if lobby.started_by_profile_id == profile_id =>
