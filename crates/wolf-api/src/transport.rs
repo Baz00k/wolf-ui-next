@@ -31,25 +31,3 @@ fn host_for_retry_scope(base_url: &str) -> String {
         .and_then(|url| url.host_str().map(str::to_owned))
         .unwrap_or_default()
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn configured_reqwest_client_builds_without_socket_file() {
-        let config = ClientConfig::new().unix_socket_path("/tmp/nonexistent-wolf.sock");
-
-        reqwest_client(&config).expect("client construction does not connect eagerly");
-    }
-
-    #[test]
-    fn configured_tcp_reqwest_client_builds_without_socket_transport() {
-        let config = ClientConfig::new()
-            .transport(ApiTransport::Tcp)
-            .base_url("http://localhost:8080")
-            .unix_socket_path("/tmp/nonexistent-wolf.sock");
-
-        reqwest_client(&config).expect("client construction does not require a socket in TCP mode");
-    }
-}

@@ -271,3 +271,153 @@ fn runner_label(runner: &RflReflectorWolfCoreEventsAppReflTypeRunner) -> &'stati
         RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(_) => "Process",
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wolf_api::types::{RflReflectorWolfCoreEventsLobbyReflTypeRunner, WolfConfigAppCMDTagged};
+
+    #[test]
+    fn sorted_apps_marks_running_and_missing_image_states() {
+        let apps = vec![
+            docker_app("steam", "Steam", "steam", "ghcr.io/wolf/steam"),
+            cmd_app("retroarch", "RetroArch", "retroarch"),
+        ];
+        let lobbies = vec![lobby(
+            "lobby-1",
+            "profile-1",
+            "Steam",
+            docker_lobby_runner("steam"),
+            false,
+        )];
+        let images = HashMap::from([("ghcr.io/wolf/steam".to_string(), false)]);
+        let apps = sorted_apps(
+            "profile-1",
+            apps,
+            &lobbies,
+            &images,
+            &HashMap::new(),
+            AppFilter::Default,
+        );
+
+        assert!(matches!(apps[0].status.kind, AppStatusKind::Playing));
+        assert!(matches!(apps[1].status.kind, AppStatusKind::Ready));
+    }
+
+    #[test]
+    fn unavailable_apps_only_offer_download_action() {
+        let apps = vec![docker_app("steam", "Steam", "steam", "ghcr.io/wolf/steam")];
+        let images = HashMap::from([("ghcr.io/wolf/steam".to_string(), false)]);
+        let app = selected_app_data(
+            "profile-1",
+            &apps,
+            &[],
+            &images,
+            &HashMap::new(),
+            AppFilter::Default,
+            0,
+        )
+        .expect("app is present");
+
+        assert!(matches!(app.status.kind, AppStatusKind::MissingImage));
+        assert_eq!(app_actions(&app), vec![AppAction::Download]);
+    }
+
+    #[test]
+    fn lobbies_match_by_profile_mode_and_runner_identity() {
+        let app = docker_app("steam", "Steam Big Picture", "steam", "ghcr.io/wolf/steam");
+        let lobby = lobby(
+            "lobby-1",
+            "profile-1",
+            "Different title",
+            docker_lobby_runner("steam"),
+            false,
+        );
+
+        assert!(is_app_lobby("profile-1", &app, &lobby, false));
+        assert!(!is_app_lobby("other-profile", &app, &lobby, false));
+        assert!(!is_app_lobby("profile-1", &app, &lobby, true));
+    }
+
+    fn docker_app(id: &str, title: &str, name: &str, image: &str) -> App {
+        App {
+            av1_gst_pipeline: String::new(),
+            h264_gst_pipeline: String::new(),
+            hevc_gst_pipeline: String::new(),
+            icon_png_path: None,
+            id: id.to_string(),
+            opus_gst_pipeline: String::new(),
+            render_node: String::new(),
+            runner: RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(
+                WolfConfigAppDockerTagged {
+                    base_create_json: None,
+                    devices: Vec::new(),
+                    env: Vec::new(),
+                    image: image.to_string(),
+                    mounts: Vec::new(),
+                    name: name.to_string(),
+                    ports: Vec::new(),
+                },
+            ),
+            start_audio_server: false,
+            start_virtual_compositor: false,
+            support_hdr: false,
+            title: title.to_string(),
+        }
+    }
+
+    fn cmd_app(id: &str, title: &str, run_cmd: &str) -> App {
+        App {
+            av1_gst_pipeline: String::new(),
+            h264_gst_pipeline: String::new(),
+            hevc_gst_pipeline: String::new(),
+            icon_png_path: None,
+            id: id.to_string(),
+            opus_gst_pipeline: String::new(),
+            render_node: String::new(),
+            runner: RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(
+                WolfConfigAppCMDTagged {
+                    run_cmd: run_cmd.to_string(),
+                },
+            ),
+            start_audio_server: false,
+            start_virtual_compositor: false,
+            support_hdr: false,
+            title: title.to_string(),
+        }
+    }
+
+    fn lobby(
+        id: &str,
+        profile_id: &str,
+        name: &str,
+        runner: RflReflectorWolfCoreEventsLobbyReflTypeRunner,
+        multi_user: bool,
+    ) -> Lobby {
+        Lobby {
+            connected_sessions: Vec::new(),
+            icon_png_path: None,
+            id: id.to_string(),
+            multi_user,
+            name: name.to_string(),
+            pin_required: false,
+            runner,
+            started_by_profile_id: profile_id.to_string(),
+            stop_when_everyone_leaves: false,
+        }
+    }
+
+    fn docker_lobby_runner(name: &str) -> RflReflectorWolfCoreEventsLobbyReflTypeRunner {
+        RflReflectorWolfCoreEventsLobbyReflTypeRunner::WolfConfigAppDockerTagged(
+            WolfConfigAppDockerTagged {
+                base_create_json: None,
+                devices: Vec::new(),
+                env: Vec::new(),
+                image: String::new(),
+                mounts: Vec::new(),
+                name: name.to_string(),
+                ports: Vec::new(),
+            },
+        )
+    }
+}

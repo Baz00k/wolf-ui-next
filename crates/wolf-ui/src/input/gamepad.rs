@@ -339,11 +339,40 @@ mod tests {
     use super::*;
 
     #[test]
-    fn nintendo_switch_controller_uses_gilrs_action_buttons() {
+    fn common_gamepad_families_are_classified() {
+        assert_eq!(
+            classify_gamepad("Xbox Wireless Controller"),
+            GamepadFamily::Xbox,
+        );
+        assert_eq!(
+            classify_gamepad("DualSense Wireless Controller"),
+            GamepadFamily::PlayStation
+        );
         assert_eq!(
             classify_gamepad("Nintendo Switch Pro Controller"),
             GamepadFamily::Switch,
         );
+        assert_eq!(classify_gamepad("8BitDo Pro 2"), GamepadFamily::Generic);
+    }
+
+    #[test]
+    fn wolf_virtual_gamepads_are_classified() {
+        assert_eq!(
+            classify_gamepad("Wolf X-Box One (virtual) pad"),
+            GamepadFamily::Xbox
+        );
+        assert_eq!(
+            classify_gamepad("Wolf DualSense (virtual) pad"),
+            GamepadFamily::PlayStation,
+        );
+        assert_eq!(
+            classify_gamepad("Wolf Nintendo (virtual) pad"),
+            GamepadFamily::Switch,
+        );
+    }
+
+    #[test]
+    fn gamepad_action_buttons_use_gilrs_layout() {
         assert_eq!(button_action(Button::South), Some(UiAction::Accept));
         assert_eq!(button_action(Button::East), Some(UiAction::Cancel));
     }

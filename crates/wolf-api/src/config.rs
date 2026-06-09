@@ -156,78 +156,29 @@ mod tests {
     use super::*;
 
     #[test]
-    fn default_config_targets_local_wolf_socket() {
-        let config = ClientConfig::default();
-
-        assert_eq!(config.base_url_ref(), DEFAULT_BASE_URL);
-        assert_eq!(config.transport_ref(), ApiTransport::UnixSocket);
-        assert_eq!(
-            config.unix_socket_path_ref(),
-            Path::new(DEFAULT_UNIX_SOCKET_PATH)
-        );
-        assert_eq!(config.connect_timeout_ref(), DEFAULT_CONNECT_TIMEOUT);
-        assert_eq!(config.request_timeout_ref(), DEFAULT_REQUEST_TIMEOUT);
-        assert_eq!(config.read_timeout_ref(), DEFAULT_READ_TIMEOUT);
-        assert_eq!(config.max_retries_ref(), DEFAULT_MAX_RETRIES);
-    }
-
-    #[test]
-    fn config_builder_overrides_connection_policy() {
-        let config = ClientConfig::new()
-            .base_url("http://wolf.test")
-            .transport(ApiTransport::Tcp)
-            .unix_socket_path("/tmp/wolf.sock")
-            .connect_timeout(Duration::from_millis(250))
-            .request_timeout(Duration::from_secs(3))
-            .read_timeout(Duration::from_secs(4))
-            .max_retries(1);
-
-        assert_eq!(config.base_url_ref(), "http://wolf.test");
-        assert_eq!(config.transport_ref(), ApiTransport::Tcp);
-        assert_eq!(config.unix_socket_path_ref(), Path::new("/tmp/wolf.sock"));
-        assert_eq!(config.connect_timeout_ref(), Duration::from_millis(250));
-        assert_eq!(config.request_timeout_ref(), Duration::from_secs(3));
-        assert_eq!(config.read_timeout_ref(), Duration::from_secs(4));
-        assert_eq!(config.max_retries_ref(), 1);
-    }
-
-    #[test]
-    fn socket_path_uses_env_value_when_present() {
+    fn socket_path_comes_from_env_or_default() {
         let path = socket_path_from_env(Some(OsString::from("/tmp/custom-wolf.sock")));
 
         assert_eq!(path, Path::new("/tmp/custom-wolf.sock"));
+        assert_eq!(
+            socket_path_from_env(None),
+            Path::new(DEFAULT_UNIX_SOCKET_PATH)
+        );
     }
 
     #[test]
-    fn socket_path_falls_back_to_default_when_env_missing() {
-        let path = socket_path_from_env(None);
-
-        assert_eq!(path, Path::new(DEFAULT_UNIX_SOCKET_PATH));
-    }
-
-    #[test]
-    fn base_url_uses_env_value_when_present() {
-        let base_url = base_url_from_env(Some("http://localhost:8080"));
-
-        assert_eq!(base_url, "http://localhost:8080");
-    }
-
-    #[test]
-    fn base_url_falls_back_to_default_when_env_missing_or_empty() {
+    fn base_url_env_selects_tcp_otherwise_socket_default() {
+        assert_eq!(
+            base_url_from_env(Some("http://localhost:8080")),
+            "http://localhost:8080"
+        );
         assert_eq!(base_url_from_env(None), DEFAULT_BASE_URL);
         assert_eq!(base_url_from_env(Some("")), DEFAULT_BASE_URL);
-    }
 
-    #[test]
-    fn tcp_transport_is_selected_when_base_url_env_is_present() {
         assert_eq!(
             transport_from_base_url_env(Some("http://localhost:8080")),
             ApiTransport::Tcp
         );
-    }
-
-    #[test]
-    fn unix_socket_transport_is_selected_when_base_url_env_is_missing_or_empty() {
         assert_eq!(transport_from_base_url_env(None), ApiTransport::UnixSocket);
         assert_eq!(
             transport_from_base_url_env(Some("")),

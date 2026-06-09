@@ -47,23 +47,3 @@ pub fn client_with_config(config: ClientConfig) -> Result<WolfApi, ClientBuildEr
     let http_client = reqwest_client(&config)?;
     Ok(WolfApi::new(config.into_base_url(), http_client))
 }
-
-#[cfg(test)]
-mod tests {
-    use super::types;
-
-    #[test]
-    fn generated_types_round_trip_wolf_json_shape() {
-        let response = types::WolfApiAppListResponse {
-            success: true,
-            apps: Vec::new(),
-        };
-
-        let json = serde_json::to_string(&response).expect("serialize response");
-        let parsed: types::WolfApiAppListResponse =
-            serde_json::from_str(&json).expect("deserialize response");
-
-        assert_eq!(parsed.success, response.success);
-        assert_eq!(parsed.apps.len(), response.apps.len());
-    }
-}

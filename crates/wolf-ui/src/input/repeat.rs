@@ -34,3 +34,27 @@ impl DirectionRepeat {
         Some(direction)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn direction_change_fires_once_and_waits_before_repeating() {
+        let mut repeat = DirectionRepeat::default();
+
+        assert_eq!(repeat.update(Some(UiAction::Right)), Some(UiAction::Right));
+        assert_eq!(repeat.update(Some(UiAction::Right)), None);
+        assert_eq!(repeat.tick(), None);
+    }
+
+    #[test]
+    fn clearing_direction_stops_repeats_until_new_direction() {
+        let mut repeat = DirectionRepeat::default();
+
+        assert_eq!(repeat.update(Some(UiAction::Down)), Some(UiAction::Down));
+        assert_eq!(repeat.update(None), None);
+        assert_eq!(repeat.tick(), None);
+        assert_eq!(repeat.update(Some(UiAction::Up)), Some(UiAction::Up));
+    }
+}

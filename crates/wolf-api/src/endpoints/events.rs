@@ -110,7 +110,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parser_emits_unknown_events_on_blank_line() {
+    fn parser_emits_and_resets_unknown_events_on_blank_lines() {
         let mut parser = EventStreamParser::default();
 
         assert!(parser.accept_line("event: wolf::unknown").is_none());
@@ -122,6 +122,14 @@ mod tests {
             .expect("unknown event should parse");
 
         assert_eq!(event, WolfEvent::Other("wolf::unknown".to_string()));
+
+        parser.accept_line("event: second");
+        let second = parser
+            .accept_line("")
+            .expect("blank line should complete second event")
+            .expect("second event should parse");
+
+        assert_eq!(second, WolfEvent::Other("second".to_string()));
     }
 
     #[test]
@@ -130,25 +138,6 @@ mod tests {
 
         assert!(parser.accept_line("data: ignored").is_none());
         assert!(parser.accept_line("").is_none());
-    }
-
-    #[test]
-    fn parser_resets_after_each_event() {
-        let mut parser = EventStreamParser::default();
-
-        parser.accept_line("event: first");
-        let first = parser
-            .accept_line("")
-            .expect("blank line should complete first event")
-            .expect("first event should parse");
-        parser.accept_line("event: second");
-        let second = parser
-            .accept_line("")
-            .expect("blank line should complete second event")
-            .expect("second event should parse");
-
-        assert_eq!(first, WolfEvent::Other("first".to_string()));
-        assert_eq!(second, WolfEvent::Other("second".to_string()));
     }
 
     #[test]

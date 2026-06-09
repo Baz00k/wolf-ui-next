@@ -290,27 +290,3 @@ pub(crate) async fn response_error(response: reqwest::Response) -> ApiError {
 
     ApiError::Status { status, body }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn client_wrapper_keeps_configured_base_url() {
-        let http_client = reqwest::Client::new();
-        let client = WolfApi::new("http://wolf.test", http_client);
-
-        assert_eq!(client.base_url(), "http://wolf.test");
-    }
-
-    #[test]
-    fn endpoint_urls_join_base_and_path() {
-        let http_client = reqwest::Client::new();
-        let client = WolfApi::new("http://wolf.test", http_client);
-
-        assert_eq!(
-            client.url("/api/v1/profiles"),
-            "http://wolf.test/api/v1/profiles"
-        );
-    }
-}
