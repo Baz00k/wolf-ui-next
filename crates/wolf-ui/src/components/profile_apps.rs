@@ -79,7 +79,6 @@ fn FilterButton(active: bool, label: String, onclick: EventHandler<MouseEvent>) 
             size: ButtonSize::Sm,
             class,
             action_label: label.clone(),
-            aria_pressed: if active { Some("true".to_string()) } else { Some("false".to_string()) },
             onclick: move |event| onclick.call(event),
             "{label}"
         }
@@ -152,10 +151,8 @@ pub fn AppsContent(
         div { class: APP_GRID_VIEWPORT_CLASS,
             div {
                 class: APP_GRID_CLASS,
-                role: "list",
-                aria_label: "Applications",
                 for (index, app) in apps.iter().cloned().enumerate() {
-                    div { role: "listitem", key: "{app.id}",
+                    div { key: "{app.id}",
                         AppCard {
                             app: app.clone(),
                             index,

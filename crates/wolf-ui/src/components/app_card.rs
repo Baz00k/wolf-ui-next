@@ -45,7 +45,6 @@ pub fn AppCard(
     onclick: EventHandler<MouseEvent>,
 ) -> Element {
     let actions = native_action(UiAction::Accept, "Actions");
-    let accessible_label = format!("{} app, {}, open actions", app.title, app.status.label);
     let show_runner = app.runner != "Docker";
     let is_unavailable = app.status.kind == AppStatusKind::MissingImage;
     let is_playing = app.status.kind == AppStatusKind::Playing;
@@ -56,7 +55,6 @@ pub fn AppCard(
             "data-focusable": "true",
             "data-app-index": "{index}",
             "data-actions": actions,
-            aria_label: "{accessible_label}",
             onfocus: move |event| onfocus.call(event),
             onclick: move |event| onclick.call(event),
             onmounted: move |event: MountedEvent| async move {
@@ -89,7 +87,6 @@ pub fn AppCard(
                             class: "absolute inset-0 h-full w-full rounded-4xl object-cover transition duration-300",
                             class: if is_unavailable { "grayscale brightness-40" },
                             src: cover_src.clone(),
-                            alt: "{app.title}",
                             loading: "lazy",
                             draggable: "false",
                         }
@@ -100,7 +97,6 @@ pub fn AppCard(
                                 class: "w-24 h-24",
                                 width: None,
                                 height: None,
-                                title: Some("Application".to_string()),
                             }
                         }
                     }

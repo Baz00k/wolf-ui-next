@@ -154,7 +154,6 @@ pub fn Toast(
         div {
             key: "{id}",
             class: "pointer-events-auto wolf-toast-enter flex w-[min(28rem,calc(100vw-2rem))] items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur backdrop-brightness-75 {tone}",
-            role: if variant == ToastVariant::Error { "alert" } else { "status" },
             p { class: "min-w-0 flex-1 text-sm font-semibold leading-6", "{message}" }
             if dismissible {
                 Button {
@@ -163,7 +162,7 @@ pub fn Toast(
                     class: "h-9 w-9 shrink-0 rounded-full text-muted-foreground focus:text-foreground".to_string(),
                     action_label: "Dismiss notification".to_string(),
                     onclick: move |_| ondismiss.call(()),
-                    Icon { icon: HiX, class: "h-4 w-4", width: None, height: None, title: Some("Dismiss".to_string()) }
+                    Icon { icon: HiX, class: "h-4 w-4", width: None, height: None }
                 }
             }
         }

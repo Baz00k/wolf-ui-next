@@ -41,7 +41,7 @@ pub fn AppActionDialog(
     });
 
     rsx! {
-        Dialog { label: "Actions for {app.title}".to_string(), scope_actions: close_actions,
+        Dialog { scope_actions: close_actions,
             Card { class: "w-full max-w-lg overflow-hidden shadow-black/50".to_string(),
                 CardHeader {
                     DialogHeader {
@@ -84,7 +84,7 @@ pub fn AppActionDialog(
                         action_label: "Cancel".to_string(),
                         disabled: is_loading,
                         onclick: move |_| onclose.call(()),
-                        Icon { icon: HiX, class: "mr-2 h-5 w-5", width: None, height: None, title: Some("Cancel".to_string()) }
+                        Icon { icon: HiX, class: "mr-2 h-5 w-5", width: None, height: None }
                         "Cancel"
                     }
                 }
@@ -179,7 +179,7 @@ fn ActionRow(
             if loading {
                 Spinner { class: "h-5 w-5".to_string() }
             } else {
-                ActionIcon { action, tone: tone.clone(), title: label.clone() }
+                ActionIcon { action, tone: tone.clone() }
             }
             "{label}"
         }
@@ -187,25 +187,25 @@ fn ActionRow(
 }
 
 #[component]
-fn ActionIcon(action: AppAction, tone: String, title: String) -> Element {
+fn ActionIcon(action: AppAction, tone: String) -> Element {
     match action {
         AppAction::Start => rsx! {
-            Icon { icon: HiPlay, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+            Icon { icon: HiPlay, class: "h-5 w-5 {tone}", width: None, height: None }
         },
         AppAction::Connect => rsx! {
-            Icon { icon: HiPlay, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+            Icon { icon: HiPlay, class: "h-5 w-5 {tone}", width: None, height: None }
         },
         AppAction::StartCoop => rsx! {
-            Icon { icon: HiUserGroup, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+            Icon { icon: HiUserGroup, class: "h-5 w-5 {tone}", width: None, height: None }
         },
         AppAction::Stop => rsx! {
-            Icon { icon: HiStop, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+            Icon { icon: HiStop, class: "h-5 w-5 {tone}", width: None, height: None }
         },
         AppAction::CheckUpdate => rsx! {
-            Icon { icon: HiRefresh, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+            Icon { icon: HiRefresh, class: "h-5 w-5 {tone}", width: None, height: None }
         },
         AppAction::Download => rsx! {
-            Icon { icon: HiDownload, class: "h-5 w-5 {tone}", width: None, height: None, title: Some(title) }
+            Icon { icon: HiDownload, class: "h-5 w-5 {tone}", width: None, height: None }
         },
     }
 }

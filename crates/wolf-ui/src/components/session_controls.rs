@@ -48,7 +48,7 @@ fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandle
 
     let confirm_label = if failed { "Retry" } else { "End session" };
     rsx! {
-        Dialog { label: "End session".to_string(), scope_actions: cancel_actions,
+        Dialog { scope_actions: cancel_actions,
             Card { class: "w-full max-w-xl overflow-hidden shadow-black/50".to_string(),
                 CardHeader {
                     DialogHeader {

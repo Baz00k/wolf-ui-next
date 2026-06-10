@@ -3,16 +3,12 @@ use dioxus::prelude::*;
 #[component]
 pub fn Dialog(
     #[props(default)] class: String,
-    #[props(default)] label: String,
     #[props(default)] scope_actions: String,
     children: Element,
 ) -> Element {
     rsx! {
         div {
             class: "fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm px-5 {class}",
-            role: "dialog",
-            aria_modal: "true",
-            aria_label: "{label}",
             "data-focus-scope": "true",
             "data-focus-trap": "true",
             "data-scope-actions": scope_actions,

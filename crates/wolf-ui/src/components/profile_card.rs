@@ -15,12 +15,6 @@ pub struct ProfileCardData {
 
 #[component]
 pub fn ProfileCard(profile: ProfileCardData, autofocus: bool, to: String) -> Element {
-    let status_label = if profile.is_pin_locked {
-        "PIN protected profile"
-    } else {
-        "Open profile"
-    };
-    let accessible_label = format!("Select {}, {}", profile.name, status_label);
     let actions = native_action(UiAction::Accept, "Select");
 
     rsx! {
@@ -29,7 +23,6 @@ pub fn ProfileCard(profile: ProfileCardData, autofocus: bool, to: String) -> Ele
             class: "group relative flex aspect-[3/4] w-full text-center outline-none transition duration-200 ease-out hover:-translate-y-1 focus:-translate-y-1 active:scale-105",
             "data-focusable": "true",
             "data-actions": actions,
-            aria_label: "{accessible_label}",
             onmounted: move |event: MountedEvent| async move {
                 if autofocus {
                     let _ = event.data().set_focus(true).await;
@@ -37,13 +30,11 @@ pub fn ProfileCard(profile: ProfileCardData, autofocus: bool, to: String) -> Ele
             },
             Card { class: "relative flex h-full w-full flex-col items-center overflow-hidden shadow-black/30 transition duration-200 ease-out group-hover:border-foreground/35 group-hover:bg-accent group-focus:border-foreground group-focus:ring-4 group-focus:ring-ring/20".to_string(),
                 div { class: "flex flex-1 items-center justify-center pt-8 md:pt-10 lg:pt-12 2xl:pt-16",
-                    div {
-                        class: "mb-6 flex h-44 w-44 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground transition group-hover:bg-secondary group-hover:text-secondary-foreground group-focus:bg-secondary group-focus:text-secondary-foreground",
+                    div { class: "mb-6 flex h-44 w-44 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground transition group-hover:bg-secondary group-hover:text-secondary-foreground group-focus:bg-secondary group-focus:text-secondary-foreground",
                         if let Some(avatar_src) = profile.avatar_src.as_ref() {
                             img {
                                 class: "h-full w-full object-cover",
                                 src: avatar_src.clone(),
-                                alt: "{profile.name}",
                                 loading: "lazy",
                                 draggable: "false",
                             }
@@ -53,7 +44,6 @@ pub fn ProfileCard(profile: ProfileCardData, autofocus: bool, to: String) -> Ele
                                 class: "h-24 w-24 mb-2",
                                 width: None,
                                 height: None,
-                                title: Some("Profile".to_string()),
                             }
                         }
                     }
@@ -68,7 +58,6 @@ pub fn ProfileCard(profile: ProfileCardData, autofocus: bool, to: String) -> Ele
                             class: "h-3.5 w-3.5",
                             width: None,
                             height: None,
-                            title: Some("PIN protected".to_string()),
                         }
                         "PIN"
                     }

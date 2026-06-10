@@ -23,7 +23,6 @@ pub fn StatusAlert(
     rsx! {
         section {
             class: "mx-auto flex w-full max-w-2xl flex-col items-center gap-4 rounded-4xl border px-8 py-8 text-center shadow-2xl shadow-black/30 {tone}",
-            role: if variant == StatusAlertVariant::Error { "alert" } else { "status" },
             if let Some(title) = title {
                 h2 { class: "text-3xl font-semibold tracking-tight", "{title}" }
             }
