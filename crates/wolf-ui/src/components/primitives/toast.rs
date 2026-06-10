@@ -147,15 +147,13 @@ pub fn Toast(
 
     let tone = match variant {
         ToastVariant::Info => "border-border bg-card/95 text-card-foreground",
-        ToastVariant::Error => {
-            "border-destructive/40 bg-destructive/10 text-destructive-foreground"
-        }
+        ToastVariant::Error => "border-destructive bg-destructive/30 text-destructive-foreground",
     };
 
     rsx! {
         div {
             key: "{id}",
-            class: "pointer-events-auto wolf-toast-enter flex w-[min(28rem,calc(100vw-2rem))] items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur {tone}",
+            class: "pointer-events-auto wolf-toast-enter flex w-[min(28rem,calc(100vw-2rem))] items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur backdrop-brightness-75 {tone}",
             role: if variant == ToastVariant::Error { "alert" } else { "status" },
             p { class: "min-w-0 flex-1 text-sm font-semibold leading-6", "{message}" }
             if dismissible {
