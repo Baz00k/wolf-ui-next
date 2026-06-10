@@ -168,7 +168,7 @@
         if (!element) return false;
 
         element.focus({ preventScroll: true });
-        window.__wolfUiScrollIntoHorizontalView?.(element, options);
+        window.__wolfUiScrollIntoView?.(element, options);
         return true;
     }
 
