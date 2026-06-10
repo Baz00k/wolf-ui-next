@@ -7,7 +7,7 @@ use dioxus_free_icons::icons::hi_solid_icons::{
 use crate::components::app_card::AppCardData;
 use crate::components::primitives::{
     Button, ButtonSize, ButtonVariant, Card, CardContent, CardFooter, CardHeader, Dialog,
-    DialogDescription, DialogHeader, DialogTitle, Spinner,
+    DialogDescription, DialogHeader, DialogTitle, Spinner, ToastContext, ToastOptions, use_toasts,
 };
 use crate::input::{UiAction, use_ui_action};
 
@@ -25,12 +25,15 @@ pub enum AppAction {
 pub fn AppActionDialog(
     app: AppCardData,
     actions: Vec<AppAction>,
-    mut action_runner: Action<(AppCardData, AppAction), ()>,
-    onerror: EventHandler<AppAction>,
+    mut action_runner: Action<(AppCardData, AppAction, Signal<Option<f64>>), bool>,
     onclose: EventHandler<()>,
 ) -> Element {
     let loading_action = use_signal(|| None::<AppAction>);
+    let progress = use_signal(|| None::<f64>);
     let is_loading = loading_action().is_some();
+    let progress_value = progress().unwrap_or(0.0).round() as u8;
+    let progress_action = loading_action().filter(|action| shows_progress(*action));
+    let toasts = use_toasts();
     let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || {
         if loading_action().is_none() {
             onclose.call(());
@@ -62,14 +65,16 @@ pub fn AppActionDialog(
                                         app.clone(),
                                         action,
                                         loading_action,
+                                        progress,
                                         action_runner,
-                                        onerror,
+                                        toasts,
                                         onclose,
                                     );
                                 }
                             },
                         }
                     }
+                    ActionStatus { action: progress_action, progress: progress_value }
                 }
                 CardFooter {
                     Button {
@@ -92,8 +97,9 @@ fn start_dialog_action(
     app: AppCardData,
     action: AppAction,
     mut loading_action: Signal<Option<AppAction>>,
-    mut action_runner: Action<(AppCardData, AppAction), ()>,
-    onerror: EventHandler<AppAction>,
+    mut progress: Signal<Option<f64>>,
+    mut action_runner: Action<(AppCardData, AppAction, Signal<Option<f64>>), bool>,
+    mut toasts: ToastContext,
     onclose: EventHandler<()>,
 ) {
     if loading_action().is_some() {
@@ -101,21 +107,54 @@ fn start_dialog_action(
     }
 
     loading_action.set(Some(action));
+    progress.set(if shows_progress(action) {
+        Some(0.0)
+    } else {
+        None
+    });
     action_runner.reset();
 
     spawn(async move {
-        action_runner.call(app, action).await;
+        action_runner.call(app, action, progress).await;
         let result = action_runner
             .value()
             .unwrap_or_else(|| Err(std::io::Error::other("Action did not complete.").into()));
         loading_action.set(None);
+        progress.set(None);
 
-        if result.is_err() {
-            onerror.call(action);
+        match result {
+            Ok(downloaded) => {
+                if let Some(message) = success_message(action, downloaded()) {
+                    toasts.show(message, None);
+                }
+            }
+            Err(_) => toasts.show(error_message(action), ToastOptions::error()),
         }
 
         onclose.call(());
     });
+}
+
+#[component]
+fn ActionStatus(action: Option<AppAction>, progress: u8) -> Element {
+    rsx! {
+        div { class: "h-16 pt-2".to_string(),
+            if let Some(action) = action {
+                div { class: "rounded-2xl border border-yellow-300/30 bg-yellow-300/10 px-4 py-3".to_string(),
+                    div { class: "flex items-center justify-between gap-4 text-sm font-bold".to_string(),
+                        span { class: "truncate text-yellow-100".to_string(), "{progress_message(action)}" }
+                        span { class: "shrink-0 tabular-nums text-yellow-200".to_string(), "{progress}%" }
+                    }
+                    div { class: "mt-2 h-1.5 overflow-hidden rounded-full bg-background/70".to_string(),
+                        div {
+                            class: "h-full rounded-full bg-yellow-300 transition-[width] duration-300".to_string(),
+                            style: "width: {progress}%;",
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[component]
@@ -180,6 +219,29 @@ fn action_label(action: AppAction) -> &'static str {
         AppAction::CheckUpdate => "Check for Update",
         AppAction::Download => "Download",
     }
+}
+
+fn success_message(action: AppAction, downloaded: bool) -> Option<&'static str> {
+    match action {
+        AppAction::CheckUpdate if !downloaded => Some("Image is up to date."),
+        _ => None,
+    }
+}
+
+fn error_message(action: AppAction) -> String {
+    format!("{} failed. Try again.", action_label(action))
+}
+
+fn progress_message(action: AppAction) -> &'static str {
+    match action {
+        AppAction::CheckUpdate => "Updating image",
+        AppAction::Download => "Downloading image",
+        _ => "Working",
+    }
+}
+
+fn shows_progress(action: AppAction) -> bool {
+    matches!(action, AppAction::CheckUpdate | AppAction::Download)
 }
 
 fn action_tone(action: AppAction) -> &'static str {

@@ -14,14 +14,15 @@ pub(crate) async fn run_app_action(
     profile_id: String,
     app: AppCardData,
     action: AppAction,
+    on_progress: impl FnMut(f64),
 ) -> Result<bool, String> {
     match action {
         AppAction::Start => start_app(profile_id, &app, false).await,
         AppAction::Connect => connect_app(&profile_id, &app).await,
         AppAction::StartCoop => start_app(profile_id, &app, true).await,
         AppAction::Stop => stop_app(&profile_id, &app).await,
-        AppAction::CheckUpdate => pull_image(&app, true).await,
-        AppAction::Download => pull_image(&app, false).await,
+        AppAction::CheckUpdate => pull_image(&app, on_progress).await,
+        AppAction::Download => pull_image(&app, on_progress).await,
     }
 }
 
@@ -64,14 +65,14 @@ async fn start_app(
     Ok(true)
 }
 
-async fn pull_image(app: &AppCardData, _check_update: bool) -> Result<bool, String> {
+async fn pull_image(app: &AppCardData, on_progress: impl FnMut(f64)) -> Result<bool, String> {
     let image =
         docker_image(&app.source).ok_or_else(|| "This app has no Docker image.".to_string())?;
 
     let api = ApiContext::consume();
     let downloaded = api
         .docker()
-        .pull_image(&image, |_| {})
+        .pull_image(&image, on_progress)
         .await
         .map_err(|error| error.to_string())?;
 

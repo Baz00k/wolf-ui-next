@@ -5,9 +5,7 @@ use tokio::time::sleep;
 use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::AppListResponse;
 
-use crate::components::primitives::{
-    Button, ButtonSize, StatusAlert, StatusAlertVariant, ToastOptions, use_toasts,
-};
+use crate::components::primitives::{Button, ButtonSize, StatusAlert, StatusAlertVariant};
 use crate::components::{
     AppAction, AppActionDialog, AppCardData, AppsContent, AppsHeader, AppsLoading,
 };
@@ -29,7 +27,6 @@ pub fn ProfileApps(profile_id: String) -> Element {
     let mut action_app = use_signal(|| None::<AppCardData>);
     let mut lobbies = use_signal(Vec::<Lobby>::new);
     let mut pending_focus_index = use_signal(|| None::<usize>);
-    let toasts = use_toasts();
 
     use_effect(move || {
         if let Some(index) = pending_focus_index() {
@@ -53,17 +50,20 @@ pub fn ProfileApps(profile_id: String) -> Element {
         async move { load_apps_state(profile_id).await }
     });
     let action_profile_id = profile_id.clone();
-    let action_runner = use_action(move |app: AppCardData, action: AppAction| {
-        let profile_id = action_profile_id.clone();
-        async move {
-            let result = run_app_action(profile_id, app, action)
+    let action_runner = use_action(
+        move |app: AppCardData, action: AppAction, mut progress: Signal<Option<f64>>| {
+            let profile_id = action_profile_id.clone();
+            async move {
+                let result = run_app_action(profile_id, app, action, move |value| {
+                    progress.set(Some(value));
+                })
                 .await
-                .map(|_| ())
                 .map_err(std::io::Error::other);
-            apps.restart();
-            result
-        }
-    });
+                apps.restart();
+                result
+            }
+        },
+    );
 
     use_effect(move || {
         if let Some(Ok(state)) = &*apps.read() {
@@ -145,28 +145,10 @@ pub fn ProfileApps(profile_id: String) -> Element {
                     actions: app_actions(&app),
                     app: app.clone(),
                     action_runner,
-                    onerror: move |action| {
-                        let mut toasts = toasts;
-                        toasts.show(
-                            format!("{} failed. Try again.", action_label(action)),
-                            ToastOptions::error(),
-                        );
-                    },
                     onclose: move |_| close_modal(action_app, selected_index()),
                 }
             }
         }
-    }
-}
-
-fn action_label(action: AppAction) -> &'static str {
-    match action {
-        AppAction::Start => "Start",
-        AppAction::Connect => "Connect",
-        AppAction::StartCoop => "Start Co-op",
-        AppAction::Stop => "Stop",
-        AppAction::CheckUpdate => "Check for update",
-        AppAction::Download => "Download",
     }
 }
 
