@@ -10,9 +10,7 @@ use crate::components::{
     AppAction, AppActionDialog, AppCardData, AppsContent, AppsHeader, AppsLoading,
 };
 use crate::domain::app_actions::run_app_action;
-use crate::domain::apps::{
-    AppFilter, app_actions, listen_for_lobby_events, load_apps_state, selected_app_data,
-};
+use crate::domain::apps::{AppFilter, app_actions, listen_for_lobby_events, load_apps_state};
 use crate::input::{ActionHint, UiAction, UiHint, action_hints, use_ui_action_hint};
 
 const ACTIVE_POLL_DELAY: Duration = Duration::from_secs(15);
@@ -40,7 +38,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
             "document.querySelector('#apps-filter button')?.focus({ preventScroll: true });",
         );
     });
-    let carousel_actions = action_hints([
+    let grid_actions = action_hints([
         ActionHint::new(UiHint::Navigate, "Navigate"),
         sort_focus_action,
     ]);
@@ -88,15 +86,15 @@ pub fn ProfileApps(profile_id: String) -> Element {
     });
 
     rsx! {
-        div { class: "h-full flex flex-col bg-background text-foreground p-8",
+        div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-6 text-foreground sm:px-8 sm:pt-8 lg:px-12 lg:pt-10",
             AppsHeader { filter, selected_index, pending_focus_index }
             section {
-                class: "relative grow flex flex-col justify-center",
+                class: "relative min-h-0 flex-1 pt-4 sm:pt-5 lg:pt-6",
                 div {
-                    class: "flex shrink items-center justify-center -mx-6 sm:-mx-10 lg:-mx-16",
+                    class: "h-full w-full",
                     "data-focus-scope": "true",
                     "data-focus-region": "main",
-                    "data-scope-actions": carousel_actions,
+                    "data-scope-actions": grid_actions,
                     match &*apps.read_unchecked() {
                         Some(Ok(state)) => rsx! {
                             AppsContent {
@@ -120,7 +118,6 @@ pub fn ProfileApps(profile_id: String) -> Element {
                                 variant: StatusAlertVariant::Error,
                                 Button {
                                     size: ButtonSize::Lg,
-                                    class: "rounded-full uppercase tracking-widest",
                                     onclick: move |_| apps.restart(),
                                     "Retry"
                                 }
@@ -128,16 +125,6 @@ pub fn ProfileApps(profile_id: String) -> Element {
                         },
                         None => rsx! { AppsLoading {} },
                     }
-                }
-                match &*apps.read_unchecked() {
-                    Some(Ok(state)) => rsx! {
-                        div { class: "pointer-events-none flex shrink-0 flex-col items-center justify-start p-4 text-center",
-                            if let Some(app) = selected_app_data(&profile_id, &state.apps, &lobbies(), &state.images, &state.covers, filter(), selected_index()) {
-                                h2 { class: "max-w-[80vw] truncate text-3xl font-black tracking-tight md:text-4xl xl:text-5xl 2xl:text-6xl p-1", "{app.title}" }
-                            }
-                        }
-                    },
-                    _ => rsx! {},
                 }
             }
             if let Some(app) = action_app() {
@@ -159,14 +146,14 @@ fn close_modal(mut action_app: Signal<Option<AppCardData>>, selected_index: usiz
 
 fn focus_app(index: usize) {
     let _ = document::eval(&format!(
-        "requestAnimationFrame(() => requestAnimationFrame(() => window.__wolfUiFocusSelector?.('[data-app-index=\\\"{}\\\"]', {{ inline: 'center' }})));",
+        "requestAnimationFrame(() => requestAnimationFrame(() => window.__wolfUiFocusSelector?.('[data-app-index=\\\"{}\\\"]', {{ inline: 'nearest' }})));",
         index
     ));
 }
 
 fn scroll_to_app(index: usize) {
     let _ = document::eval(&format!(
-        "window.__wolfUiScrollSelectorIntoHorizontalView?.('[data-app-index=\\\"{}\\\"]', {{ inline: 'center' }});",
+        "window.__wolfUiScrollSelectorIntoView?.('[data-app-index=\\\"{}\\\"]', {{ block: 'nearest', inline: 'nearest' }});",
         index
     ));
 }

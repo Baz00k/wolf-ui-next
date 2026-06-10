@@ -40,7 +40,6 @@ pub struct AppCardData {
 pub fn AppCard(
     app: AppCardData,
     index: usize,
-    selected: bool,
     autofocus: bool,
     onfocus: EventHandler<FocusEvent>,
     onclick: EventHandler<MouseEvent>,
@@ -51,16 +50,9 @@ pub fn AppCard(
     let is_unavailable = app.status.kind == AppStatusKind::MissingImage;
     let is_playing = app.status.kind == AppStatusKind::Playing;
 
-    let card_state_class = if selected {
-        "border-foreground text-card-foreground opacity-100 shadow-[0_2.5rem_4rem_oklch(0_0_0/0.55)] group-focus:ring-ring/25"
-    } else {
-        "border-border/70 text-muted-foreground opacity-70 shadow-black/30 group-focus:ring-ring/25"
-    };
-
     rsx! {
         button {
-            class: "group relative h-72 w-56 shrink-0 snap-center scroll-mx-10 border-0 p-0 text-left outline-none transition-transform duration-300 ease-out active:scale-95 md:h-80 md:w-64 lg:h-96 lg:w-72 xl:h-[28rem] xl:w-80 2xl:h-[34rem] 2xl:w-96",
-            class: if selected { "scale-100 hover:scale-105" } else { "scale-90 hover:scale-95" },
+            class: "group relative aspect-[3/4] w-full border-0 p-0 text-left outline-none transition-transform duration-300 ease-out hover:-translate-y-1 focus:-translate-y-1 active:scale-95",
             "data-focusable": "true",
             "data-app-index": "{index}",
             "data-actions": actions,
@@ -72,21 +64,29 @@ pub fn AppCard(
                     let _ = event.data().set_focus(true).await;
                 }
             },
-            Card { class: format!("relative h-full w-full overflow-visible transition-[transform,opacity,border-color,box-shadow,background-color] duration-300 ease-out group-focus:ring-4 {card_state_class}"),
-                div { class: "pointer-events-none absolute inset-x-4 top-4 z-10 flex items-center justify-between text-xs font-semibold uppercase tracking-widest text-muted-foreground md:inset-x-5 md:top-5 xl:inset-x-6 xl:top-6",
+            Card { class: "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-80 shadow-black/25 transition duration-300 ease-out group-focus:border-foreground group-focus:text-card-foreground group-focus:opacity-100 group-focus:shadow-[0_1.5rem_3rem_oklch(0_0_0/0.5)] group-focus:ring-4 group-focus:ring-ring/25".to_string(),
+                div { class: "pointer-events-none absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground md:inset-x-5 md:top-5 xl:inset-x-6 xl:top-6",
                     if show_runner {
                         span { "{app.runner}" }
                     } else {
                         span {}
                     }
-                    if app.supports_hdr {
-                        span { class: "rounded-full border border-yellow-400/30 bg-yellow-400/10 px-2 py-1 text-yellow-300", "HDR" }
+                    div { class: "flex flex-col items-end gap-2",
+                        if app.supports_hdr {
+                            span { class: "rounded-full border border-yellow-400/30 bg-yellow-400/10 px-2 py-1 text-yellow-300", "HDR" }
+                        }
+                        if is_unavailable {
+                            StatusBadge { label: "Not installed" }
+                        }
+                        if is_playing {
+                            StatusBadge { label: "Playing", pulse: true }
+                        }
                     }
                 }
                 div { class: "relative flex h-full items-center justify-center overflow-hidden rounded-4xl",
                     if let Some(cover_src) = app.cover_src.as_ref() {
                         img {
-                            class: "absolute inset-0 h-full w-full rounded-4xl object-cover transition-[filter] duration-300",
+                            class: "absolute inset-0 h-full w-full rounded-4xl object-cover transition duration-300",
                             class: if is_unavailable { "grayscale brightness-40" },
                             src: cover_src.clone(),
                             alt: "{app.title}",
@@ -97,18 +97,17 @@ pub fn AppCard(
                         div { class: "flex h-20 w-20 items-center justify-center rounded-3xl border border-border/70 bg-background/70 text-muted-foreground shadow-inner transition duration-300 md:h-24 md:w-24 lg:h-28 lg:w-28 xl:h-32 xl:w-32 2xl:h-36 2xl:w-36",
                             Icon {
                                 icon: HiCube,
-                                class: "h-10 w-10 md:h-12 md:w-12 lg:h-14 lg:w-14 xl:h-16 xl:w-16 2xl:h-20 2xl:w-20",
+                                class: "w-24 h-24",
                                 width: None,
                                 height: None,
                                 title: Some("Application".to_string()),
                             }
                         }
                     }
-                    if is_unavailable {
-                        StatusBadge { label: "Not installed" }
-                    }
-                    if is_playing {
-                        StatusBadge { label: "Playing", pulse: true }
+                    div { class: "pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-6 pb-6 pt-8 lg:px-8",
+                        h2 { class: "overflow-hidden truncate line-clamp-2 text-3xl font-black leading-tight tracking-tight text-white",
+                            "{app.title}"
+                        }
                     }
                 }
             }
@@ -119,10 +118,12 @@ pub fn AppCard(
 #[component]
 fn StatusBadge(label: &'static str, #[props(default)] pulse: bool) -> Element {
     rsx! {
-        div { class: "pointer-events-none absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 backdrop-blur-sm md:bottom-5",
-            span {
-                class: "h-2 w-2 rounded-full",
-                class: if pulse { "animate-pulse bg-emerald-400 shadow-lg shadow-emerald-400/50" } else { "bg-muted-foreground" },
+        span { class: "inline-flex items-center gap-2 rounded-full bg-black/55 px-3 py-1.5 backdrop-blur-sm",
+            if pulse {
+                span {
+                    class: "h-2 w-2 rounded-full",
+                    class: "animate-pulse bg-emerald-400 shadow-lg shadow-emerald-400/50",
+                }
             }
             span { class: "text-xs font-semibold uppercase tracking-widest text-muted-foreground", "{label}" }
         }
@@ -132,10 +133,17 @@ fn StatusBadge(label: &'static str, #[props(default)] pulse: bool) -> Element {
 #[component]
 pub fn AppCardSkeleton() -> Element {
     rsx! {
-        article { class: "flex h-72 w-56 shrink-0 animate-pulse snap-center flex-col overflow-hidden rounded-4xl border border-border bg-card/60 opacity-70 shadow-2xl shadow-black/20 md:h-80 md:w-64 lg:h-96 lg:w-72 xl:h-[28rem] xl:w-80 2xl:h-[34rem] 2xl:w-96",
+        article { class: "flex aspect-[3/4] w-full animate-pulse flex-col overflow-hidden rounded-4xl border border-border bg-card/60 opacity-70 shadow-2xl shadow-black/20",
             div { class: "relative flex flex-1 items-center justify-center rounded-4xl",
                 Skeleton { class: "absolute inset-0 rounded-4xl" }
+                div { class: "absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 md:inset-x-5 md:top-5 xl:inset-x-6 xl:top-6",
+                    Skeleton { class: "h-5 w-16 rounded-full" }
+                    Skeleton { class: "h-7 w-28 rounded-full" }
+                }
                 Skeleton { class: "h-20 w-20 rounded-3xl md:h-24 md:w-24 lg:h-28 lg:w-28 xl:h-32 xl:w-32 2xl:h-36 2xl:w-36" }
+                div { class: "absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-6 pb-6 pt-8 lg:px-8",
+                    Skeleton { class: "h-9 w-3/5 rounded-full" }
+                }
             }
         }
     }

@@ -9,6 +9,7 @@ use crate::domain::image_loader::load_image_src;
 use crate::input::navigate_hint;
 
 const CARD_SKELETON_COUNT: usize = 3;
+const PROFILE_GRID_CLASS: &str = "mx-auto grid w-full max-w-[min(100%,calc(22rem*5+2rem*4))] grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),18rem))] justify-center gap-4 p-2 sm:grid-cols-[repeat(auto-fit,minmax(16rem,20rem))] sm:gap-5 sm:p-3 xl:grid-cols-[repeat(auto-fit,minmax(18rem,22rem))] xl:gap-6 lg:p-4 2xl:gap-8 2xl:p-5";
 
 #[component]
 pub fn Profiles() -> Element {
@@ -19,12 +20,12 @@ pub fn Profiles() -> Element {
     });
 
     rsx! {
-        div { class: "h-full",
+        div { class: "h-full min-h-0",
             section {
-                class: "relative flex h-full flex-col px-8 py-12 sm:px-12 lg:px-20",
+                class: "relative flex h-full min-h-0 flex-col px-6 pt-8 sm:px-10 sm:pt-10 lg:px-16 lg:pt-12",
                 ProfilesHeader {}
                 div {
-                    class: "-mx-8 flex flex-1 items-center justify-center py-10 sm:-mx-12 lg:-mx-20",
+                    class: "flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-pt-6 scroll-pb-6 scrollbar-hide sm:scroll-pt-8 sm:scroll-pb-8 lg:scroll-pt-10 lg:scroll-pb-10",
                     "data-focus-scope": "true",
                     "data-focus-region": "main",
                     "data-scope-actions": navigate_hint("Navigate"),
@@ -39,7 +40,6 @@ pub fn Profiles() -> Element {
                                 variant: StatusAlertVariant::Error,
                                 Button {
                                     size: ButtonSize::Lg,
-                                    class: "rounded-full uppercase tracking-[0.18em]",
                                     onclick: move |_| profiles.restart(),
                                     "Retry"
                                 }
@@ -60,8 +60,9 @@ fn ProfilesHeader() -> Element {
             class: "grid grid-cols-[1fr_auto_1fr] items-start gap-4 text-center",
             "data-focus-scope": "true",
             "data-focus-region": "top-bar",
+            "data-scope-actions": navigate_hint("Navigate"),
             div {}
-            h1 { class: "text-4xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl", "Who's playing?" }
+            h1 { class: "text-5xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl", "Who's playing?" }
             div { class: "justify-self-end", SessionShutdownControl {} }
         }
     }
@@ -70,12 +71,10 @@ fn ProfilesHeader() -> Element {
 #[component]
 fn ProfilesLoading() -> Element {
     rsx! {
-        div { class: "scrollbar-hide w-full overflow-x-auto",
-            div { class: "mx-auto flex w-max min-w-fit snap-x snap-mandatory gap-5 px-8 py-8 md:gap-6 md:px-12 xl:gap-7 xl:px-20 2xl:gap-10 2xl:px-28",
-                div { class: "flex min-w-[calc(100vw-4rem)] justify-center gap-5 md:min-w-[calc(100vw-6rem)] md:gap-6 xl:min-w-[calc(100vw-10rem)] xl:gap-7 2xl:min-w-[calc(100vw-14rem)] 2xl:gap-10",
-                    for _ in 0..CARD_SKELETON_COUNT {
-                        ProfileCardSkeleton {}
-                    }
+        div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-8 lg:py-10",
+            div { class: PROFILE_GRID_CLASS,
+                for _ in 0..CARD_SKELETON_COUNT {
+                    ProfileCardSkeleton {}
                 }
             }
         }
@@ -105,18 +104,16 @@ fn ProfilesContent(response: ProfileListResponse) -> Element {
     }
 
     rsx! {
-        div { class: "scrollbar-hide w-full overflow-x-auto",
+        div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-8 lg:py-10",
             div {
-                class: "mx-auto flex w-max min-w-fit snap-x snap-mandatory gap-5 px-8 py-8 md:gap-6 md:px-12 xl:gap-7 xl:px-20 2xl:gap-10 2xl:px-28",
+                class: PROFILE_GRID_CLASS,
                 role: "list",
                 aria_label: "Profiles",
-                div { class: "flex min-w-[calc(100vw-4rem)] justify-center gap-5 md:min-w-[calc(100vw-6rem)] md:gap-6 xl:min-w-[calc(100vw-10rem)] xl:gap-7 2xl:min-w-[calc(100vw-14rem)] 2xl:gap-10",
-                    for (index, profile) in response.profiles.iter().cloned().enumerate() {
-                        div { class: "snap-center", role: "listitem",
-                            ProfileCardLoader {
-                                profile,
-                                autofocus: index == 0,
-                            }
+                for (index, profile) in response.profiles.iter().cloned().enumerate() {
+                    div { role: "listitem",
+                        ProfileCardLoader {
+                            profile,
+                            autofocus: index == 0,
                         }
                     }
                 }

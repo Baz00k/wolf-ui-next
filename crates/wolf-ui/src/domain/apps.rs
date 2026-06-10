@@ -74,20 +74,6 @@ pub(crate) fn sorted_apps(
     apps
 }
 
-pub(crate) fn selected_app_data(
-    profile_id: &str,
-    apps: &[App],
-    lobbies: &[Lobby],
-    images: &HashMap<String, bool>,
-    covers: &HashMap<String, String>,
-    filter: AppFilter,
-    index: usize,
-) -> Option<AppCardData> {
-    sorted_apps(profile_id, apps.to_vec(), lobbies, images, covers, filter)
-        .into_iter()
-        .nth(index)
-}
-
 pub(crate) fn app_actions(app: &AppCardData) -> Vec<AppAction> {
     if app.status.kind == AppStatusKind::MissingImage {
         return vec![AppAction::Download];
@@ -308,15 +294,16 @@ mod tests {
     fn unavailable_apps_only_offer_download_action() {
         let apps = vec![docker_app("steam", "Steam", "steam", "ghcr.io/wolf/steam")];
         let images = HashMap::from([("ghcr.io/wolf/steam".to_string(), false)]);
-        let app = selected_app_data(
+        let app = sorted_apps(
             "profile-1",
-            &apps,
+            apps,
             &[],
             &images,
             &HashMap::new(),
             AppFilter::Default,
-            0,
         )
+        .into_iter()
+        .next()
         .expect("app is present");
 
         assert!(matches!(app.status.kind, AppStatusKind::MissingImage));

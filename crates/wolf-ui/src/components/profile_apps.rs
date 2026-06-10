@@ -11,11 +11,10 @@ use crate::components::{AppCard, AppCardData, AppCardSkeleton, SessionShutdownCo
 use crate::domain::apps::{AppFilter, filter_label, sorted_apps};
 use crate::input::navigate_hint;
 
-pub const APP_CAROUSEL_CLASS: &str =
-    "w-full snap-x snap-mandatory overflow-x-auto overflow-y-visible scrollbar-hide";
-pub const APP_CAROUSEL_TRACK_CLASS: &str = "mx-auto flex min-w-max items-center gap-5 px-[calc(50vw-7rem)] py-16 md:px-[calc(50vw-8rem)] lg:gap-6 lg:px-[calc(50vw-9rem)] xl:gap-7 xl:px-[calc(50vw-10rem)] 2xl:px-[calc(50vw-12rem)]";
+pub const APP_GRID_VIEWPORT_CLASS: &str = "h-full w-full overflow-y-auto overflow-x-hidden scroll-pt-4 scroll-pb-4 scrollbar-hide sm:scroll-pt-5 sm:scroll-pb-5 lg:scroll-pt-6 lg:scroll-pb-6";
+pub const APP_GRID_CLASS: &str = "mx-auto grid w-full max-w-[min(100%,calc(22rem*6+2rem*5))] grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),18rem))] justify-center gap-4 p-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem,20rem))] sm:gap-5 sm:p-3 xl:grid-cols-[repeat(auto-fill,minmax(18rem,22rem))] xl:gap-6 lg:p-4 2xl:gap-8 2xl:p-5";
 
-const LOADING_CARD_COUNT: usize = 5;
+const LOADING_CARD_COUNT: usize = 8;
 
 #[component]
 pub fn AppsHeader(
@@ -31,7 +30,7 @@ pub fn AppsHeader(
             "data-focus-region": "top-bar",
             "data-scope-actions": navigate_hint("Navigate"),
             div { class: "min-w-0",
-                h1 { class: "text-2xl font-bold tracking-tight sm:text-4xl lg:text-5xl", "Applications" }
+                h1 { class: "text-4xl font-bold tracking-tight lg:text-5xl", "Applications" }
             }
             div { class: "flex min-w-0 items-center justify-end gap-3 sm:gap-4",
                 AppsFilter { filter, selected_index, pending_focus_index }
@@ -50,7 +49,7 @@ fn AppsFilter(
     rsx! {
         div {
             id: "apps-filter",
-            class: "rounded-full border border-border bg-card/70 p-1 font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground shadow-lg shadow-black/20",
+            class: "rounded-lg flex gap-1 border border-border bg-card/70 p-1 font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground shadow-lg shadow-black/20",
             for item in [AppFilter::Default, AppFilter::Available, AppFilter::Alphabetical] {
                 FilterButton {
                     active: filter() == item,
@@ -69,9 +68,9 @@ fn AppsFilter(
 #[component]
 fn FilterButton(active: bool, label: String, onclick: EventHandler<MouseEvent>) -> Element {
     let class = if active {
-        "rounded-full px-3 py-2 font-mono text-xs font-semibold uppercase tracking-widest"
+        "px-3 py-2 font-mono text-xs font-semibold uppercase tracking-widest"
     } else {
-        "rounded-full px-3 py-2 font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground"
+        "px-3 py-2 font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground"
     };
 
     rsx! {
@@ -90,14 +89,13 @@ fn FilterButton(active: bool, label: String, onclick: EventHandler<MouseEvent>) 
 #[component]
 pub fn AppsLoading() -> Element {
     rsx! {
-        div { class: APP_CAROUSEL_CLASS,
-            div { class: APP_CAROUSEL_TRACK_CLASS,
+        div { class: APP_GRID_VIEWPORT_CLASS,
+            div { class: APP_GRID_CLASS,
                 for _ in 0..LOADING_CARD_COUNT {
                     AppCardSkeleton {}
                 }
             }
         }
-        LoadingAppMeta {}
     }
 }
 
@@ -114,10 +112,13 @@ pub fn AppsContent(
 ) -> Element {
     if !response.success {
         return rsx! {
-            StatusAlert {
-                title: Some("Apps unavailable".to_string()),
-                message: "Wolf returned an unsuccessful app response. Try again once the service is ready.".to_string(),
-                variant: StatusAlertVariant::Error,
+            div {
+                class: "flex justify-center items-center h-full",
+                StatusAlert {
+                    title: Some("Apps unavailable".to_string()),
+                    message: "Wolf returned an unsuccessful app response. Try again once the service is ready.".to_string(),
+                    variant: StatusAlertVariant::Error,
+                }
             }
         };
     }
@@ -132,10 +133,13 @@ pub fn AppsContent(
     );
     if apps.is_empty() {
         return rsx! {
-            StatusAlert {
-                title: Some("No apps found".to_string()),
-                message: "Add apps to this Wolf profile before launching a Moonlight session.".to_string(),
-                variant: StatusAlertVariant::Info,
+            div {
+                class: "flex justify-center items-center h-full",
+                StatusAlert {
+                    title: Some("No apps found".to_string()),
+                    message: "Add apps to this Wolf profile before launching a Moonlight session.".to_string(),
+                    variant: StatusAlertVariant::Info,
+                }
             }
         };
     }
@@ -145,9 +149,9 @@ pub fn AppsContent(
     }
 
     rsx! {
-        div { class: APP_CAROUSEL_CLASS,
+        div { class: APP_GRID_VIEWPORT_CLASS,
             div {
-                class: APP_CAROUSEL_TRACK_CLASS,
+                class: APP_GRID_CLASS,
                 role: "list",
                 aria_label: "Applications",
                 for (index, app) in apps.iter().cloned().enumerate() {
@@ -155,7 +159,6 @@ pub fn AppsContent(
                         AppCard {
                             app: app.clone(),
                             index,
-                            selected: selected_index() == index,
                             autofocus: index == 0,
                             onfocus: move |_| selected_index.set(index),
                             onclick: move |_| {
@@ -166,16 +169,6 @@ pub fn AppsContent(
                     }
                 }
             }
-        }
-    }
-}
-
-#[component]
-fn LoadingAppMeta() -> Element {
-    rsx! {
-        div { class: "pointer-events-none flex h-28 shrink-0 flex-col items-center justify-center gap-3 px-6 text-center",
-            div { class: "h-9 w-48 animate-pulse rounded-full bg-muted sm:h-10 sm:w-56 lg:h-11 lg:w-64" }
-            div { class: "h-8 w-36 animate-pulse rounded-full border border-border bg-card/70" }
         }
     }
 }

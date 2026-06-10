@@ -23,7 +23,7 @@ pub fn AppLayout() -> Element {
     rsx! {
         main { class: "grid h-screen w-screen overflow-x-hidden grid-rows-[minmax(0,1fr)_auto]",
             div {
-                class: "h-full w-full overflow-x-hidden overflow-y-auto scrollbar-hide",
+                class: "mx-auto h-full w-full max-w-[min(100vw,256rem)] overflow-hidden",
                 "data-focus-root": "true",
                 "data-scope-actions": global_actions,
                 Outlet::<Route> {}
