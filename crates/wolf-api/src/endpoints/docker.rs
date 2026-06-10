@@ -74,9 +74,7 @@ where
 {
     let mut response = response.bytes_stream();
     let mut buffer = String::new();
-    let mut layers = Vec::<LayerProgress>::new();
-    let mut last_current = 0;
-    let mut unpacking = false;
+    let mut progress = PullProgressState::default();
     let mut downloaded = false;
 
     on_progress(0.0);
@@ -106,24 +104,11 @@ where
             };
 
             downloaded = true;
-            upsert_layer(&mut layers, layer_id, event.current_progress, event.total);
-            let current = layers.iter().map(|layer| layer.current).sum::<i64>();
-            let total = layers.iter().map(|layer| layer.total).sum::<i64>();
-            if total <= 500 {
-                continue;
+            if let Some(progress) =
+                progress.update_layer(layer_id, event.current_progress, event.total)
+            {
+                on_progress(progress);
             }
-
-            if last_current > 0 && last_current > current + last_current * 3 / 10 {
-                unpacking = true;
-            }
-            last_current = current;
-
-            let progress = if unpacking {
-                50.0 + (current as f64 * 50.0 / total as f64)
-            } else {
-                current as f64 * 50.0 / total as f64
-            };
-            on_progress(progress.clamp(0.0, 99.0));
         }
     }
 
@@ -149,11 +134,79 @@ struct LayerProgress {
     total: i64,
 }
 
+#[derive(Default)]
+struct PullProgressState {
+    layers: Vec<LayerProgress>,
+    last_current: i64,
+    last_progress: f64,
+    unpacking: bool,
+}
+
+impl PullProgressState {
+    fn update_layer(&mut self, layer_id: String, current_progress: i64, total: i64) -> Option<f64> {
+        upsert_layer(&mut self.layers, layer_id, current_progress, total);
+        let current = self.layers.iter().map(|layer| layer.current).sum::<i64>();
+        let total = self.layers.iter().map(|layer| layer.total).sum::<i64>();
+        if total <= 500 {
+            return None;
+        }
+
+        if self.last_current > 0 && self.last_current > current + self.last_current * 3 / 10 {
+            self.unpacking = true;
+        }
+        self.last_current = current;
+
+        let progress = if self.unpacking {
+            50.0 + (current as f64 * 50.0 / total as f64)
+        } else {
+            current as f64 * 50.0 / total as f64
+        };
+        self.last_progress = self.last_progress.max(progress.clamp(0.0, 99.0));
+        Some(self.last_progress)
+    }
+}
+
 fn upsert_layer(layers: &mut Vec<LayerProgress>, id: String, current: i64, total: i64) {
     if let Some(layer) = layers.iter_mut().find(|layer| layer.id == id) {
         layer.current = current;
         layer.total = total;
     } else {
         layers.push(LayerProgress { id, current, total });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::PullProgressState;
+
+    #[test]
+    fn progress_does_not_decrease_when_layer_current_regresses() {
+        let mut progress = PullProgressState::default();
+
+        let first = progress.update_layer("layer-a".to_string(), 800, 1000);
+        let second = progress.update_layer("layer-a".to_string(), 700, 1000);
+
+        assert_eq!(first, Some(40.0));
+        assert_eq!(second, first);
+    }
+
+    #[test]
+    fn progress_does_not_decrease_when_new_layer_changes_total() {
+        let mut progress = PullProgressState::default();
+
+        let first = progress.update_layer("layer-a".to_string(), 1000, 1000);
+        let second = progress.update_layer("layer-b".to_string(), 10, 1000);
+
+        assert_eq!(first, Some(50.0));
+        assert_eq!(second, first);
+    }
+
+    #[test]
+    fn progress_never_reaches_complete_before_success_event() {
+        let mut progress = PullProgressState::default();
+
+        let value = progress.update_layer("layer-a".to_string(), 2000, 1000);
+
+        assert_eq!(value, Some(99.0));
     }
 }
