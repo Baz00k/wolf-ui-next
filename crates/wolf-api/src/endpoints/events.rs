@@ -6,6 +6,8 @@ use crate::{ApiError, WolfApi, types};
 #[derive(Clone, Debug, PartialEq)]
 pub enum WolfEvent {
     LobbyCreated(Box<types::RflReflectorWolfCoreEventsLobbyReflType>),
+    LobbyJoined(types::WolfCoreEventsJoinLobbyEvent),
+    LobbyLeft(types::WolfCoreEventsLeaveLobbyEvent),
     LobbyStopped(String),
     Other(String),
 }
@@ -90,6 +92,8 @@ fn parse_event(event: String, data: String) -> Result<WolfEvent, ApiError> {
         "wolf::core::events::CreateLobbyEvent" => {
             parse_json(&data).map(|event| WolfEvent::LobbyCreated(Box::new(event)))
         }
+        "wolf::core::events::JoinLobbyEvent" => parse_json(&data).map(WolfEvent::LobbyJoined),
+        "wolf::core::events::LeaveLobbyEvent" => parse_json(&data).map(WolfEvent::LobbyLeft),
         "wolf::core::events::StopLobbyEvent" => {
             parse_json::<types::WolfCoreEventsStopLobbyEvent>(&data)
                 .map(|event| WolfEvent::LobbyStopped(event.lobby_id))

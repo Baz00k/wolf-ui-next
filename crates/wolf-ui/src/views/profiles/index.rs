@@ -1,22 +1,45 @@
 use dioxus::prelude::*;
-use wolf_api::profiles::{Profile, ProfileListResponse};
+use wolf_api::lobbies::Lobby;
 
-use crate::Route;
-use crate::api::ApiContext;
 use crate::components::primitives::{Button, ButtonSize, StatusAlert, StatusAlertVariant};
-use crate::components::{ProfileCard, ProfileCardSkeleton, SessionShutdownControl};
-use crate::domain::image_loader::load_image_src;
+use crate::components::{
+    LobbyActionDialog, ProfilesContent, ProfilesLoading, SessionShutdownControl,
+};
+use crate::domain::app_actions::{join_lobby, stop_lobby};
+use crate::domain::profiles::{listen_for_lobby_events, load_profiles_state};
 use crate::input::navigate_hint;
-
-const CARD_SKELETON_COUNT: usize = 3;
-const PROFILE_GRID_CLASS: &str = "mx-auto grid w-full max-w-[min(100%,calc(22rem*5+2rem*4))] grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),18rem))] justify-center gap-4 p-2 sm:grid-cols-[repeat(auto-fit,minmax(16rem,20rem))] sm:gap-5 sm:p-3 xl:grid-cols-[repeat(auto-fit,minmax(18rem,22rem))] xl:gap-6 lg:p-4 2xl:gap-8 2xl:p-5";
 
 #[component]
 pub fn Profiles() -> Element {
-    let mut profiles = use_resource(move || async move {
-        ApiContext::consume().profiles().list().await.map_err(|_| {
-            "Profiles could not be loaded. Check that Wolf is running, then try again.".to_string()
-        })
+    let mut lobbies = use_signal(Vec::<Lobby>::new);
+    let mut action_lobby = use_signal(|| None::<Lobby>);
+    let mut pending_focus_lobby_id = use_signal(|| None::<String>);
+    let mut profiles = use_resource(move || async move { load_profiles_state().await });
+    let join_runner = use_action(move |lobby_id: String| async move {
+        join_lobby(lobby_id).await.map_err(std::io::Error::other)
+    });
+    let stop_runner = use_action(move |lobby_id: String| async move {
+        stop_lobby(lobby_id).await.map_err(std::io::Error::other)
+    });
+
+    use_effect(move || {
+        if let Some(Ok(state)) = &*profiles.read() {
+            lobbies.set(state.lobbies.clone());
+        }
+    });
+
+    use_effect(move || {
+        spawn(async move {
+            listen_for_lobby_events(lobbies).await;
+        });
+    });
+
+    use_effect(move || {
+        if action_lobby().is_none()
+            && let Some(lobby_id) = pending_focus_lobby_id.write().take()
+        {
+            focus_lobby_card(&lobby_id);
+        }
     });
 
     rsx! {
@@ -30,8 +53,15 @@ pub fn Profiles() -> Element {
                     "data-focus-region": "main",
                     "data-scope-actions": navigate_hint("Navigate"),
                     match &*profiles.read_unchecked() {
-                        Some(Ok(response)) => rsx! {
-                            ProfilesContent { response: response.clone() }
+                        Some(Ok(state)) => rsx! {
+                            ProfilesContent {
+                                state: state.clone(),
+                                lobbies: lobbies(),
+                                on_lobby_click: move |lobby: Lobby| {
+                                    pending_focus_lobby_id.set(Some(lobby.id.clone()));
+                                    action_lobby.set(Some(lobby));
+                                },
+                            }
                         },
                         Some(Err(message)) => rsx! {
                             StatusAlert {
@@ -49,8 +79,32 @@ pub fn Profiles() -> Element {
                     }
                 }
             }
+            if let Some(lobby) = action_lobby() {
+                LobbyActionDialog {
+                    lobby,
+                    join_runner,
+                    stop_runner,
+                    onstopped: move |lobby_id: String| {
+                        lobbies.with_mut(|items| items.retain(|item| item.id != lobby_id));
+                    },
+                    onclose: move |_| action_lobby.set(None),
+                }
+            }
         }
     }
+}
+
+fn focus_lobby_card(lobby_id: &str) {
+    let selector = format!("[data-lobby-id=\"{}\"]", escape_css_attribute(lobby_id));
+    let selector = serde_json::to_string(&selector).unwrap_or_else(|_| "\"\"".to_string());
+    let _ = document::eval(&format!(
+        "requestAnimationFrame(() => requestAnimationFrame(() => window.__wolfUiFocusSelector?.({}, {{ inline: 'nearest' }}) || window.__wolfUiEnsureFocusableActiveElement?.()));",
+        selector
+    ));
+}
+
+fn escape_css_attribute(value: &str) -> String {
+    value.replace('\\', "\\\\").replace('"', "\\\"")
 }
 
 #[component]
@@ -65,90 +119,5 @@ fn ProfilesHeader() -> Element {
             h1 { class: "text-5xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl", "Who's playing?" }
             div { class: "justify-self-end", SessionShutdownControl {} }
         }
-    }
-}
-
-#[component]
-fn ProfilesLoading() -> Element {
-    rsx! {
-        div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-8 lg:py-10",
-            div { class: PROFILE_GRID_CLASS,
-                for _ in 0..CARD_SKELETON_COUNT {
-                    ProfileCardSkeleton {}
-                }
-            }
-        }
-    }
-}
-
-#[component]
-fn ProfilesContent(response: ProfileListResponse) -> Element {
-    if !response.success {
-        return rsx! {
-            StatusAlert {
-                title: Some("Profiles unavailable".to_string()),
-                message: "Wolf returned an unsuccessful profiles response. Try again once the service is ready.".to_string(),
-                variant: StatusAlertVariant::Error,
-            }
-        };
-    }
-
-    if response.profiles.is_empty() {
-        return rsx! {
-            StatusAlert {
-                title: Some("No profiles found".to_string()),
-                message: "Create a Wolf profile before launching a Moonlight session.".to_string(),
-                variant: StatusAlertVariant::Info,
-            }
-        };
-    }
-
-    rsx! {
-        div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-8 lg:py-10",
-            div {
-                class: PROFILE_GRID_CLASS,
-                role: "list",
-                aria_label: "Profiles",
-                for (index, profile) in response.profiles.iter().cloned().enumerate() {
-                    div { role: "listitem",
-                        ProfileCardLoader {
-                            profile,
-                            autofocus: index == 0,
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-#[component]
-fn ProfileCardLoader(profile: Profile, autofocus: bool) -> Element {
-    let profile_id = profile.id.clone();
-    let icon_path = profile.icon_png_path.trim().to_string();
-    let avatar = use_resource(move || {
-        let icon_path = icon_path.clone();
-
-        async move { load_image_src(&ApiContext::consume(), &icon_path).await }
-    });
-
-    let mut profile = profile_card_data(profile);
-    profile.avatar_src = avatar.read().clone().flatten();
-
-    rsx! {
-        ProfileCard {
-            profile,
-            autofocus,
-            to: Route::ProfileApps { profile_id }.to_string(),
-        }
-    }
-}
-
-fn profile_card_data(profile: Profile) -> crate::components::profile_card::ProfileCardData {
-    crate::components::profile_card::ProfileCardData {
-        id: profile.id,
-        name: profile.name,
-        avatar_src: None,
-        is_pin_locked: profile.pin.is_some(),
     }
 }

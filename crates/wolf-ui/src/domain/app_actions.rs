@@ -49,7 +49,14 @@ async fn start_app(
     let lobby_id = match lobby_id {
         Some(lobby_id) => lobby_id,
         None => {
-            let lobby = build_lobby(profile_id, app, &session, multi_user);
+            let lobby_name = if multi_user {
+                creator_lobby_name(&api, &profile_id)
+                    .await
+                    .unwrap_or_else(|_| app.title.clone())
+            } else {
+                app.title.clone()
+            };
+            let lobby = build_lobby(profile_id, app, &session, multi_user, lobby_name);
             api.lobbies()
                 .create(&lobby)
                 .await
@@ -60,6 +67,25 @@ async fn start_app(
 
     api.lobbies()
         .join(lobby_id, session_id, None)
+        .await
+        .map_err(|error| error.to_string())?;
+    Ok(true)
+}
+
+pub(crate) async fn join_lobby(lobby_id: String) -> Result<bool, String> {
+    let api = ApiContext::consume();
+    let session_id = current_session_id()?;
+    api.lobbies()
+        .join(lobby_id, session_id, None)
+        .await
+        .map_err(|error| error.to_string())?;
+    Ok(true)
+}
+
+pub(crate) async fn stop_lobby(lobby_id: String) -> Result<bool, String> {
+    ApiContext::consume()
+        .lobbies()
+        .stop(lobby_id, None)
         .await
         .map_err(|error| error.to_string())?;
     Ok(true)
@@ -134,6 +160,7 @@ fn build_lobby(
     app: &AppCardData,
     session: &wolf_api::sessions::Session,
     multi_user: bool,
+    name: String,
 ) -> WolfApiCreateLobbyRequest {
     let runner_name = match &app.source.runner {
         RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(runner) => {
@@ -152,7 +179,7 @@ fn build_lobby(
             .map(partial_client_settings),
         icon_png_path: app.source.icon_png_path.clone(),
         multi_user,
-        name: app.title.clone(),
+        name,
         pin: None,
         profile_id: profile_id.clone(),
         runner: create_lobby_runner(&app.source.runner),
@@ -167,6 +194,20 @@ fn build_lobby(
             width: session.video_width,
         },
     }
+}
+
+async fn creator_lobby_name(api: &wolf_api::WolfApi, profile_id: &str) -> Result<String, String> {
+    let profile = api
+        .profiles()
+        .list()
+        .await
+        .map_err(|error| error.to_string())?
+        .profiles
+        .into_iter()
+        .find(|profile| profile.id == profile_id)
+        .ok_or_else(|| "Profile not found.".to_string())?;
+
+    Ok(format!("{}'s lobby", profile.name))
 }
 
 fn create_lobby_runner(
