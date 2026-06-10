@@ -79,8 +79,8 @@ pub fn AppActionDialog(
                 CardFooter {
                     Button {
                         variant: ButtonVariant::Ghost,
-                        size: ButtonSize::Lg,
-                        class: "h-14 w-full rounded-2xl text-base text-muted-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
+                        size: ButtonSize::Xl,
+                        class: "w-full text-muted-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
                         action_label: "Cancel".to_string(),
                         disabled: is_loading,
                         onclick: move |_| onclose.call(()),
@@ -140,7 +140,7 @@ fn ActionStatus(action: Option<AppAction>, progress: u8) -> Element {
     rsx! {
         div { class: "h-16 pt-2".to_string(),
             if let Some(action) = action {
-                div { class: "rounded-2xl border border-yellow-300/30 bg-yellow-300/10 px-4 py-3".to_string(),
+                div { class: "border rounded-xl border-yellow-300/30 bg-yellow-300/10 px-4 py-3".to_string(),
                     div { class: "flex items-center justify-between gap-4 text-sm font-bold".to_string(),
                         span { class: "truncate text-yellow-100".to_string(), "{progress_message(action)}" }
                         span { class: "shrink-0 tabular-nums text-yellow-200".to_string(), "{progress}%" }
@@ -170,8 +170,8 @@ fn ActionRow(
     rsx! {
         Button {
             variant: ButtonVariant::Ghost,
-            size: ButtonSize::Lg,
-            class: "h-16 w-full justify-start rounded-2xl border border-transparent px-5 text-left text-lg font-bold hover:border-foreground/30 focus:border-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
+            size: ButtonSize::Xl,
+            class: "w-full justify-start border border-transparent text-left hover:border-foreground/30 focus:border-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
             action_label: label.clone(),
             autofocus,
             disabled,

@@ -18,7 +18,7 @@ pub fn SessionShutdownControl() -> Element {
         Button {
             variant: ButtonVariant::Ghost,
             size: ButtonSize::Icon,
-            class: "h-11 w-11 rounded-full border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur transition hover:border-destructive/60 hover:bg-destructive/15 hover:text-destructive-foreground focus:border-destructive/70 focus:bg-destructive/15 focus:text-destructive-foreground sm:h-12 sm:w-12".to_string(),
+            class: "border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur transition hover:border-destructive/60 hover:bg-destructive/15 hover:text-destructive-foreground focus:border-destructive/70 focus:bg-destructive/15 focus:text-destructive-foreground sm:h-12 sm:w-12".to_string(),
             action_label: "End session".to_string(),
             disabled: stop_session.pending(),
             onclick: move |_| dialog_open.set(true),
@@ -70,7 +70,7 @@ fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandle
                     Button {
                         variant: ButtonVariant::Ghost,
                         size: ButtonSize::Lg,
-                        class: "h-14 rounded-2xl text-base text-muted-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
+                        class: "h-14 rounded-2xl text-muted-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
                         action_label: "Cancel".to_string(),
                         disabled: pending,
                         onclick: move |_| oncancel.call(()),
@@ -79,7 +79,7 @@ fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandle
                     Button {
                         variant: ButtonVariant::Destructive,
                         size: ButtonSize::Lg,
-                        class: "h-14 rounded-2xl text-base font-bold".to_string(),
+                        class: "h-14 rounded-2xl".to_string(),
                         action_label: confirm_label.to_string(),
                         autofocus: true,
                         disabled: pending,

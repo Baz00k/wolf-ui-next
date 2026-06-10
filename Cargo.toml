@@ -39,5 +39,6 @@ serde_json = "1"
 tokio = { version = "1", features = ["time"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tw_merge = "0.1.21"
 
 wolf-api = { path = "crates/wolf-api" }

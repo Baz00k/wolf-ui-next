@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use tw_merge::tw_merge;
 
 use crate::input::{UiAction, native_action};
 
@@ -18,6 +19,7 @@ pub enum ButtonSize {
     Default,
     Sm,
     Lg,
+    Xl,
     Icon,
 }
 
@@ -47,13 +49,20 @@ pub fn Button(
         ButtonSize::Default => "h-10 px-4 py-2",
         ButtonSize::Sm => "h-9 rounded-md px-3",
         ButtonSize::Lg => "h-11 rounded-xl px-8",
+        ButtonSize::Xl => "h-14 rounded-xl px-8",
         ButtonSize::Icon => "h-10 w-10",
     };
     let actions = native_action(UiAction::Accept, action_label);
+    let class = tw_merge!(
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium outline-none transition-colors focus:ring-2 focus:ring-ring/50 disabled:pointer-events-none disabled:opacity-50",
+        variant_class,
+        size_class,
+        class,
+    );
 
     rsx! {
         button {
-            class: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium outline-none transition-colors focus:ring-2 focus:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 {variant_class} {size_class} {class}",
+            class,
             "data-focusable": "true",
             "data-actions": actions,
             disabled,

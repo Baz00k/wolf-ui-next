@@ -87,8 +87,8 @@ pub fn LobbyActionDialog(
                 CardFooter {
                     Button {
                         variant: ButtonVariant::Ghost,
-                        size: ButtonSize::Lg,
-                        class: "h-14 w-full rounded-2xl text-base text-muted-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
+                        size: ButtonSize::Xl,
+                        class: "w-full text-muted-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
                         action_label: "Cancel".to_string(),
                         disabled: is_loading,
                         onclick: move |_| onclose.call(()),
@@ -165,8 +165,8 @@ fn LobbyActionRow(
     rsx! {
         Button {
             variant: ButtonVariant::Ghost,
-            size: ButtonSize::Lg,
-            class: "h-16 w-full justify-start rounded-2xl border border-transparent px-5 text-left text-lg font-bold hover:border-foreground/30 focus:border-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
+            size: ButtonSize::Xl,
+            class: "w-full justify-start border border-transparent text-left hover:border-foreground/30 focus:border-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
             action_label: label.clone(),
             autofocus,
             disabled,
