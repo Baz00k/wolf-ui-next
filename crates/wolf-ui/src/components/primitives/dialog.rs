@@ -9,7 +9,7 @@ pub fn Dialog(
 ) -> Element {
     rsx! {
         div {
-            class: "fixed inset-0 z-100 flex items-center justify-center px-5 backdrop-blur-sm backdrop-brightness-75 {class}",
+            class: "fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm px-5 {class}",
             role: "dialog",
             aria_modal: "true",
             aria_label: "{label}",
