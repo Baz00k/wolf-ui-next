@@ -132,16 +132,11 @@ pub fn ProfileApps(profile_id: String) -> Element {
                     actions: app_actions(&app),
                     app: app.clone(),
                     action_runner,
-                    onclose: move |_| close_modal(action_app, selected_index()),
+                    onclose: move |_| action_app.set(None),
                 }
             }
         }
     }
-}
-
-fn close_modal(mut action_app: Signal<Option<AppCardData>>, selected_index: usize) {
-    action_app.set(None);
-    focus_app(selected_index);
 }
 
 fn focus_app(index: usize) {

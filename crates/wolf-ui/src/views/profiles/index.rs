@@ -13,7 +13,6 @@ use crate::input::navigate_hint;
 pub fn Profiles() -> Element {
     let mut lobbies = use_signal(Vec::<Lobby>::new);
     let mut action_lobby = use_signal(|| None::<Lobby>);
-    let mut pending_focus_lobby_id = use_signal(|| None::<String>);
     let mut profiles = use_resource(move || async move { load_profiles_state().await });
     let join_runner = use_action(move |lobby_id: String| async move {
         join_lobby(lobby_id).await.map_err(std::io::Error::other)
@@ -34,14 +33,6 @@ pub fn Profiles() -> Element {
         });
     });
 
-    use_effect(move || {
-        if action_lobby().is_none()
-            && let Some(lobby_id) = pending_focus_lobby_id.write().take()
-        {
-            focus_lobby_card(&lobby_id);
-        }
-    });
-
     rsx! {
         div { class: "h-full min-h-0",
             section {
@@ -57,10 +48,7 @@ pub fn Profiles() -> Element {
                             ProfilesContent {
                                 state: state.clone(),
                                 lobbies: lobbies(),
-                                on_lobby_click: move |lobby: Lobby| {
-                                    pending_focus_lobby_id.set(Some(lobby.id.clone()));
-                                    action_lobby.set(Some(lobby));
-                                },
+                                on_lobby_click: move |lobby: Lobby| action_lobby.set(Some(lobby)),
                             }
                         },
                         Some(Err(message)) => rsx! {
@@ -92,19 +80,6 @@ pub fn Profiles() -> Element {
             }
         }
     }
-}
-
-fn focus_lobby_card(lobby_id: &str) {
-    let selector = format!("[data-lobby-id=\"{}\"]", escape_css_attribute(lobby_id));
-    let selector = serde_json::to_string(&selector).unwrap_or_else(|_| "\"\"".to_string());
-    let _ = document::eval(&format!(
-        "requestAnimationFrame(() => requestAnimationFrame(() => window.__wolfUiFocusSelector?.({}, {{ inline: 'nearest' }}) || window.__wolfUiEnsureFocusableActiveElement?.()));",
-        selector
-    ));
-}
-
-fn escape_css_attribute(value: &str) -> String {
-    value.replace('\\', "\\\\").replace('"', "\\\"")
 }
 
 #[component]

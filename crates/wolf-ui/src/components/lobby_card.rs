@@ -25,7 +25,6 @@ pub fn LobbyCard(
         button {
             class: "group relative flex aspect-[3/4] w-full text-center outline-none transition duration-200 ease-out hover:-translate-y-1 focus:-translate-y-1 active:scale-105",
             "data-focusable": "true",
-            "data-lobby-id": "{lobby.id}",
             "data-actions": actions,
             onclick: move |event| onclick.call(event),
             onmounted: move |event: MountedEvent| async move {
