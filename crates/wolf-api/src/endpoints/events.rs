@@ -1,15 +1,28 @@
 use futures_util::StreamExt;
 use serde::de::DeserializeOwned;
+use serde::Deserialize;
 
 use crate::{ApiError, WolfApi, types};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum WolfEvent {
     LobbyCreated(Box<types::RflReflectorWolfCoreEventsLobbyReflType>),
-    LobbyJoined(types::WolfCoreEventsJoinLobbyEvent),
-    LobbyLeft(types::WolfCoreEventsLeaveLobbyEvent),
+    LobbyJoined(types::WolfApiJoinLobbyRequest),
+    LobbyLeft(types::WolfApiLeaveLobbyRequest),
     LobbyStopped(String),
     Other(String),
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq)]
+struct CreateLobbyEvent {
+    id: String,
+    profile_id: String,
+    name: String,
+    icon_png_path: Option<String>,
+    pin: Option<Vec<i64>>,
+    multi_user: bool,
+    stop_when_everyone_leaves: bool,
+    runner: types::RflReflectorWolfCoreEventsLobbyReflTypeRunner,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -28,7 +41,7 @@ impl<'api> Events<'api> {
     {
         let path = "/api/v1/events";
         let context = self.api.request_context("GET", path);
-        let response = self.api.get_response(path).await?;
+        let response = self.api.get_stream_response(path).await?;
         let mut stream = response.bytes_stream();
         let mut parser = EventStreamParser::default();
         let mut buffer = String::new();
@@ -89,9 +102,10 @@ impl EventStreamParser {
 
 fn parse_event(event: String, data: String) -> Result<WolfEvent, ApiError> {
     match event.as_str() {
-        "wolf::core::events::CreateLobbyEvent" => {
-            parse_json(&data).map(|event| WolfEvent::LobbyCreated(Box::new(event)))
-        }
+        "wolf::core::events::CreateLobbyEvent" => parse_json::<CreateLobbyEvent>(&data)
+            .map(CreateLobbyEvent::into_lobby)
+            .map(Box::new)
+            .map(WolfEvent::LobbyCreated),
         "wolf::core::events::JoinLobbyEvent" => parse_json(&data).map(WolfEvent::LobbyJoined),
         "wolf::core::events::LeaveLobbyEvent" => parse_json(&data).map(WolfEvent::LobbyLeft),
         "wolf::core::events::StopLobbyEvent" => {
@@ -99,6 +113,22 @@ fn parse_event(event: String, data: String) -> Result<WolfEvent, ApiError> {
                 .map(|event| WolfEvent::LobbyStopped(event.lobby_id))
         }
         _ => Ok(WolfEvent::Other(event)),
+    }
+}
+
+impl CreateLobbyEvent {
+    fn into_lobby(self) -> types::RflReflectorWolfCoreEventsLobbyReflType {
+        types::RflReflectorWolfCoreEventsLobbyReflType {
+            connected_sessions: Vec::new(),
+            icon_png_path: self.icon_png_path,
+            id: self.id,
+            multi_user: self.multi_user,
+            name: self.name,
+            pin_required: self.pin.is_some(),
+            runner: self.runner,
+            started_by_profile_id: self.profile_id,
+            stop_when_everyone_leaves: self.stop_when_everyone_leaves,
+        }
     }
 }
 
@@ -157,5 +187,41 @@ mod tests {
             .expect_err("malformed known event should fail");
 
         assert!(matches!(error, ApiError::EventDecode(_)));
+    }
+
+    #[test]
+    fn parser_accepts_string_session_ids_from_wolf_events() {
+        let event = parse_event(
+            "wolf::core::events::JoinLobbyEvent".to_string(),
+            r#"{"lobby_id":"lobby","moonlight_session_id":"7651850227544520802"}"#.to_string(),
+        )
+        .expect("string session id should parse");
+
+        assert_eq!(
+            event,
+            WolfEvent::LobbyJoined(types::WolfApiJoinLobbyRequest {
+                lobby_id: "lobby".to_string(),
+                moonlight_session_id: "7651850227544520802".to_string(),
+                pin: None,
+            })
+        );
+    }
+
+    #[test]
+    fn parser_maps_create_lobby_events_into_lobby_state() {
+        let event = parse_event(
+            "wolf::core::events::CreateLobbyEvent".to_string(),
+            r#"{"id":"lobby","profile_id":"profile","name":"Game","multi_user":true,"pin":null,"stop_when_everyone_leaves":true,"runner":{"type":"process","run_cmd":"game"},"video_settings":{"width":1920,"height":1080,"refresh_rate":60,"wayland_render_node":"software","runner_render_node":"render","video_producer_buffer_caps":"video/x-raw"},"audio_settings":{"channel_count":2},"client_settings":{},"runner_state_folder":"state"}"#.to_string(),
+        )
+        .expect("create lobby event should map into lobby state");
+
+        match event {
+            WolfEvent::LobbyCreated(lobby) => {
+                assert_eq!(lobby.id, "lobby");
+                assert_eq!(lobby.started_by_profile_id, "profile");
+                assert!(lobby.connected_sessions.is_empty());
+            }
+            _ => panic!("expected lobby created event"),
+        }
     }
 }

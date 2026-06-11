@@ -51,7 +51,7 @@ fn apply_lobby_event(event: wolf_api::events::WolfEvent, mut lobbies: Signal<Vec
             lobbies.with_mut(|items| items.retain(|item| item.id != lobby_id));
         }
         wolf_api::events::WolfEvent::LobbyJoined(event) => {
-            let session_id = event.moonlight_session_id.to_string();
+            let session_id = event.moonlight_session_id;
             lobbies.with_mut(|items| {
                 if let Some(lobby) = items.iter_mut().find(|lobby| lobby.id == event.lobby_id)
                     && !lobby.connected_sessions.contains(&session_id)
@@ -61,7 +61,7 @@ fn apply_lobby_event(event: wolf_api::events::WolfEvent, mut lobbies: Signal<Vec
             });
         }
         wolf_api::events::WolfEvent::LobbyLeft(event) => {
-            let session_id = event.moonlight_session_id.to_string();
+            let session_id = event.moonlight_session_id;
             lobbies.with_mut(|items| {
                 if let Some(lobby) = items.iter_mut().find(|lobby| lobby.id == event.lobby_id) {
                     lobby

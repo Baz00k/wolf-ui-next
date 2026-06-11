@@ -391,7 +391,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/wolf__core__events__JoinLobbyEvent"
+                "$ref": "#/components/schemas/wolf__api__JoinLobbyRequest"
               }
             }
           },
@@ -430,7 +430,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/wolf__core__events__LeaveLobbyEvent"
+                "$ref": "#/components/schemas/wolf__api__LeaveLobbyRequest"
               }
             }
           },
@@ -1289,6 +1289,49 @@
           "success"
         ]
       },
+      "wolf__api__JoinLobbyRequest": {
+        "type": "object",
+        "properties": {
+          "lobby_id": {
+            "type": "string"
+          },
+          "moonlight_session_id": {
+            "type": "string"
+          },
+          "pin": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "lobby_id",
+          "moonlight_session_id"
+        ]
+      },
+      "wolf__api__LeaveLobbyRequest": {
+        "type": "object",
+        "properties": {
+          "lobby_id": {
+            "type": "string"
+          },
+          "moonlight_session_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "lobby_id",
+          "moonlight_session_id"
+        ]
+      },
       "wolf__api__LobbiesResponse": {
         "type": "object",
         "properties": {
@@ -1872,8 +1915,8 @@
             "items": {
               "type": "integer"
             },
-            "minItems": "16",
-            "maxItems": "16"
+            "minItems": 16,
+            "maxItems": 16
           },
           "packet_duration": {
             "type": "integer"
@@ -1905,49 +1948,6 @@
         },
         "required": [
           "channel_count"
-        ]
-      },
-      "wolf__core__events__JoinLobbyEvent": {
-        "type": "object",
-        "properties": {
-          "lobby_id": {
-            "type": "string"
-          },
-          "moonlight_session_id": {
-            "type": "integer"
-          },
-          "pin": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "type": "integer"
-                }
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "lobby_id",
-          "moonlight_session_id"
-        ]
-      },
-      "wolf__core__events__LeaveLobbyEvent": {
-        "type": "object",
-        "properties": {
-          "lobby_id": {
-            "type": "string"
-          },
-          "moonlight_session_id": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "lobby_id",
-          "moonlight_session_id"
         ]
       },
       "wolf__core__events__StopLobbyEvent": {
@@ -2039,8 +2039,8 @@
             "items": {
               "type": "integer"
             },
-            "minItems": "16",
-            "maxItems": "16"
+            "minItems": 16,
+            "maxItems": 16
           }
         },
         "required": [
