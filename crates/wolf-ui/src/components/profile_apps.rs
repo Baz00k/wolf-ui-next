@@ -50,7 +50,7 @@ fn AppsFilter(
         div {
             id: "apps-filter",
             class: "rounded-lg flex gap-1 border border-border bg-card/70 p-1 font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground shadow-lg shadow-black/20",
-            for item in [AppFilter::Default, AppFilter::Available, AppFilter::Alphabetical] {
+            for item in [AppFilter::Available, AppFilter::Alphabetical] {
                 FilterButton {
                     active: filter() == item,
                     label: filter_label(item).to_string(),

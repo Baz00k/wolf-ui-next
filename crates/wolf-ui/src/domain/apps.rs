@@ -11,7 +11,6 @@ use crate::domain::image_loader::load_image_src;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum AppFilter {
-    Default,
     Available,
     Alphabetical,
 }
@@ -64,7 +63,6 @@ pub(crate) fn sorted_apps(
         .collect::<Vec<_>>();
 
     match filter {
-        AppFilter::Default => {}
         AppFilter::Available => {
             apps.sort_by_key(|app| !matches!(app.status.tone, AppStatusTone::Ready));
         }
@@ -92,7 +90,6 @@ pub(crate) fn app_actions(app: &AppCardData) -> Vec<AppAction> {
 
 pub(crate) fn filter_label(filter: AppFilter) -> &'static str {
     match filter {
-        AppFilter::Default => "Default",
         AppFilter::Available => "Available",
         AppFilter::Alphabetical => "A-Z",
     }
@@ -283,7 +280,7 @@ mod tests {
             &lobbies,
             &images,
             &HashMap::new(),
-            AppFilter::Default,
+            AppFilter::Available,
         );
 
         assert!(matches!(apps[0].status.kind, AppStatusKind::Playing));
@@ -300,7 +297,7 @@ mod tests {
             &[],
             &images,
             &HashMap::new(),
-            AppFilter::Default,
+            AppFilter::Available,
         )
         .into_iter()
         .next()

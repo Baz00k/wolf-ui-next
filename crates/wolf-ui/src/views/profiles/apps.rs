@@ -21,7 +21,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
     let resource_profile_id = profile_id.clone();
     let events_profile_id = profile_id.clone();
     let selected_index = use_signal(|| 0usize);
-    let filter = use_signal(|| AppFilter::Default);
+    let filter = use_signal(|| AppFilter::Available);
     let mut action_app = use_signal(|| None::<AppCardData>);
     let mut lobbies = use_signal(Vec::<Lobby>::new);
     let mut pending_focus_index = use_signal(|| None::<usize>);
