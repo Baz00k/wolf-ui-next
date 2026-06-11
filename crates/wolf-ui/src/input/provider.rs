@@ -158,12 +158,22 @@ fn spawn_keyboard_repeat(
         let mut directions = KeyboardDirectionState::default();
 
         loop {
-            match receiver.recv_timeout(KEYBOARD_INPUT_TICK) {
-                Ok(event) => {
-                    handle_keyboard_repeat_event(event, &mut directions, &mut repeat, &dispatcher)
+            if directions.direction().is_none() {
+                let Ok(event) = receiver.recv() else {
+                    return;
+                };
+                handle_keyboard_repeat_event(event, &mut directions, &mut repeat, &dispatcher);
+            } else {
+                match receiver.recv_timeout(KEYBOARD_INPUT_TICK) {
+                    Ok(event) => handle_keyboard_repeat_event(
+                        event,
+                        &mut directions,
+                        &mut repeat,
+                        &dispatcher,
+                    ),
+                    Err(mpsc::RecvTimeoutError::Timeout) => {}
+                    Err(mpsc::RecvTimeoutError::Disconnected) => return,
                 }
-                Err(mpsc::RecvTimeoutError::Timeout) => {}
-                Err(mpsc::RecvTimeoutError::Disconnected) => return,
             }
 
             while let Ok(event) = receiver.try_recv() {

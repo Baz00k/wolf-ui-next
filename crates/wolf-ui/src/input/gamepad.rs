@@ -2,7 +2,7 @@ use std::thread;
 use std::time::Duration;
 
 use dioxus::prelude::*;
-use gilrs::{Axis, Button, EventType, Gamepad, GamepadId, Gilrs};
+use gilrs::{Axis, Button, Event, EventType, Gamepad, GamepadId, Gilrs};
 
 use crate::input::repeat::DirectionRepeat;
 use crate::input::{InputEvent, UiAction};
@@ -40,79 +40,29 @@ pub fn use_gamepad_input(dispatcher: UnboundedSender<InputEvent>) {
             let mut active_gamepad_id = None;
 
             loop {
-                while let Some(event) = gilrs.next_event() {
-                    active_gamepad_id = Some(event.id);
-                    let gamepad = gilrs.gamepad(event.id);
-                    let family = classify_gamepad(gamepad.name());
-
-                    tracing::debug!(
-                        target: "wolf-ui-input",
-                        "event id={:?} name={:?} os_name={:?} family={:?} event={:?}",
-                        event.id,
-                        gamepad.name(),
-                        gamepad.os_name(),
-                        family,
-                        event.event,
+                let event_timeout = active_direction(&dpad, &stick).map(|_| INPUT_TICK);
+                if let Some(event) = gilrs.next_event_blocking(event_timeout) {
+                    handle_gamepad_event(
+                        event,
+                        &gilrs,
+                        &dispatcher,
+                        &mut active_gamepad_id,
+                        &mut repeat,
+                        &mut dpad,
+                        &mut stick,
                     );
+                }
 
-                    match event.event {
-                        EventType::ButtonPressed(button, _) => {
-                            if let Some(direction) = dpad_action(button) {
-                                dpad.set_button(direction, true);
-                                if let Some(action) = repeat.update(active_direction(&dpad, &stick))
-                                {
-                                    send_action(&dispatcher, family, action);
-                                }
-                            } else if let Some(action) = button_action(button) {
-                                send_action(&dispatcher, family, action);
-                            }
-                        }
-                        EventType::ButtonChanged(button, value, _) => {
-                            if let Some(direction) = dpad_action(button) {
-                                dpad.set_button(direction, value >= 0.5);
-                                if let Some(action) = repeat.update(active_direction(&dpad, &stick))
-                                {
-                                    send_action(&dispatcher, family, action);
-                                }
-                            } else if let Some(action) = button_changed_action(button, value) {
-                                send_action(&dispatcher, family, action);
-                            }
-                        }
-                        EventType::ButtonReleased(button, _) => {
-                            if let Some(direction) = dpad_action(button) {
-                                dpad.set_button(direction, false);
-                                if let Some(action) = repeat.update(active_direction(&dpad, &stick))
-                                {
-                                    send_action(&dispatcher, family, action);
-                                }
-                            }
-                        }
-                        EventType::AxisChanged(axis, value, _) => {
-                            let previous_direction = active_direction(&dpad, &stick);
-                            update_axis(&mut dpad, &mut stick, axis, value);
-                            let next_direction = active_direction(&dpad, &stick);
-
-                            if next_direction != previous_direction
-                                && let Some(action) = repeat.update(next_direction)
-                            {
-                                send_action(&dispatcher, family, action);
-                            }
-                        }
-                        EventType::Connected => {
-                            log_gamepad("connected", gamepad);
-                            let _ = dispatcher.unbounded_send(InputEvent::SourceChanged(
-                                InputSource::Gamepad(family),
-                            ));
-                        }
-                        EventType::Disconnected => {
-                            tracing::debug!(target: "wolf-ui-input", "disconnected id={:?}", event.id);
-                            active_gamepad_id = None;
-                            repeat.update(None);
-                            dpad = DirectionState::default();
-                            stick = StickState::default();
-                        }
-                        _ => {}
-                    }
+                while let Some(event) = gilrs.next_event() {
+                    handle_gamepad_event(
+                        event,
+                        &gilrs,
+                        &dispatcher,
+                        &mut active_gamepad_id,
+                        &mut repeat,
+                        &mut dpad,
+                        &mut stick,
+                    );
                 }
 
                 if let Some(gamepad_id) = active_gamepad_id {
@@ -132,11 +82,88 @@ pub fn use_gamepad_input(dispatcher: UnboundedSender<InputEvent>) {
                         active_family(&gilrs, active_gamepad_id).unwrap_or(GamepadFamily::Generic);
                     send_action(&dispatcher, family, action);
                 }
-
-                thread::sleep(INPUT_TICK);
             }
         });
     });
+}
+
+fn handle_gamepad_event(
+    event: Event,
+    gilrs: &Gilrs,
+    dispatcher: &UnboundedSender<InputEvent>,
+    active_gamepad_id: &mut Option<GamepadId>,
+    repeat: &mut DirectionRepeat,
+    dpad: &mut DirectionState,
+    stick: &mut StickState,
+) {
+    *active_gamepad_id = Some(event.id);
+    let gamepad = gilrs.gamepad(event.id);
+    let family = classify_gamepad(gamepad.name());
+
+    tracing::debug!(
+        target: "wolf-ui-input",
+        "event id={:?} name={:?} os_name={:?} family={:?} event={:?}",
+        event.id,
+        gamepad.name(),
+        gamepad.os_name(),
+        family,
+        event.event,
+    );
+
+    match event.event {
+        EventType::ButtonPressed(button, _) => {
+            if let Some(direction) = dpad_action(button) {
+                dpad.set_button(direction, true);
+                if let Some(action) = repeat.update(active_direction(dpad, stick)) {
+                    send_action(dispatcher, family, action);
+                }
+            } else if let Some(action) = button_action(button) {
+                send_action(dispatcher, family, action);
+            }
+        }
+        EventType::ButtonChanged(button, value, _) => {
+            if let Some(direction) = dpad_action(button) {
+                dpad.set_button(direction, value >= 0.5);
+                if let Some(action) = repeat.update(active_direction(dpad, stick)) {
+                    send_action(dispatcher, family, action);
+                }
+            } else if let Some(action) = button_changed_action(button, value) {
+                send_action(dispatcher, family, action);
+            }
+        }
+        EventType::ButtonReleased(button, _) => {
+            if let Some(direction) = dpad_action(button) {
+                dpad.set_button(direction, false);
+                if let Some(action) = repeat.update(active_direction(dpad, stick)) {
+                    send_action(dispatcher, family, action);
+                }
+            }
+        }
+        EventType::AxisChanged(axis, value, _) => {
+            let previous_direction = active_direction(dpad, stick);
+            update_axis(dpad, stick, axis, value);
+            let next_direction = active_direction(dpad, stick);
+
+            if next_direction != previous_direction
+                && let Some(action) = repeat.update(next_direction)
+            {
+                send_action(dispatcher, family, action);
+            }
+        }
+        EventType::Connected => {
+            log_gamepad("connected", gamepad);
+            let _ =
+                dispatcher.unbounded_send(InputEvent::SourceChanged(InputSource::Gamepad(family)));
+        }
+        EventType::Disconnected => {
+            tracing::debug!(target: "wolf-ui-input", "disconnected id={:?}", event.id);
+            *active_gamepad_id = None;
+            repeat.update(None);
+            *dpad = DirectionState::default();
+            *stick = StickState::default();
+        }
+        _ => {}
+    }
 }
 
 #[derive(Default)]
