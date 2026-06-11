@@ -125,10 +125,18 @@ impl WolfApi {
         self.decode_bytes(context, response).await
     }
 
-    pub(crate) async fn get_response(&self, path: &str) -> Result<reqwest::Response, ApiError> {
+    pub(crate) async fn get_stream_response(
+        &self,
+        path: &str,
+    ) -> Result<reqwest::Response, ApiError> {
         let context = self.request_context("GET", path);
-        self.send(context, self.http_client.get(self.url(path)))
-            .await
+        self.send(
+            context,
+            self.http_client
+                .get(self.url(path))
+                .timeout(STREAM_REQUEST_TIMEOUT),
+        )
+        .await
     }
 
     pub(crate) async fn get_response_with_query<T>(

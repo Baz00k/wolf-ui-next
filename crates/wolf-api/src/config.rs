@@ -8,7 +8,7 @@ pub const WOLF_API_BASE_URL_ENV: &str = "WOLF_API_BASE_URL";
 pub const WOLF_SOCKET_PATH_ENV: &str = "WOLF_SOCKET_PATH";
 pub const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_secs(2);
 pub const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
-pub const DEFAULT_READ_TIMEOUT: Duration = Duration::from_mins(1);
+pub const DEFAULT_READ_TIMEOUT: Duration = Duration::from_hours(12);
 pub const DEFAULT_MAX_RETRIES: u32 = 2;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
