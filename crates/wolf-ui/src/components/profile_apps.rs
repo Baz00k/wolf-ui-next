@@ -143,7 +143,7 @@ pub fn AppsContent(
         };
     }
 
-    if selected_index() >= apps.len() {
+    if *selected_index.peek() >= apps.len() {
         selected_index.set(apps.len().saturating_sub(1));
     }
 
@@ -157,9 +157,15 @@ pub fn AppsContent(
                             app: app.clone(),
                             index,
                             autofocus: index == 0,
-                            onfocus: move |_| selected_index.set(index),
+                            onfocus: move |_| {
+                                if *selected_index.peek() != index {
+                                    selected_index.set(index);
+                                }
+                            },
                             onclick: move |_| {
-                                selected_index.set(index);
+                                if *selected_index.peek() != index {
+                                    selected_index.set(index);
+                                }
                                 on_app_click.call((index, app.clone()));
                             },
                         }

@@ -19,13 +19,18 @@
         "page-up": "page-up",
         "page-down": "page-down",
     };
+    let lastActionHintsJson = null;
 
     function isVisible(element) {
+        return visibleRect(element) !== null;
+    }
+
+    function visibleRect(element) {
         const style = window.getComputedStyle(element);
-        if (style.display === "none" || style.visibility === "hidden") return false;
-        if (element.matches(':disabled,[aria-disabled="true"],[inert]')) return false;
+        if (style.display === "none" || style.visibility === "hidden") return null;
+        if (element.matches(':disabled,[aria-disabled="true"],[inert]')) return null;
         const rect = element.getBoundingClientRect();
-        return rect.width > 0 && rect.height > 0;
+        return rect.width > 0 && rect.height > 0 ? rect : null;
     }
 
     function scopeFor(element) {
@@ -46,6 +51,15 @@
         return Array.from(scope.querySelectorAll(FOCUSABLE_SELECTOR)).filter(isVisible);
     }
 
+    function candidateEntriesIn(scope) {
+        const entries = [];
+        for (const element of scope.querySelectorAll(FOCUSABLE_SELECTOR)) {
+            const rect = visibleRect(element);
+            if (rect) entries.push({ element, rect });
+        }
+        return entries;
+    }
+
     function rootScopeFor(element) {
         return element?.closest?.("[data-focus-root]") ?? document.querySelector("[data-focus-root]") ?? document.body;
     }
@@ -58,7 +72,7 @@
         return Array.from(root.querySelectorAll(`[${FOCUS_REGION_ATTRIBUTE}]`)).filter(isVisible);
     }
 
-    function fallbackCandidate(action, active) {
+    function fallbackCandidate(action, active, currentRect = active.getBoundingClientRect()) {
         const currentRegion = regionFor(active);
         if (!currentRegion) return null;
 
@@ -69,16 +83,15 @@
         const step = action === "up" || action === "left" ? -1 : action === "down" || action === "right" ? 1 : 0;
         if (step === 0) return null;
 
-        const currentRect = active.getBoundingClientRect();
         for (let index = currentIndex + step; index >= 0 && index < regions.length; index += step) {
             let best = null;
             let bestScore = Infinity;
-            for (const candidate of candidatesIn(regions[index])) {
-                const score = directionScore(action, currentRect, candidate.getBoundingClientRect(), {
+            for (const candidate of candidateEntriesIn(regions[index])) {
+                const score = directionScore(action, currentRect, candidate.rect, {
                     enforceAngle: true,
                 });
                 if (score !== null && score < bestScore) {
-                    best = candidate;
+                    best = candidate.element;
                     bestScore = score;
                 }
             }
@@ -206,17 +219,17 @@
         let best = null;
         let bestScore = Infinity;
 
-        for (const candidate of candidatesIn(scope)) {
-            if (candidate === active) continue;
-            const score = directionScore(action, currentRect, candidate.getBoundingClientRect());
+        for (const candidate of candidateEntriesIn(scope)) {
+            if (candidate.element === active) continue;
+            const score = directionScore(action, currentRect, candidate.rect);
             if (score !== null && score < bestScore) {
-                best = candidate;
+                best = candidate.element;
                 bestScore = score;
             }
         }
 
         if (!best) {
-            best = fallbackCandidate(action, active);
+            best = fallbackCandidate(action, active, currentRect);
             if (!best) return false;
         }
 
@@ -274,9 +287,14 @@
     }
 
     function dispatchActionHintsChanged(element = document.activeElement) {
+        const hints = actionHintsFor(element?.matches?.(FOCUSABLE_SELECTOR) ? element : null);
+        const nextActionHintsJson = JSON.stringify(hints);
+        if (nextActionHintsJson === lastActionHintsJson) return;
+
+        lastActionHintsJson = nextActionHintsJson;
         document.dispatchEvent(
             new CustomEvent("wolf-ui-action-hints-changed", {
-                detail: actionHintsFor(element?.matches?.(FOCUSABLE_SELECTOR) ? element : null),
+                detail: hints,
             }),
         );
     }
