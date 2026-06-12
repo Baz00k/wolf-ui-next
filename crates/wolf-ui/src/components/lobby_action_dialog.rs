@@ -26,6 +26,14 @@ pub fn LobbyActionDialog(
     let loading_action = use_signal(|| None::<LobbyAction>);
     let is_loading = loading_action().is_some();
     let toasts = use_toasts();
+    let action_context = LobbyActionContext {
+        loading_action,
+        join_runner,
+        stop_runner,
+        toasts,
+        onstopped,
+        onclose,
+    };
     let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || {
         if loading_action().is_none() {
             onclose.call(());
@@ -51,16 +59,7 @@ pub fn LobbyActionDialog(
                         disabled: is_loading,
                         onselect: {
                             let lobby_id = lobby.id.clone();
-                            move |action| run_lobby_action(
-                                lobby_id.clone(),
-                                action,
-                                loading_action,
-                                join_runner,
-                                stop_runner,
-                                toasts,
-                                onstopped,
-                                onclose,
-                            )
+                            move |action| run_lobby_action(lobby_id.clone(), action, action_context)
                         },
                     }
                     LobbyActionRow {
@@ -71,16 +70,7 @@ pub fn LobbyActionDialog(
                         disabled: is_loading,
                         onselect: {
                             let lobby_id = lobby.id.clone();
-                            move |action| run_lobby_action(
-                                lobby_id.clone(),
-                                action,
-                                loading_action,
-                                join_runner,
-                                stop_runner,
-                                toasts,
-                                onstopped,
-                                onclose,
-                            )
+                            move |action| run_lobby_action(lobby_id.clone(), action, action_context)
                         },
                     }
                 }
@@ -101,16 +91,30 @@ pub fn LobbyActionDialog(
     }
 }
 
+#[derive(Clone, Copy)]
+struct LobbyActionContext {
+    loading_action: Signal<Option<LobbyAction>>,
+    join_runner: Action<(String,), bool>,
+    stop_runner: Action<(String,), bool>,
+    toasts: ToastContext,
+    onstopped: EventHandler<String>,
+    onclose: EventHandler<()>,
+}
+
 fn run_lobby_action(
     lobby_id: String,
     action: LobbyAction,
-    mut loading_action: Signal<Option<LobbyAction>>,
-    mut join_runner: Action<(String,), bool>,
-    mut stop_runner: Action<(String,), bool>,
-    mut toasts: ToastContext,
-    onstopped: EventHandler<String>,
-    onclose: EventHandler<()>,
+    context: LobbyActionContext,
 ) {
+    let LobbyActionContext {
+        mut loading_action,
+        mut join_runner,
+        mut stop_runner,
+        mut toasts,
+        onstopped,
+        onclose,
+    } = context;
+
     if loading_action().is_some() {
         return;
     }
