@@ -1,6 +1,6 @@
 use futures_util::StreamExt;
-use serde::de::DeserializeOwned;
 use serde::Deserialize;
+use serde::de::DeserializeOwned;
 
 use crate::{ApiError, WolfApi, types};
 
