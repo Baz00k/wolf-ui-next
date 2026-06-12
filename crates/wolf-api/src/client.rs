@@ -36,6 +36,10 @@ impl WolfApi {
         endpoints::profiles::Profiles::new(self)
     }
 
+    pub fn apps(&self) -> endpoints::Apps<'_> {
+        endpoints::apps::Apps::new(self)
+    }
+
     pub fn lobbies(&self) -> endpoints::Lobbies<'_> {
         endpoints::lobbies::Lobbies::new(self)
     }

@@ -1,12 +1,18 @@
 use dioxus::prelude::*;
+use dioxus_free_icons::Icon;
+use dioxus_free_icons::icons::hi_solid_icons::HiCog;
 use wolf_api::lobbies::Lobby;
 
-use crate::components::primitives::{Button, ButtonSize, StatusAlert, StatusAlertVariant};
+use crate::Route;
+use crate::components::primitives::{
+    Button, ButtonSize, ButtonVariant, StatusAlert, StatusAlertVariant,
+};
 use crate::components::{
     LobbyActionDialog, ProfilesContent, ProfilesLoading, SessionShutdownControl,
 };
 use crate::domain::app_actions::{join_lobby, stop_lobby};
 use crate::domain::profiles::{listen_for_lobby_events, load_profiles_state};
+use crate::domain::settings::settings_enabled;
 use crate::input::navigate_hint;
 
 #[component]
@@ -52,14 +58,17 @@ pub fn Profiles() -> Element {
                             }
                         },
                         Some(Err(message)) => rsx! {
-                            StatusAlert {
-                                title: Some("Profiles unavailable".to_string()),
-                                message: message.clone(),
-                                variant: StatusAlertVariant::Error,
-                                Button {
-                                    size: ButtonSize::Lg,
-                                    onclick: move |_| profiles.restart(),
-                                    "Retry"
+                            div {
+                                class: "w-full h-full grid place-items-center",
+                                StatusAlert {
+                                    title: Some("Profiles unavailable".to_string()),
+                                    message: message.clone(),
+                                    variant: StatusAlertVariant::Error,
+                                    Button {
+                                        size: ButtonSize::Lg,
+                                        onclick: move |_| profiles.restart(),
+                                        "Retry"
+                                    }
                                 }
                             }
                         },
@@ -84,13 +93,29 @@ pub fn Profiles() -> Element {
 
 #[component]
 fn ProfilesHeader() -> Element {
+    let navigator = use_navigator();
+    let show_settings = settings_enabled();
+
     rsx! {
         header {
             class: "grid grid-cols-[1fr_auto_1fr] items-start gap-4 text-center",
             "data-focus-scope": "true",
             "data-focus-region": "top-bar",
             "data-scope-actions": navigate_hint("Navigate"),
-            div {}
+            div { class: "justify-self-start",
+                if show_settings {
+                    Button {
+                        variant: ButtonVariant::Ghost,
+                        size: ButtonSize::Icon,
+                        class: "border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur transition hover:border-primary/50 hover:bg-primary/15 hover:text-foreground focus:border-primary/70 focus:bg-primary/15 focus:text-foreground sm:h-12 sm:w-12".to_string(),
+                        action_label: "Open settings".to_string(),
+                        onclick: move |_| {
+                            navigator.push(Route::SettingsImageUpdates {});
+                        },
+                        Icon { icon: HiCog, class: "h-5 w-5", width: None, height: None, title: None }
+                    }
+                }
+            }
             h1 { class: "text-5xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl", "Who's playing?" }
             div { class: "justify-self-end", SessionShutdownControl {} }
         }

@@ -7,7 +7,7 @@ mod input;
 mod views;
 
 use api::ApiContext;
-use views::{AppLayout, ProfileApps, Profiles, Settings};
+use views::{AppLayout, ProfileApps, Profiles, Settings, SettingsImageUpdates, SettingsLayout};
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 enum Route {
@@ -18,8 +18,12 @@ enum Route {
     #[route("/profiles/:profile_id/apps")]
     ProfileApps { profile_id: String },
 
+    #[layout(SettingsLayout)]
     #[route("/settings")]
     Settings {},
+
+    #[route("/settings/image-updates")]
+    SettingsImageUpdates {},
 }
 
 const STYLES_CSS: Asset = asset!("/assets/dist/styles.css");

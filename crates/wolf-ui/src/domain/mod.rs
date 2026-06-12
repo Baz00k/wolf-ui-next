@@ -3,3 +3,4 @@ pub mod apps;
 pub mod image_loader;
 pub mod profiles;
 pub mod session;
+pub mod settings;

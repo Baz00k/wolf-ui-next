@@ -1,9 +1,14 @@
 use dioxus::prelude::*;
 
+use crate::Route;
+
 #[component]
 pub fn Settings() -> Element {
-    // Original: src/Scenes/Main/Body/Settings/Settings.tscn
-    // Container for profile and app settings panes.
-    // Settings view is hidden/WiP in the original implementation.
+    let navigator = use_navigator();
+
+    use_effect(move || {
+        navigator.replace(Route::SettingsImageUpdates {});
+    });
+
     rsx! {}
 }

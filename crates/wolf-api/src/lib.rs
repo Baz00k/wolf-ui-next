@@ -16,7 +16,7 @@ pub mod types {
     include!(concat!(env!("OUT_DIR"), "/types.rs"));
 }
 
-pub use endpoints::{docker, events, lobbies, profiles, sessions};
+pub use endpoints::{apps, docker, events, lobbies, profiles, sessions};
 
 pub use client::WolfApi;
 pub use config::{

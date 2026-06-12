@@ -101,11 +101,7 @@ struct LobbyActionContext {
     onclose: EventHandler<()>,
 }
 
-fn run_lobby_action(
-    lobby_id: String,
-    action: LobbyAction,
-    context: LobbyActionContext,
-) {
+fn run_lobby_action(lobby_id: String, action: LobbyAction, context: LobbyActionContext) {
     let LobbyActionContext {
         mut loading_action,
         mut join_runner,
