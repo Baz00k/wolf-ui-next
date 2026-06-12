@@ -2,8 +2,8 @@ use dioxus::prelude::*;
 use tw_merge::tw_merge;
 
 use crate::components::primitives::{
-    Button, ButtonSize, Card, CardContent, Spinner, StatusAlert, StatusAlertVariant, ToastContext,
-    ToastOptions, use_toasts,
+    Button, ButtonSize, Card, CardContent, ProgressPanel, Spinner, StatusAlert, StatusAlertVariant,
+    ToastContext, ToastOptions, use_toasts,
 };
 use crate::domain::settings::{WolfUiImageState, load_wolf_ui_image_state, update_wolf_ui_image};
 
@@ -44,7 +44,7 @@ pub fn SettingsImageUpdates() -> Element {
             None => rsx! {
                 div {
                     class: "w-full h-full grid place-items-center",
-                    Spinner { class: "m-8 h-8 w-8".to_string() }
+                    Spinner { class: "m-8 h-8 w-8" }
                 }
             },
         }
@@ -69,8 +69,8 @@ fn UpdatePanel(
     let update_disabled = pending || update_downloaded.is_some();
 
     rsx! {
-        Card { class: "overflow-hidden rounded-2xl bg-card shadow-black/35".to_string(),
-            CardContent { class: "space-y-8 px-6 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10".to_string(),
+        Card { class: "overflow-hidden rounded-2xl bg-card shadow-black/35",
+            CardContent { class: "space-y-8 px-6 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10",
                 PageHeader {}
                 div { class: "grid gap-4 xl:grid-cols-5 xl:items-stretch",
                     ImageInfoTile { label: "Current image source".to_string(), value: state.repository.clone(), wide: true }
@@ -141,14 +141,14 @@ fn UpdateButton(
         div { class: "flex items-center justify-start xl:justify-end",
             Button {
                 size: ButtonSize::Xl,
-                class: "mx-auto px-6 text-base font-bold".to_string(),
-                action_label: "Update image".to_string(),
+                class: "mx-auto my-2 font-bold",
+                action_label: "Update image",
                 disabled,
                 onclick: move |_| {
                     start_image_update(image.clone(), progress, update_runner, toasts, onupdated);
                 },
                 if pending {
-                    Spinner { class: "h-5 w-5".to_string() }
+                    Spinner { class: "h-5 w-5" }
                     "Updating"
                 } else {
                     "Update Image"
@@ -163,18 +163,7 @@ fn ProgressBar(progress: u8, visible: bool) -> Element {
     rsx! {
         div { class: "mt-6 h-12",
             if visible {
-                div { class: "rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-foreground",
-                    div { class: "flex items-center justify-between gap-4 text-sm font-bold",
-                        span { "Downloading image" }
-                        span { class: "tabular-nums", "{progress}%" }
-                    }
-                    div { class: "mt-2 h-1.5 overflow-hidden rounded-full bg-background/80",
-                        div {
-                            class: "h-full rounded-full bg-primary transition-[width] duration-300",
-                            style: "width: {progress}%;",
-                        }
-                    }
-                }
+                ProgressPanel { label: "Downloading image".to_string(), progress }
             }
         }
     }

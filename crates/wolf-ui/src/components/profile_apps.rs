@@ -5,16 +5,14 @@ use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::AppListResponse;
 
 use crate::components::primitives::{
-    Button, ButtonSize, ButtonVariant, StatusAlert, StatusAlertVariant,
+    Button, ButtonSize, ButtonVariant, CardGrid, CardGridViewport, StatusAlert, StatusAlertVariant,
 };
 use crate::components::{AppCard, AppCardData, AppCardSkeleton, SessionShutdownControl};
 use crate::domain::apps::{AppFilter, filter_label, sorted_apps};
 use crate::input::navigate_hint;
 
-pub const APP_GRID_VIEWPORT_CLASS: &str = "h-full w-full overflow-y-auto overflow-x-hidden scroll-pt-4 scroll-pb-4 scrollbar-hide sm:scroll-pt-5 sm:scroll-pb-5 lg:scroll-pt-6 lg:scroll-pb-6";
-pub const APP_GRID_CLASS: &str = "mx-auto grid w-full max-w-[min(100%,calc(22rem*6+2rem*5))] grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),18rem))] justify-center gap-4 p-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem,20rem))] sm:gap-5 sm:p-3 xl:grid-cols-[repeat(auto-fill,minmax(18rem,22rem))] xl:gap-6 lg:p-4 2xl:gap-8 2xl:p-5";
-
 const LOADING_CARD_COUNT: usize = 8;
+const APP_GRID_COLUMNS: usize = 6;
 
 #[component]
 pub fn AppsHeader(
@@ -49,16 +47,19 @@ fn AppsFilter(
     rsx! {
         div {
             id: "apps-filter",
-            class: "rounded-lg flex gap-1 border border-border bg-card/70 p-1 font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground shadow-lg shadow-black/20",
+            class: "flex gap-2 rounded-lg border border-border bg-card/70 p-1 shadow-lg shadow-black/20",
             for item in [AppFilter::Available, AppFilter::Alphabetical] {
-                FilterButton {
-                    active: filter() == item,
-                    label: filter_label(item).to_string(),
+                Button {
+                    variant: if filter() == item { ButtonVariant::Default } else { ButtonVariant::Ghost },
+                    size: ButtonSize::Sm,
+                    class: "font-mono text-xs font-semibold uppercase tracking-widest",
+                    action_label: filter_label(item),
                     onclick: move |_| {
                         selected_index.set(0);
                         filter.set(item);
                         pending_focus_index.set(Some(0));
                     },
+                    {filter_label(item)}
                 }
             }
         }
@@ -66,30 +67,10 @@ fn AppsFilter(
 }
 
 #[component]
-fn FilterButton(active: bool, label: String, onclick: EventHandler<MouseEvent>) -> Element {
-    let class = if active {
-        "px-3 py-2 font-mono text-xs font-semibold uppercase tracking-widest"
-    } else {
-        "px-3 py-2 font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground"
-    };
-
-    rsx! {
-        Button {
-            variant: if active { ButtonVariant::Default } else { ButtonVariant::Ghost },
-            size: ButtonSize::Sm,
-            class,
-            action_label: label.clone(),
-            onclick: move |event| onclick.call(event),
-            "{label}"
-        }
-    }
-}
-
-#[component]
 pub fn AppsLoading() -> Element {
     rsx! {
-        div { class: APP_GRID_VIEWPORT_CLASS,
-            div { class: APP_GRID_CLASS,
+        CardGridViewport {
+            CardGrid { columns: APP_GRID_COLUMNS,
                 for _ in 0..LOADING_CARD_COUNT {
                     AppCardSkeleton {}
                 }
@@ -111,8 +92,7 @@ pub fn AppsContent(
 ) -> Element {
     if !response.success {
         return rsx! {
-            div {
-                class: "flex justify-center items-center h-full",
+            div { class: "flex h-full items-center justify-center",
                 StatusAlert {
                     title: Some("Apps unavailable".to_string()),
                     message: "Wolf returned an unsuccessful app response. Try again once the service is ready.".to_string(),
@@ -132,8 +112,7 @@ pub fn AppsContent(
     );
     if apps.is_empty() {
         return rsx! {
-            div {
-                class: "flex justify-center items-center h-full",
+            div { class: "flex h-full items-center justify-center",
                 StatusAlert {
                     title: Some("No apps found".to_string()),
                     message: "Add apps to this Wolf profile before launching a Moonlight session.".to_string(),
@@ -148,27 +127,25 @@ pub fn AppsContent(
     }
 
     rsx! {
-        div { class: APP_GRID_VIEWPORT_CLASS,
-            div {
-                class: APP_GRID_CLASS,
+        CardGridViewport {
+            CardGrid { columns: APP_GRID_COLUMNS,
                 for (index, app) in apps.iter().cloned().enumerate() {
-                    div { key: "{app.id}",
-                        AppCard {
-                            app: app.clone(),
-                            index,
-                            autofocus: index == 0,
-                            onfocus: move |_| {
-                                if *selected_index.peek() != index {
-                                    selected_index.set(index);
-                                }
-                            },
-                            onclick: move |_| {
-                                if *selected_index.peek() != index {
-                                    selected_index.set(index);
-                                }
-                                on_app_click.call((index, app.clone()));
-                            },
-                        }
+                    AppCard {
+                        key: "{app.id}",
+                        app: app.clone(),
+                        index,
+                        autofocus: index == 0,
+                        onfocus: move |_| {
+                            if *selected_index.peek() != index {
+                                selected_index.set(index);
+                            }
+                        },
+                        onclick: move |_| {
+                            if *selected_index.peek() != index {
+                                selected_index.set(index);
+                            }
+                            on_app_click.call((index, app.clone()));
+                        },
                     }
                 }
             }

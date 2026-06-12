@@ -1,26 +1,26 @@
 use dioxus::prelude::*;
+use dioxus_free_icons::Icon;
+use dioxus_free_icons::icons::hi_solid_icons::{HiUser, HiUserGroup};
 use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::Profile;
 
 use crate::Route;
 use crate::api::ApiContext;
-use crate::components::lobby_card::LobbyCardData;
-use crate::components::primitives::{StatusAlert, StatusAlertVariant};
-use crate::components::{LobbyCard, ProfileCard, ProfileCardData, ProfileCardSkeleton};
+use crate::components::persona_card::{PersonaCard, PersonaCardSkeleton};
+use crate::components::primitives::{
+    Badge, BadgeVariant, CardGrid, StatusAlert, StatusAlertVariant,
+};
 use crate::domain::image_loader::load_image_src;
 use crate::domain::profiles::ProfilesState;
 
 const CARD_SKELETON_COUNT: usize = 3;
-const PROFILE_GRID_CLASS: &str = "mx-auto grid w-full max-w-[min(100%,calc(22rem*5+2rem*4))] grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),18rem))] justify-center gap-4 p-2 sm:grid-cols-[repeat(auto-fit,minmax(16rem,20rem))] sm:gap-5 sm:p-3 xl:grid-cols-[repeat(auto-fit,minmax(18rem,22rem))] xl:gap-6 lg:p-4 2xl:gap-8 2xl:p-5";
 
 #[component]
 pub fn ProfilesLoading() -> Element {
     rsx! {
-        div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-8 lg:py-10",
-            div { class: PROFILE_GRID_CLASS,
-                for _ in 0..CARD_SKELETON_COUNT {
-                    ProfileCardSkeleton {}
-                }
+        ProfilesGrid {
+            for _ in 0..CARD_SKELETON_COUNT {
+                PersonaCardSkeleton {}
             }
         }
     }
@@ -54,25 +54,21 @@ pub fn ProfilesContent(
     }
 
     rsx! {
-        div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-8 lg:py-10",
-            div { class: PROFILE_GRID_CLASS,
-                for (index, profile) in response.profiles.iter().cloned().enumerate() {
-                    div {
-                        ProfileCardLoader {
-                            profile,
-                            autofocus: index == 0,
-                        }
-                    }
+        ProfilesGrid {
+            for (index, profile) in response.profiles.iter().cloned().enumerate() {
+                ProfileCard {
+                    key: "{profile.id}",
+                    profile,
+                    autofocus: index == 0,
                 }
-                for (index, lobby) in lobbies.iter().cloned().enumerate() {
-                    div { key: "{lobby.id}",
-                        LobbyCardLoader {
-                            lobby: lobby.clone(),
-                            profiles: response.profiles.clone(),
-                            autofocus: response.profiles.is_empty() && index == 0,
-                            onclick: move |_| on_lobby_click.call(lobby.clone()),
-                        }
-                    }
+            }
+            for (index, lobby) in lobbies.iter().cloned().enumerate() {
+                LobbyCard {
+                    key: "{lobby.id}",
+                    lobby: lobby.clone(),
+                    profiles: response.profiles.clone(),
+                    autofocus: response.profiles.is_empty() && index == 0,
+                    onclick: move |_| on_lobby_click.call(lobby.clone()),
                 }
             }
         }
@@ -80,70 +76,85 @@ pub fn ProfilesContent(
 }
 
 #[component]
-fn ProfileCardLoader(profile: Profile, autofocus: bool) -> Element {
-    let profile_id = profile.id.clone();
+fn ProfilesGrid(children: Element) -> Element {
+    rsx! {
+        div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-8 lg:py-10",
+            CardGrid { columns: 5, fit: true,
+                {children}
+            }
+        }
+    }
+}
+
+#[component]
+fn ProfileCard(profile: Profile, autofocus: bool) -> Element {
     let icon_path = profile.icon_png_path.trim().to_string();
     let avatar = use_resource(move || {
         let icon_path = icon_path.clone();
 
         async move { load_image_src(&ApiContext::consume(), &icon_path).await }
     });
-
-    let mut profile = profile_card_data(profile);
-    profile.avatar_src = avatar.read().clone().flatten();
+    let avatar_src = avatar.read().clone().flatten();
 
     rsx! {
-        ProfileCard {
-            profile,
+        PersonaCard {
+            name: profile.name.clone(),
+            to: Route::ProfileApps { profile_id: profile.id.clone() }.to_string(),
             autofocus,
-            to: Route::ProfileApps { profile_id }.to_string(),
+            pin_locked: profile.pin.is_some(),
+            avatar: rsx! {
+                if let Some(avatar_src) = avatar_src {
+                    img {
+                        class: "h-full w-full object-cover",
+                        src: avatar_src,
+                        loading: "lazy",
+                        draggable: "false",
+                    }
+                } else {
+                    Icon { icon: HiUser, class: "mb-2 h-24 w-24", width: None, height: None }
+                }
+            },
         }
     }
 }
 
 #[component]
-fn LobbyCardLoader(
+fn LobbyCard(
     lobby: Lobby,
     profiles: Vec<Profile>,
     autofocus: bool,
     onclick: EventHandler<MouseEvent>,
 ) -> Element {
+    let connected_users = lobby.connected_sessions.len();
+
     rsx! {
-        LobbyCard {
-            lobby: lobby_card_data(lobby, &profiles),
+        PersonaCard {
+            name: lobby_name(&lobby, &profiles),
             autofocus,
+            pin_locked: lobby.pin_required,
             onclick: move |event| onclick.call(event),
+            avatar: rsx! {
+                Icon { icon: HiUserGroup, class: "mb-2 h-24 w-24", width: None, height: None }
+            },
+            badges: rsx! {
+                Badge { variant: BadgeVariant::Success, class: "absolute left-4 top-4 lg:left-5 lg:top-5",
+                    Icon { icon: HiUserGroup, class: "h-3.5 w-3.5", width: None, height: None }
+                    "{connected_users}"
+                }
+            },
         }
     }
 }
 
-fn profile_card_data(profile: Profile) -> ProfileCardData {
-    ProfileCardData {
-        id: profile.id,
-        name: profile.name,
-        avatar_src: None,
-        is_pin_locked: profile.pin.is_some(),
-    }
-}
-
-fn lobby_card_data(lobby: Lobby, profiles: &[Profile]) -> LobbyCardData {
+fn lobby_name(lobby: &Lobby, profiles: &[Profile]) -> String {
     let creator = profiles
         .iter()
         .find(|profile| profile.id == lobby.started_by_profile_id)
         .map(|profile| profile.name.as_str());
 
-    LobbyCardData {
-        id: lobby.id,
-        name: creator.map(lobby_name).unwrap_or(lobby.name),
-        is_pin_locked: lobby.pin_required,
-        connected_users: lobby.connected_sessions.len(),
-    }
-}
-
-fn lobby_name(creator: &str) -> String {
-    if creator.ends_with('s') {
-        format!("{creator}' lobby")
-    } else {
-        format!("{creator}'s lobby")
+    match creator {
+        Some(creator) if creator.ends_with('s') => format!("{creator}' lobby"),
+        Some(creator) => format!("{creator}'s lobby"),
+        None => lobby.name.clone(),
     }
 }

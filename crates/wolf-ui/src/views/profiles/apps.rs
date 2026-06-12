@@ -141,14 +141,14 @@ pub fn ProfileApps(profile_id: String) -> Element {
 
 fn focus_app(index: usize) {
     let _ = document::eval(&format!(
-        "requestAnimationFrame(() => requestAnimationFrame(() => window.__wolfUiFocusSelector?.('[data-app-index=\\\"{}\\\"]', {{ inline: 'nearest' }})));",
+        "requestAnimationFrame(() => requestAnimationFrame(() => window.__wolfUiFocusSelector?.('[data-grid-index=\\\"{}\\\"]', {{ inline: 'nearest' }})));",
         index
     ));
 }
 
 fn scroll_to_app(index: usize) {
     let _ = document::eval(&format!(
-        "window.__wolfUiScrollSelectorIntoView?.('[data-app-index=\\\"{}\\\"]', {{ block: 'nearest', inline: 'nearest' }});",
+        "window.__wolfUiScrollSelectorIntoView?.('[data-grid-index=\\\"{}\\\"]', {{ block: 'nearest', inline: 'nearest' }});",
         index
     ));
 }

@@ -2,8 +2,7 @@ use dioxus::prelude::*;
 use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::hi_solid_icons::HiCube;
 
-use crate::components::primitives::{Card, Skeleton};
-use crate::input::{UiAction, native_action};
+use crate::components::primitives::{Badge, BadgeVariant, Card, CardTrigger, Skeleton};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum AppStatusKind {
@@ -44,25 +43,19 @@ pub fn AppCard(
     onfocus: EventHandler<FocusEvent>,
     onclick: EventHandler<MouseEvent>,
 ) -> Element {
-    let actions = native_action(UiAction::Accept, "Actions");
     let show_runner = app.runner != "Docker";
     let is_unavailable = app.status.kind == AppStatusKind::MissingImage;
     let is_playing = app.status.kind == AppStatusKind::Playing;
 
     rsx! {
-        button {
-            class: "group relative aspect-[3/4] w-full border-0 p-0 text-left outline-none transition-transform duration-300 ease-out hover:-translate-y-1 focus:-translate-y-1 active:scale-95",
-            "data-focusable": "true",
-            "data-app-index": "{index}",
-            "data-actions": actions,
-            onfocus: move |event| onfocus.call(event),
-            onclick: move |event| onclick.call(event),
-            onmounted: move |event: MountedEvent| async move {
-                if autofocus {
-                    let _ = event.data().set_focus(true).await;
-                }
-            },
-            Card { class: "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-80 shadow-black/25 transition duration-300 ease-out group-focus:border-foreground group-focus:text-card-foreground group-focus:opacity-100 group-focus:shadow-[0_1.5rem_3rem_oklch(0_0_0/0.5)] group-focus:ring-4 group-focus:ring-ring/25".to_string(),
+        CardTrigger {
+            class: "text-left transition-transform duration-300",
+            action_label: "Actions",
+            index,
+            autofocus,
+            onfocus,
+            onclick,
+            Card { class: "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-80 shadow-black/25 transition duration-300 ease-out group-focus:border-foreground group-focus:text-card-foreground group-focus:opacity-100 group-focus:shadow-[0_1.5rem_3rem_oklch(0_0_0/0.5)] group-focus:ring-4 group-focus:ring-ring/60 group-focus:ring-offset-2 group-focus:ring-offset-background",
                 div { class: "pointer-events-none absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground md:inset-x-5 md:top-5 xl:inset-x-6 xl:top-6",
                     if show_runner {
                         span { "{app.runner}" }
@@ -71,7 +64,7 @@ pub fn AppCard(
                     }
                     div { class: "flex flex-col items-end gap-2",
                         if app.supports_hdr {
-                            span { class: "rounded-full border border-yellow-400/30 bg-yellow-400/10 px-2 py-1 text-yellow-300", "HDR" }
+                            Badge { variant: BadgeVariant::Warning, class: "px-2", "HDR" }
                         }
                         if is_unavailable {
                             StatusBadge { label: "Not installed" }
@@ -114,12 +107,9 @@ pub fn AppCard(
 #[component]
 fn StatusBadge(label: &'static str, #[props(default)] pulse: bool) -> Element {
     rsx! {
-        span { class: "inline-flex items-center gap-2 rounded-full bg-black/55 px-3 py-1.5 backdrop-blur-sm",
+        Badge { variant: BadgeVariant::Overlay, class: "gap-2 py-1.5",
             if pulse {
-                span {
-                    class: "h-2 w-2 rounded-full",
-                    class: "animate-pulse bg-emerald-400 shadow-lg shadow-emerald-400/50",
-                }
+                span { class: "h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" }
             }
             span { class: "text-xs font-semibold uppercase tracking-widest text-muted-foreground", "{label}" }
         }

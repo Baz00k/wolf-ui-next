@@ -1,8 +1,8 @@
 use dioxus::prelude::*;
-use tw_merge::tw_merge;
 
 use crate::Route;
-use crate::input::{UiAction, native_action, navigate_hint};
+use crate::components::primitives::{Button, ButtonSize, ButtonVariant};
+use crate::input::navigate_hint;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum SettingsCategory {
@@ -46,7 +46,7 @@ pub fn SettingsLayout() -> Element {
                 "data-focus-region": "main",
                 "data-scope-actions": navigate_hint("Navigate"),
                 SettingsSidebar { active }
-                main { class: "min-h-0 flex-1 overflow-y-auto pb-6 scrollbar-hide",
+                main { class: "min-h-0 flex-1 overflow-y-auto scroll-py-4 pb-6 scrollbar-hide",
                     Outlet::<Route> {}
                 }
             }
@@ -66,22 +66,14 @@ fn SettingsSidebar(active: SettingsCategory) -> Element {
 #[component]
 fn SettingsNavItem(category: SettingsCategory, active: SettingsCategory) -> Element {
     let selected = category == active;
-    let class = tw_merge!(
-        "flex h-14 w-full items-center rounded-xl border px-5 text-left font-medium outline-none focus:ring-2 focus:ring-ring/50",
-        if selected {
-            "border-primary/40 bg-primary/15 text-foreground shadow-lg shadow-primary/10 focus:border-primary focus:bg-primary/20"
-        } else {
-            "border-transparent text-muted-foreground hover:border-foreground/30 hover:bg-accent hover:text-accent-foreground focus:border-foreground focus:bg-accent focus:text-accent-foreground"
-        },
-    );
-    let actions = native_action(UiAction::Accept, category.label());
 
     rsx! {
-        Link {
-            to: category.route(),
-            class,
-            "data-focusable": "true",
-            "data-actions": actions,
+        Button {
+            variant: if selected { ButtonVariant::MenuActive } else { ButtonVariant::Menu },
+            size: ButtonSize::Xl,
+            class: "w-full justify-start rounded-xl px-5 font-medium",
+            to: category.route().to_string(),
+            action_label: category.label(),
             "{category.label()}"
         }
     }

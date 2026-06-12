@@ -45,7 +45,7 @@ pub fn Profiles() -> Element {
                 class: "relative flex h-full min-h-0 flex-col px-6 pt-8 sm:px-10 sm:pt-10 lg:px-16 lg:pt-12",
                 ProfilesHeader {}
                 div {
-                    class: "flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-pt-6 scroll-pb-6 scrollbar-hide sm:scroll-pt-8 sm:scroll-pb-8 lg:scroll-pt-10 lg:scroll-pb-10",
+                    class: "flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-py-8 scrollbar-hide sm:scroll-py-10 lg:scroll-py-12",
                     "data-focus-scope": "true",
                     "data-focus-region": "main",
                     "data-scope-actions": navigate_hint("Navigate"),
@@ -105,9 +105,8 @@ fn ProfilesHeader() -> Element {
             div { class: "justify-self-start",
                 if show_settings {
                     Button {
-                        variant: ButtonVariant::Ghost,
-                        size: ButtonSize::Icon,
-                        class: "border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur transition hover:border-primary/50 hover:bg-primary/15 hover:text-foreground focus:border-primary/70 focus:bg-primary/15 focus:text-foreground sm:h-12 sm:w-12".to_string(),
+                        variant: ButtonVariant::Chrome,
+                        size: ButtonSize::IconLg,
                         action_label: "Open settings".to_string(),
                         onclick: move |_| {
                             navigator.push(Route::SettingsImageUpdates {});

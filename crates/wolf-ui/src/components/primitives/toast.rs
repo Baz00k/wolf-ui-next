@@ -158,9 +158,9 @@ pub fn Toast(
             if dismissible {
                 Button {
                     variant: ButtonVariant::Ghost,
-                    size: ButtonSize::Icon,
-                    class: "h-9 w-9 shrink-0 rounded-full text-muted-foreground focus:text-foreground".to_string(),
-                    action_label: "Dismiss notification".to_string(),
+                    size: ButtonSize::IconSm,
+                    class: "shrink-0 text-muted-foreground focus:text-foreground",
+                    action_label: "Dismiss notification",
                     onclick: move |_| ondismiss.call(()),
                     Icon { icon: HiX, class: "h-4 w-4", width: None, height: None }
                 }

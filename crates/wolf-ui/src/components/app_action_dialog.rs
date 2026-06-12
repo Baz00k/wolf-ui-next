@@ -1,13 +1,13 @@
 use dioxus::prelude::*;
 use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::hi_solid_icons::{
-    HiDownload, HiPlay, HiRefresh, HiStop, HiUserGroup, HiX,
+    HiDownload, HiPlay, HiRefresh, HiStop, HiUserGroup,
 };
 
 use crate::components::app_card::AppCardData;
 use crate::components::primitives::{
-    Button, ButtonSize, ButtonVariant, Card, CardContent, CardFooter, CardHeader, Dialog,
-    DialogDescription, DialogHeader, DialogTitle, Spinner, ToastContext, ToastOptions, use_toasts,
+    ActionDialog, ActionDialogItem, CardContent, CardFooter, DialogCancelButton, ProgressPanel,
+    ProgressTone, ToastContext, ToastOptions, use_toasts,
 };
 use crate::input::{UiAction, use_ui_action};
 
@@ -41,52 +41,48 @@ pub fn AppActionDialog(
     });
 
     rsx! {
-        Dialog { scope_actions: close_actions,
-            Card { class: "w-full max-w-lg overflow-hidden shadow-black/50".to_string(),
-                CardHeader {
-                    DialogHeader {
-                        DialogTitle { "{app.title}" }
-                        DialogDescription { "Select action" }
+        ActionDialog {
+            title: app.title.clone(),
+            description: "Select action".to_string(),
+            scope_actions: close_actions,
+            CardContent { class: "space-y-3",
+                for (index, action) in actions.iter().copied().enumerate() {
+                    ActionDialogItem {
+                        label: action_label(action),
+                        autofocus: index == 0,
+                        loading: loading_action() == Some(action),
+                        disabled: is_loading,
+                        onclick: {
+                            let app = app.clone();
+                            move |_| {
+                                start_dialog_action(
+                                    app.clone(),
+                                    action,
+                                    loading_action,
+                                    progress,
+                                    action_runner,
+                                    toasts,
+                                    onclose,
+                                );
+                            }
+                        },
+                        ActionIcon { action }
                     }
                 }
-                CardContent { class: "space-y-3".to_string(),
-                    for (index, action) in actions.iter().copied().enumerate() {
-                        ActionRow {
-                            label: action_label(action).to_string(),
-                            tone: action_tone(action).to_string(),
-                            autofocus: index == 0,
-                            action,
-                            loading: loading_action() == Some(action),
-                            disabled: is_loading,
-                            onselect: {
-                                let app = app.clone();
-                                move |action| {
-                                    start_dialog_action(
-                                        app.clone(),
-                                        action,
-                                        loading_action,
-                                        progress,
-                                        action_runner,
-                                        toasts,
-                                        onclose,
-                                    );
-                                }
-                            },
+                div { class: "h-16 pt-2",
+                    if let Some(action) = progress_action {
+                        ProgressPanel {
+                            label: progress_message(action),
+                            progress: progress_value,
+                            tone: ProgressTone::Warning,
                         }
                     }
-                    ActionStatus { action: progress_action, progress: progress_value }
                 }
-                CardFooter {
-                    Button {
-                        variant: ButtonVariant::Ghost,
-                        size: ButtonSize::Xl,
-                        class: "w-full text-muted-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
-                        action_label: "Cancel".to_string(),
-                        disabled: is_loading,
-                        onclick: move |_| onclose.call(()),
-                        Icon { icon: HiX, class: "mr-2 h-5 w-5", width: None, height: None }
-                        "Cancel"
-                    }
+            }
+            CardFooter {
+                DialogCancelButton {
+                    disabled: is_loading,
+                    onclick: move |_| onclose.call(()),
                 }
             }
         }
@@ -136,76 +132,22 @@ fn start_dialog_action(
 }
 
 #[component]
-fn ActionStatus(action: Option<AppAction>, progress: u8) -> Element {
-    rsx! {
-        div { class: "h-16 pt-2".to_string(),
-            if let Some(action) = action {
-                div { class: "border rounded-xl border-yellow-300/30 bg-yellow-300/10 px-4 py-3".to_string(),
-                    div { class: "flex items-center justify-between gap-4 text-sm font-bold".to_string(),
-                        span { class: "truncate text-yellow-100".to_string(), "{progress_message(action)}" }
-                        span { class: "shrink-0 tabular-nums text-yellow-200".to_string(), "{progress}%" }
-                    }
-                    div { class: "mt-2 h-1.5 overflow-hidden rounded-full bg-background/70".to_string(),
-                        div {
-                            class: "h-full rounded-full bg-yellow-300 transition-[width] duration-300".to_string(),
-                            style: "width: {progress}%;",
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-#[component]
-fn ActionRow(
-    label: String,
-    tone: String,
-    autofocus: bool,
-    action: AppAction,
-    loading: bool,
-    disabled: bool,
-    onselect: EventHandler<AppAction>,
-) -> Element {
-    rsx! {
-        Button {
-            variant: ButtonVariant::Ghost,
-            size: ButtonSize::Xl,
-            class: "w-full justify-start border border-transparent text-left hover:border-foreground/30 focus:border-foreground focus:bg-accent focus:text-accent-foreground".to_string(),
-            action_label: label.clone(),
-            autofocus,
-            disabled,
-            onclick: move |_| onselect.call(action),
-            if loading {
-                Spinner { class: "h-5 w-5".to_string() }
-            } else {
-                ActionIcon { action, tone: tone.clone() }
-            }
-            "{label}"
-        }
-    }
-}
-
-#[component]
-fn ActionIcon(action: AppAction, tone: String) -> Element {
+fn ActionIcon(action: AppAction) -> Element {
     match action {
-        AppAction::Start => rsx! {
-            Icon { icon: HiPlay, class: "h-5 w-5 {tone}", width: None, height: None }
-        },
-        AppAction::Connect => rsx! {
-            Icon { icon: HiPlay, class: "h-5 w-5 {tone}", width: None, height: None }
+        AppAction::Start | AppAction::Connect => rsx! {
+            Icon { icon: HiPlay, class: "h-5 w-5 text-emerald-400", width: None, height: None }
         },
         AppAction::StartCoop => rsx! {
-            Icon { icon: HiUserGroup, class: "h-5 w-5 {tone}", width: None, height: None }
+            Icon { icon: HiUserGroup, class: "h-5 w-5 text-blue-400", width: None, height: None }
         },
         AppAction::Stop => rsx! {
-            Icon { icon: HiStop, class: "h-5 w-5 {tone}", width: None, height: None }
+            Icon { icon: HiStop, class: "h-5 w-5 text-red-400", width: None, height: None }
         },
         AppAction::CheckUpdate => rsx! {
-            Icon { icon: HiRefresh, class: "h-5 w-5 {tone}", width: None, height: None }
+            Icon { icon: HiRefresh, class: "h-5 w-5 text-yellow-300", width: None, height: None }
         },
         AppAction::Download => rsx! {
-            Icon { icon: HiDownload, class: "h-5 w-5 {tone}", width: None, height: None }
+            Icon { icon: HiDownload, class: "h-5 w-5 text-yellow-300", width: None, height: None }
         },
     }
 }
@@ -242,13 +184,4 @@ fn progress_message(action: AppAction) -> &'static str {
 
 fn shows_progress(action: AppAction) -> bool {
     matches!(action, AppAction::CheckUpdate | AppAction::Download)
-}
-
-fn action_tone(action: AppAction) -> &'static str {
-    match action {
-        AppAction::Start | AppAction::Connect => "text-emerald-400",
-        AppAction::StartCoop => "text-blue-400",
-        AppAction::Stop => "text-red-400",
-        AppAction::CheckUpdate | AppAction::Download => "text-yellow-300",
-    }
 }

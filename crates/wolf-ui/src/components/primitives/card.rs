@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use tw_merge::tw_merge;
 
+use crate::components::primitives::Focusable;
+
 #[component]
 pub fn Card(#[props(default)] class: String, children: Element) -> Element {
     let class = tw_merge!(
@@ -43,6 +45,39 @@ pub fn CardFooter(#[props(default)] class: String, children: Element) -> Element
 
     rsx! {
         div { class,
+            {children}
+        }
+    }
+}
+
+/// Focusable grid-card wrapper (3:4 aspect) with the shared lift-on-focus
+/// motion. Style the inner [`Card`] with `group-focus:`/`group-hover:`
+/// variants.
+#[component]
+pub fn CardTrigger(
+    #[props(default)] class: String,
+    #[props(default)] to: Option<String>,
+    #[props(default = "Select".to_string())] action_label: String,
+    #[props(default)] index: Option<usize>,
+    #[props(default)] autofocus: bool,
+    #[props(default)] onclick: Option<EventHandler<MouseEvent>>,
+    #[props(default)] onfocus: Option<EventHandler<FocusEvent>>,
+    children: Element,
+) -> Element {
+    let class = tw_merge!(
+        "group relative flex aspect-[3/4] w-full border-0 p-0 outline-none transition duration-200 ease-out hover:-translate-y-1 focus:-translate-y-1 active:scale-95",
+        class,
+    );
+
+    rsx! {
+        Focusable {
+            class,
+            to,
+            action_label,
+            index,
+            autofocus,
+            onclick,
+            onfocus,
             {children}
         }
     }
