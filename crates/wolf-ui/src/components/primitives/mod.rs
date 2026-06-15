@@ -4,6 +4,7 @@ pub mod card;
 pub mod card_grid;
 pub mod dialog;
 pub mod focusable;
+pub mod numpad;
 pub mod progress;
 pub mod skeleton;
 pub mod spinner;
@@ -18,6 +19,7 @@ pub use dialog::{ActionDialog, ActionDialogItem, DialogCancelButton};
 #[allow(unused_imports)]
 pub use dialog::{Dialog, DialogDescription, DialogHeader, DialogTitle};
 pub use focusable::Focusable;
+pub use numpad::Numpad;
 pub use progress::{ProgressPanel, ProgressTone};
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;

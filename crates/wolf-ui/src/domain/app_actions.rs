@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use wolf_api::ApiError;
 use wolf_api::types::{
     RflReflectorWolfCoreEventsAppReflTypeRunner, RflReflectorWolfCoreEventsLobbyReflType,
     WolfApiCreateLobbyRequest, WolfApiCreateLobbyRequestRunner, WolfApiPartialClientSettings,
@@ -14,12 +15,13 @@ pub(crate) async fn run_app_action(
     profile_id: String,
     app: AppCardData,
     action: AppAction,
+    pin: Option<Vec<i64>>,
     on_progress: impl FnMut(f64),
 ) -> Result<bool, String> {
     match action {
-        AppAction::Start => start_app(profile_id, &app, false).await,
+        AppAction::Start => start_app(profile_id, &app, false, None).await,
         AppAction::Connect => connect_app(&profile_id, &app).await,
-        AppAction::StartCoop => start_app(profile_id, &app, true).await,
+        AppAction::StartCoop => start_app(profile_id, &app, true, pin).await,
         AppAction::Stop => stop_app(&profile_id, &app).await,
         AppAction::CheckUpdate => pull_image(&app, on_progress).await,
         AppAction::Download => pull_image(&app, on_progress).await,
@@ -30,6 +32,7 @@ async fn start_app(
     profile_id: String,
     app: &AppCardData,
     multi_user: bool,
+    pin: Option<Vec<i64>>,
 ) -> Result<bool, String> {
     let api = ApiContext::consume();
     let session_id = current_session_id()?;
@@ -37,7 +40,7 @@ async fn start_app(
         .sessions()
         .by_client_id(&session_id)
         .await
-        .map_err(|error| error.to_string())?
+        .map_err(api_error_message)?
         .unwrap_or_else(fallback_session);
     let lobby_id = if multi_user {
         None
@@ -56,39 +59,62 @@ async fn start_app(
             } else {
                 app.title.clone()
             };
-            let lobby = build_lobby(profile_id, app, &session, multi_user, lobby_name);
+            let lobby = build_lobby(
+                profile_id,
+                app,
+                &session,
+                multi_user,
+                lobby_name,
+                pin.clone(),
+            );
             api.lobbies()
                 .create(&lobby)
                 .await
-                .map_err(|error| error.to_string())?
+                .map_err(api_error_message)?
                 .lobby_id
         }
     };
 
     api.lobbies()
-        .join(lobby_id, session_id, None)
+        .join(lobby_id, session_id, pin)
         .await
-        .map_err(|error| error.to_string())?;
+        .map_err(api_error_message)?;
     Ok(true)
 }
 
-pub(crate) async fn join_lobby(lobby_id: String) -> Result<bool, String> {
+pub(crate) async fn join_lobby(
+    lobby_id: String,
+    pin: Option<Vec<i64>>,
+) -> Result<bool, std::io::Error> {
     let api = ApiContext::consume();
-    let session_id = current_session_id()?;
+    let session_id = current_session_id().map_err(std::io::Error::other)?;
+
     api.lobbies()
-        .join(lobby_id, session_id, None)
+        .join(lobby_id, session_id, pin)
         .await
-        .map_err(|error| error.to_string())?;
+        .map_err(|error| std::io::Error::other(api_error_message(error)))?;
     Ok(true)
 }
 
-pub(crate) async fn stop_lobby(lobby_id: String) -> Result<bool, String> {
+pub(crate) async fn stop_lobby(
+    lobby_id: String,
+    pin: Option<Vec<i64>>,
+) -> Result<bool, std::io::Error> {
     ApiContext::consume()
         .lobbies()
-        .stop(lobby_id, None)
+        .stop(lobby_id, pin)
         .await
-        .map_err(|error| error.to_string())?;
+        .map_err(|error| std::io::Error::other(api_error_message(error)))?;
     Ok(true)
+}
+
+fn api_error_message(error: ApiError) -> String {
+    match error {
+        ApiError::Timeout => "Request timed out".to_string(),
+        ApiError::Wolf { message, .. } => message,
+        ApiError::Status { body, .. } => body,
+        error => error.to_string(),
+    }
 }
 
 async fn pull_image(app: &AppCardData, on_progress: impl FnMut(f64)) -> Result<bool, String> {
@@ -161,6 +187,7 @@ fn build_lobby(
     session: &wolf_api::sessions::Session,
     multi_user: bool,
     name: String,
+    pin: Option<Vec<i64>>,
 ) -> WolfApiCreateLobbyRequest {
     let runner_name = match &app.source.runner {
         RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(runner) => {
@@ -180,7 +207,7 @@ fn build_lobby(
         icon_png_path: app.source.icon_png_path.clone(),
         multi_user,
         name,
-        pin: None,
+        pin,
         profile_id: profile_id.clone(),
         runner: create_lobby_runner(&app.source.runner),
         runner_state_folder: format!("profile-data/{profile_id}/{runner_name}"),

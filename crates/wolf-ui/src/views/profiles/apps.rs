@@ -49,10 +49,13 @@ pub fn ProfileApps(profile_id: String) -> Element {
     });
     let action_profile_id = profile_id.clone();
     let action_runner = use_action(
-        move |app: AppCardData, action: AppAction, mut progress: Signal<Option<f64>>| {
+        move |app: AppCardData,
+              action: AppAction,
+              pin: Option<Vec<i64>>,
+              mut progress: Signal<Option<f64>>| {
             let profile_id = action_profile_id.clone();
             async move {
-                let result = run_app_action(profile_id, app, action, move |value| {
+                let result = run_app_action(profile_id, app, action, pin, move |value| {
                     progress.set(Some(value));
                 })
                 .await

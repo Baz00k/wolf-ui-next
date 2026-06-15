@@ -11,7 +11,7 @@ use crate::components::{
     LobbyActionDialog, ProfilesContent, ProfilesLoading, SessionShutdownControl,
 };
 use crate::domain::app_actions::{join_lobby, stop_lobby};
-use crate::domain::profiles::{listen_for_lobby_events, load_profiles_state};
+use crate::domain::profiles::{ProfilesState, listen_for_lobby_events, load_profiles_state};
 use crate::domain::settings::settings_enabled;
 use crate::input::navigate_hint;
 
@@ -20,11 +20,11 @@ pub fn Profiles() -> Element {
     let mut lobbies = use_signal(Vec::<Lobby>::new);
     let mut action_lobby = use_signal(|| None::<Lobby>);
     let mut profiles = use_resource(move || async move { load_profiles_state().await });
-    let join_runner = use_action(move |lobby_id: String| async move {
-        join_lobby(lobby_id).await.map_err(std::io::Error::other)
+    let join_runner = use_action(move |lobby_id: String, pin: Option<Vec<i64>>| async move {
+        join_lobby(lobby_id, pin).await
     });
-    let stop_runner = use_action(move |lobby_id: String| async move {
-        stop_lobby(lobby_id).await.map_err(std::io::Error::other)
+    let stop_runner = use_action(move |lobby_id: String, pin: Option<Vec<i64>>| async move {
+        stop_lobby(lobby_id, pin).await
     });
 
     use_effect(move || {
@@ -78,6 +78,7 @@ pub fn Profiles() -> Element {
             }
             if let Some(lobby) = action_lobby() {
                 LobbyActionDialog {
+                    owner_pin: lobby_owner_pin(&profiles, &lobby),
                     lobby,
                     join_runner,
                     stop_runner,
@@ -89,6 +90,22 @@ pub fn Profiles() -> Element {
             }
         }
     }
+}
+
+fn lobby_owner_pin(
+    profiles: &Resource<Result<ProfilesState, String>>,
+    lobby: &Lobby,
+) -> Option<Vec<i64>> {
+    let binding = profiles.read();
+    let Some(Ok(state)) = &*binding else {
+        return None;
+    };
+    state
+        .profiles
+        .profiles
+        .iter()
+        .find(|profile| profile.id == lobby.started_by_profile_id)
+        .and_then(|profile| profile.pin.clone())
 }
 
 #[component]

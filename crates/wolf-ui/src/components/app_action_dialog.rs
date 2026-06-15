@@ -5,6 +5,7 @@ use dioxus_free_icons::icons::hi_solid_icons::{
 };
 
 use crate::components::app_card::AppCardData;
+use crate::components::pin_dialog::{PinInputDialog, PinProtectQuestionDialog};
 use crate::components::primitives::{
     ActionDialog, ActionDialogItem, CardContent, CardFooter, DialogCancelButton, ProgressPanel,
     ProgressTone, ToastContext, ToastOptions, use_toasts,
@@ -25,11 +26,20 @@ pub enum AppAction {
 pub fn AppActionDialog(
     app: AppCardData,
     actions: Vec<AppAction>,
-    mut action_runner: Action<(AppCardData, AppAction, Signal<Option<f64>>), bool>,
+    mut action_runner: Action<
+        (
+            AppCardData,
+            AppAction,
+            Option<Vec<i64>>,
+            Signal<Option<f64>>,
+        ),
+        bool,
+    >,
     onclose: EventHandler<()>,
 ) -> Element {
     let loading_action = use_signal(|| None::<AppAction>);
     let progress = use_signal(|| None::<f64>);
+    let mut pin_prompt = use_signal(|| None::<PinPrompt>);
     let is_loading = loading_action().is_some();
     let progress_value = progress().unwrap_or(0.0).round() as u8;
     let progress_action = loading_action().filter(|action| shows_progress(*action));
@@ -55,9 +65,10 @@ pub fn AppActionDialog(
                         onclick: {
                             let app = app.clone();
                             move |_| {
-                                start_dialog_action(
+                                request_or_start_action(
                                     app.clone(),
                                     action,
+                                    pin_prompt,
                                     loading_action,
                                     progress,
                                     action_runner,
@@ -86,15 +97,122 @@ pub fn AppActionDialog(
                 }
             }
         }
+        if let Some(prompt) = pin_prompt() {
+            match prompt {
+                PinPrompt::ProtectCoop => rsx! {
+                    PinProtectQuestionDialog {
+                        onanswer: move |protect| {
+                            if protect {
+                                pin_prompt.set(Some(PinPrompt::EnterPin(AppAction::StartCoop)));
+                            } else {
+                                pin_prompt.set(None);
+                                start_dialog_action(
+                                    app.clone(),
+                                    AppAction::StartCoop,
+                                    None,
+                                    loading_action,
+                                    progress,
+                                    action_runner,
+                                    toasts,
+                                    onclose,
+                                );
+                            }
+                        },
+                        oncancel: move |_| pin_prompt.set(None),
+                    }
+                },
+                PinPrompt::EnterPin(action) => rsx! {
+                    PinInputDialog {
+                        title: pin_title(action).to_string(),
+                        description: pin_description(action).to_string(),
+                        submit_label: pin_submit_label(action).to_string(),
+                        onsubmit: move |pin| {
+                            pin_prompt.set(None);
+                            start_dialog_action(
+                                app.clone(),
+                                action,
+                                Some(pin),
+                                loading_action,
+                                progress,
+                                action_runner,
+                                toasts,
+                                onclose,
+                            );
+                        },
+                        oncancel: move |_| {
+                            if action == AppAction::StartCoop {
+                                pin_prompt.set(Some(PinPrompt::ProtectCoop));
+                            } else {
+                                pin_prompt.set(None);
+                            }
+                        },
+                    }
+                },
+            }
+        }
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum PinPrompt {
+    ProtectCoop,
+    EnterPin(AppAction),
+}
+
+fn request_or_start_action(
+    app: AppCardData,
+    action: AppAction,
+    mut pin_prompt: Signal<Option<PinPrompt>>,
+    loading_action: Signal<Option<AppAction>>,
+    progress: Signal<Option<f64>>,
+    action_runner: Action<
+        (
+            AppCardData,
+            AppAction,
+            Option<Vec<i64>>,
+            Signal<Option<f64>>,
+        ),
+        bool,
+    >,
+    toasts: ToastContext,
+    onclose: EventHandler<()>,
+) {
+    if loading_action().is_some() {
+        return;
+    }
+
+    if action == AppAction::StartCoop {
+        pin_prompt.set(Some(PinPrompt::ProtectCoop));
+        return;
+    }
+
+    start_dialog_action(
+        app,
+        action,
+        None,
+        loading_action,
+        progress,
+        action_runner,
+        toasts,
+        onclose,
+    );
 }
 
 fn start_dialog_action(
     app: AppCardData,
     action: AppAction,
+    pin: Option<Vec<i64>>,
     mut loading_action: Signal<Option<AppAction>>,
     mut progress: Signal<Option<f64>>,
-    mut action_runner: Action<(AppCardData, AppAction, Signal<Option<f64>>), bool>,
+    mut action_runner: Action<
+        (
+            AppCardData,
+            AppAction,
+            Option<Vec<i64>>,
+            Signal<Option<f64>>,
+        ),
+        bool,
+    >,
     mut toasts: ToastContext,
     onclose: EventHandler<()>,
 ) {
@@ -111,7 +229,7 @@ fn start_dialog_action(
     action_runner.reset();
 
     spawn(async move {
-        action_runner.call(app, action, progress).await;
+        action_runner.call(app, action, pin, progress).await;
         let result = action_runner
             .value()
             .unwrap_or_else(|| Err(std::io::Error::other("Action did not complete.").into()));
@@ -124,7 +242,7 @@ fn start_dialog_action(
                     toasts.show(message, None);
                 }
             }
-            Err(_) => toasts.show(error_message(action), ToastOptions::error()),
+            Err(error) => toasts.show(error_message(action, &error), ToastOptions::error()),
         }
 
         onclose.call(());
@@ -170,8 +288,40 @@ fn success_message(action: AppAction, downloaded: bool) -> Option<&'static str> 
     }
 }
 
-fn error_message(action: AppAction) -> String {
+fn error_message(action: AppAction, error: &impl std::fmt::Display) -> String {
+    let message = error.to_string();
+    if message.eq_ignore_ascii_case("Request timed out") {
+        return format!("{} timed out. Try again.", action_label(action));
+    }
+
+    if matches!(action, AppAction::StartCoop)
+        && message.eq_ignore_ascii_case("Lobby or session not found")
+    {
+        return "Lobby or session not found. Refresh and try again.".to_string();
+    }
+
     format!("{} failed. Try again.", action_label(action))
+}
+
+fn pin_title(action: AppAction) -> &'static str {
+    match action {
+        AppAction::StartCoop => "Choose lobby PIN",
+        _ => "PIN required",
+    }
+}
+
+fn pin_description(action: AppAction) -> &'static str {
+    match action {
+        AppAction::StartCoop => "Players need this PIN to join",
+        _ => "Enter PIN",
+    }
+}
+
+fn pin_submit_label(action: AppAction) -> &'static str {
+    match action {
+        AppAction::StartCoop => "Create",
+        _ => "Submit",
+    }
 }
 
 fn progress_message(action: AppAction) -> &'static str {

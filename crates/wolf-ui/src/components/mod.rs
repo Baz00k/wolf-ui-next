@@ -3,6 +3,7 @@ pub mod app_action_dialog;
 pub mod app_card;
 pub mod lobby_action_dialog;
 pub mod persona_card;
+pub mod pin_dialog;
 pub mod primitives;
 pub mod profile_apps;
 pub mod profiles_grid;
@@ -15,6 +16,8 @@ pub use app_card::{
     AppCard, AppCardData, AppCardSkeleton, AppStatus, AppStatusKind, AppStatusTone,
 };
 pub use lobby_action_dialog::LobbyActionDialog;
+#[allow(unused_imports)]
+pub use pin_dialog::{PinInputDialog, PinProtectQuestionDialog};
 pub use profile_apps::{AppsContent, AppsHeader, AppsLoading};
 pub use profiles_grid::{ProfilesContent, ProfilesLoading};
 pub use session_controls::SessionShutdownControl;

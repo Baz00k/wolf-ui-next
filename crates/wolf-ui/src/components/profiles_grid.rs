@@ -6,9 +6,10 @@ use wolf_api::profiles::Profile;
 
 use crate::Route;
 use crate::api::ApiContext;
+use crate::components::PinInputDialog;
 use crate::components::persona_card::{PersonaCard, PersonaCardSkeleton};
 use crate::components::primitives::{
-    Badge, BadgeVariant, CardGrid, StatusAlert, StatusAlertVariant,
+    Badge, BadgeVariant, CardGrid, StatusAlert, StatusAlertVariant, ToastOptions, use_toasts,
 };
 use crate::domain::image_loader::load_image_src;
 use crate::domain::profiles::ProfilesState;
@@ -88,6 +89,9 @@ fn ProfilesGrid(children: Element) -> Element {
 
 #[component]
 fn ProfileCard(profile: Profile, autofocus: bool) -> Element {
+    let navigator = use_navigator();
+    let mut show_pin_prompt = use_signal(|| false);
+    let toasts = use_toasts();
     let icon_path = profile.icon_png_path.trim().to_string();
     let avatar = use_resource(move || {
         let icon_path = icon_path.clone();
@@ -95,11 +99,21 @@ fn ProfileCard(profile: Profile, autofocus: bool) -> Element {
         async move { load_image_src(&ApiContext::consume(), &icon_path).await }
     });
     let avatar_src = avatar.read().clone().flatten();
+    let route = Route::ProfileApps {
+        profile_id: profile.id.clone(),
+    }
+    .to_string();
+    let pin = profile.pin.clone();
 
     rsx! {
         PersonaCard {
             name: profile.name.clone(),
-            to: Route::ProfileApps { profile_id: profile.id.clone() }.to_string(),
+            to: if pin.is_none() { Some(route.clone()) } else { None },
+            onclick: if pin.is_some() {
+                Some(EventHandler::new(move |_| show_pin_prompt.set(true)))
+            } else {
+                None
+            },
             autofocus,
             pin_locked: profile.pin.is_some(),
             avatar: rsx! {
@@ -114,6 +128,23 @@ fn ProfileCard(profile: Profile, autofocus: bool) -> Element {
                     Icon { icon: HiUser, class: "mb-2 h-24 w-24", width: None, height: None }
                 }
             },
+        }
+        if show_pin_prompt() {
+            PinInputDialog {
+                title: "Profile PIN required".to_string(),
+                description: format!("Enter the PIN for {}", profile.name),
+                submit_label: "Unlock".to_string(),
+                onsubmit: move |entered_pin| {
+                    if Some(entered_pin) == pin {
+                        navigator.push(route.clone());
+                    } else {
+                        let mut toasts = toasts;
+                        toasts.show("Incorrect PIN. Try again.", ToastOptions::error());
+                    }
+                    show_pin_prompt.set(false);
+                },
+                oncancel: move |_| show_pin_prompt.set(false),
+            }
         }
     }
 }
