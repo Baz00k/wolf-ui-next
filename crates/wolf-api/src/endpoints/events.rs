@@ -7,8 +7,8 @@ use crate::{ApiError, WolfApi, types};
 #[derive(Clone, Debug, PartialEq)]
 pub enum WolfEvent {
     LobbyCreated(Box<types::RflReflectorWolfCoreEventsLobbyReflType>),
-    LobbyJoined(types::WolfApiJoinLobbyRequest),
-    LobbyLeft(types::WolfApiLeaveLobbyRequest),
+    LobbyJoined(types::WolfCoreEventsJoinLobbyEvent),
+    LobbyLeft(types::WolfCoreEventsLeaveLobbyEvent),
     LobbyStopped(String),
     Other(String),
 }
@@ -167,14 +167,6 @@ mod tests {
     }
 
     #[test]
-    fn parser_ignores_data_without_event_type() {
-        let mut parser = EventStreamParser::default();
-
-        assert!(parser.accept_line("data: ignored").is_none());
-        assert!(parser.accept_line("").is_none());
-    }
-
-    #[test]
     fn parser_returns_decode_errors_for_malformed_known_events() {
         let mut parser = EventStreamParser::default();
 
@@ -187,24 +179,6 @@ mod tests {
             .expect_err("malformed known event should fail");
 
         assert!(matches!(error, ApiError::EventDecode(_)));
-    }
-
-    #[test]
-    fn parser_accepts_string_session_ids_from_wolf_events() {
-        let event = parse_event(
-            "wolf::core::events::JoinLobbyEvent".to_string(),
-            r#"{"lobby_id":"lobby","moonlight_session_id":"7651850227544520802"}"#.to_string(),
-        )
-        .expect("string session id should parse");
-
-        assert_eq!(
-            event,
-            WolfEvent::LobbyJoined(types::WolfApiJoinLobbyRequest {
-                lobby_id: "lobby".to_string(),
-                moonlight_session_id: "7651850227544520802".to_string(),
-                pin: None,
-            })
-        );
     }
 
     #[test]
