@@ -1,16 +1,20 @@
 # syntax=docker/dockerfile:1
 
 ARG BASE_APP_IMAGE=ghcr.io/games-on-whales/base-app:edge
-ARG RUST_VERSION=1.96.0
 ARG DIOXUS_CLI_VERSION=0.7.9
 
-FROM rust:${RUST_VERSION}-trixie AS chef
+FROM rust:trixie AS chef
 
 ARG DIOXUS_CLI_VERSION
 
 ENV DEBIAN_FRONTEND=noninteractive \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:/.cargo/bin:${PATH}
+
+WORKDIR /app
+
+COPY rust-toolchain.toml ./
+RUN rustup show
 
 RUN <<_INSTALL_BUILD_DEPS
 set -e
@@ -38,8 +42,6 @@ curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-
 cargo binstall dioxus-cli --version "${DIOXUS_CLI_VERSION}" --root /.cargo -y --force
 cargo binstall cargo-chef --root /.cargo -y --force
 _INSTALL_DX
-
-WORKDIR /app
 
 FROM chef AS planner
 
