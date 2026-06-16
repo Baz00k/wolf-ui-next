@@ -34,9 +34,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
     });
 
     let sort_focus_action = use_ui_action_hint(UiAction::Menu, "Sort", move || {
-        let _ = document::eval(
-            "window.__wolfUiFocusSelector?.('#apps-filter button');",
-        );
+        let _ = document::eval("window.__wolfUiFocusSelector?.('#apps-filter button');");
     });
     let grid_actions = action_hints([
         ActionHint::new(UiHint::Navigate, "Navigate"),
