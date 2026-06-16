@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1
 
 ARG BASE_APP_IMAGE=ghcr.io/games-on-whales/base-app:edge
 ARG RUST_VERSION=1.96.0
