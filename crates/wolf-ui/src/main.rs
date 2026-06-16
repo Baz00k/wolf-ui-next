@@ -31,6 +31,10 @@ enum Route {
 const STYLES_CSS: Asset = asset!("/assets/dist/styles.css");
 const SCROLL_ANIMATION_JS: Asset = asset!("/assets/scroll-animation.js");
 const FOCUS_NAVIGATION_JS: Asset = asset!("/assets/focus-navigation.js");
+const UI_SOUNDS_JS: Asset = asset!("/assets/ui-sounds.js");
+const NAVIGATION_SOUND: Asset = asset!("/assets/audio/navigation.ogg");
+const SELECT_SOUND: Asset = asset!("/assets/audio/select.ogg");
+const BACK_SOUND: Asset = asset!("/assets/audio/back.ogg");
 
 fn main() {
     init_logging();
@@ -77,6 +81,10 @@ fn App() -> Element {
 
     rsx! {
         document::Stylesheet { href: STYLES_CSS }
+        script {
+            "window.__wolfUiSoundUrls = {{ navigate: '{NAVIGATION_SOUND}', select: '{SELECT_SOUND}', back: '{BACK_SOUND}' }};"
+        }
+        script { src: UI_SOUNDS_JS }
         script { src: SCROLL_ANIMATION_JS }
         script { src: FOCUS_NAVIGATION_JS }
         input::InputProvider {

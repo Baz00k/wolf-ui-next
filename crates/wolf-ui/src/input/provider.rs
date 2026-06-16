@@ -42,9 +42,6 @@ pub fn InputProvider(children: Element) -> Element {
                         action,
                     } => {
                         update_source(source, next_source);
-                        if matches!(next_source, InputSource::Gamepad(_)) {
-                            recover_focus();
-                        }
                         dispatch_action(action);
                     }
                 }
@@ -62,7 +59,8 @@ pub fn InputProvider(children: Element) -> Element {
             if let Some(action) = keyboard_action(&event) {
                 update_source(source, InputSource::MouseKeyboard);
 
-                if action == UiAction::Accept {
+                if action == UiAction::Accept && event.is_auto_repeating() {
+                    event.prevent_default();
                     return;
                 }
 

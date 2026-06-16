@@ -20,6 +20,7 @@
         "page-down": "page-down",
     };
     let lastActionHintsJson = null;
+    const uiSounds = window.__wolfUiSounds ?? { play() {} };
 
     function isVisible(element) {
         return visibleRect(element) !== null;
@@ -348,34 +349,52 @@
         switch (action) {
             case "accept":
                 ensureFocusableActiveElement();
-                if (dispatchRustAction(action)) break;
-                activateFocused();
+                if (dispatchRustAction(action) || activateFocused()) {
+                    uiSounds.play("select");
+                }
                 break;
             case "left":
             case "right":
             case "up":
             case "down":
-                if (dispatchRustAction(action)) break;
-                if (!document.activeElement?.matches?.(FOCUSABLE_SELECTOR) || !isVisible(document.activeElement)) {
-                    ensureFocusableActiveElement();
+                if (dispatchRustAction(action)) {
+                    uiSounds.play("navigate");
                     break;
                 }
-                moveFocus(action);
+                if (!document.activeElement?.matches?.(FOCUSABLE_SELECTOR) || !isVisible(document.activeElement)) {
+                    if (ensureFocusableActiveElement()) uiSounds.play("navigate");
+                    break;
+                }
+                if (moveFocus(action)) uiSounds.play("navigate");
                 break;
             case "page-up":
-                if (dispatchRustAction(action)) break;
+                if (dispatchRustAction(action)) {
+                    uiSounds.play("navigate");
+                    break;
+                }
                 window.scrollBy({ top: -window.innerHeight * 0.8, behavior: "smooth" });
+                uiSounds.play("navigate");
                 break;
             case "page-down":
-                if (dispatchRustAction(action)) break;
+                if (dispatchRustAction(action)) {
+                    uiSounds.play("navigate");
+                    break;
+                }
                 window.scrollBy({ top: window.innerHeight * 0.8, behavior: "smooth" });
+                uiSounds.play("navigate");
                 break;
             case "cancel":
-                if (dispatchRustAction(action)) break;
+                if (dispatchRustAction(action)) {
+                    uiSounds.play("back");
+                    break;
+                }
                 document.dispatchEvent(new CustomEvent("wolf-ui-cancel"));
                 break;
             case "menu":
-                if (dispatchRustAction(action)) break;
+                if (dispatchRustAction(action)) {
+                    uiSounds.play("navigate");
+                    break;
+                }
                 document.dispatchEvent(new CustomEvent("wolf-ui-menu"));
                 break;
         }
