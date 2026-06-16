@@ -41,6 +41,11 @@ jobs:
       - name: Cache Cargo artifacts
         uses: Swatinem/rust-cache@v2
 
+      - name: Generate Tailwind CSS placeholder
+        run: |
+          mkdir -p crates/wolf-ui/assets/dist
+          touch crates/wolf-ui/assets/dist/styles.css
+
       - name: Install build dependencies
         run: |
           sudo apt-get update -y
