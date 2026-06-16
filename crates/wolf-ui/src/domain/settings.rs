@@ -182,7 +182,10 @@ mod tests {
     fn env_flag_parses_truthy_values() {
         for value in ["1", "true", "TRUE", "Yes", "on"] {
             unsafe { std::env::set_var("WOLF_UI_TEST_FLAG", value) };
-            assert!(env_flag("WOLF_UI_TEST_FLAG", false), "{value} should be true");
+            assert!(
+                env_flag("WOLF_UI_TEST_FLAG", false),
+                "{value} should be true"
+            );
         }
 
         unsafe { std::env::remove_var("WOLF_UI_TEST_FLAG") };
@@ -192,7 +195,10 @@ mod tests {
     fn env_flag_parses_other_values_as_false() {
         for value in ["0", "false", "off", ""] {
             unsafe { std::env::set_var("WOLF_UI_TEST_FLAG", value) };
-            assert!(!env_flag("WOLF_UI_TEST_FLAG", true), "{value} should be false");
+            assert!(
+                !env_flag("WOLF_UI_TEST_FLAG", true),
+                "{value} should be false"
+            );
         }
 
         unsafe { std::env::remove_var("WOLF_UI_TEST_FLAG") };

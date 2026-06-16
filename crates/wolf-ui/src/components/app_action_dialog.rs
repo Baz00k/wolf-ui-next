@@ -22,19 +22,30 @@ pub enum AppAction {
     Download,
 }
 
+type ActionRunner = Action<
+    (
+        AppCardData,
+        AppAction,
+        Option<Vec<i64>>,
+        Signal<Option<f64>>,
+    ),
+    bool,
+>;
+
+#[derive(Clone, Copy)]
+struct DialogActionContext {
+    loading_action: Signal<Option<AppAction>>,
+    progress: Signal<Option<f64>>,
+    action_runner: ActionRunner,
+    toasts: ToastContext,
+    onclose: EventHandler<()>,
+}
+
 #[component]
 pub fn AppActionDialog(
     app: AppCardData,
     actions: Vec<AppAction>,
-    mut action_runner: Action<
-        (
-            AppCardData,
-            AppAction,
-            Option<Vec<i64>>,
-            Signal<Option<f64>>,
-        ),
-        bool,
-    >,
+    action_runner: ActionRunner,
     onclose: EventHandler<()>,
 ) -> Element {
     let loading_action = use_signal(|| None::<AppAction>);
@@ -49,6 +60,13 @@ pub fn AppActionDialog(
             onclose.call(());
         }
     });
+    let ctx = DialogActionContext {
+        loading_action,
+        progress,
+        action_runner,
+        toasts,
+        onclose,
+    };
 
     rsx! {
         ActionDialog {
@@ -65,16 +83,7 @@ pub fn AppActionDialog(
                         onclick: {
                             let app = app.clone();
                             move |_| {
-                                request_or_start_action(
-                                    app.clone(),
-                                    action,
-                                    pin_prompt,
-                                    loading_action,
-                                    progress,
-                                    action_runner,
-                                    toasts,
-                                    onclose,
-                                );
+                                request_or_start_action(app.clone(), action, pin_prompt, ctx);
                             }
                         },
                         ActionIcon { action }
@@ -106,16 +115,7 @@ pub fn AppActionDialog(
                                 pin_prompt.set(Some(PinPrompt::EnterPin(AppAction::StartCoop)));
                             } else {
                                 pin_prompt.set(None);
-                                start_dialog_action(
-                                    app.clone(),
-                                    AppAction::StartCoop,
-                                    None,
-                                    loading_action,
-                                    progress,
-                                    action_runner,
-                                    toasts,
-                                    onclose,
-                                );
+                                start_dialog_action(app.clone(), AppAction::StartCoop, None, ctx);
                             }
                         },
                         oncancel: move |_| pin_prompt.set(None),
@@ -128,16 +128,7 @@ pub fn AppActionDialog(
                         submit_label: pin_submit_label(action).to_string(),
                         onsubmit: move |pin| {
                             pin_prompt.set(None);
-                            start_dialog_action(
-                                app.clone(),
-                                action,
-                                Some(pin),
-                                loading_action,
-                                progress,
-                                action_runner,
-                                toasts,
-                                onclose,
-                            );
+                            start_dialog_action(app.clone(), action, Some(pin), ctx);
                         },
                         oncancel: move |_| {
                             if action == AppAction::StartCoop {
@@ -163,21 +154,9 @@ fn request_or_start_action(
     app: AppCardData,
     action: AppAction,
     mut pin_prompt: Signal<Option<PinPrompt>>,
-    loading_action: Signal<Option<AppAction>>,
-    progress: Signal<Option<f64>>,
-    action_runner: Action<
-        (
-            AppCardData,
-            AppAction,
-            Option<Vec<i64>>,
-            Signal<Option<f64>>,
-        ),
-        bool,
-    >,
-    toasts: ToastContext,
-    onclose: EventHandler<()>,
+    ctx: DialogActionContext,
 ) {
-    if loading_action().is_some() {
+    if ctx.loading_action.read().is_some() {
         return;
     }
 
@@ -186,36 +165,23 @@ fn request_or_start_action(
         return;
     }
 
-    start_dialog_action(
-        app,
-        action,
-        None,
-        loading_action,
-        progress,
-        action_runner,
-        toasts,
-        onclose,
-    );
+    start_dialog_action(app, action, None, ctx);
 }
 
 fn start_dialog_action(
     app: AppCardData,
     action: AppAction,
     pin: Option<Vec<i64>>,
-    mut loading_action: Signal<Option<AppAction>>,
-    mut progress: Signal<Option<f64>>,
-    mut action_runner: Action<
-        (
-            AppCardData,
-            AppAction,
-            Option<Vec<i64>>,
-            Signal<Option<f64>>,
-        ),
-        bool,
-    >,
-    mut toasts: ToastContext,
-    onclose: EventHandler<()>,
+    ctx: DialogActionContext,
 ) {
+    let DialogActionContext {
+        mut loading_action,
+        mut progress,
+        mut action_runner,
+        mut toasts,
+        onclose,
+    } = ctx;
+
     if loading_action().is_some() {
         return;
     }
