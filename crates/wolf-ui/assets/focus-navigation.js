@@ -22,6 +22,10 @@
     let lastActionHintsJson = null;
     const uiSounds = window.__wolfUiSounds ?? { play() {} };
 
+    const AUTOFOCUS_ATTRIBUTE = "data-autofocus";
+    let usingMouse = false;
+    document.addEventListener("pointerdown", () => (usingMouse = true), true);
+
     function isVisible(element) {
         return visibleRect(element) !== null;
     }
@@ -181,7 +185,8 @@
     function focusAndScrollElement(element, options = {}) {
         if (!element) return false;
 
-        element.focus({ preventScroll: true });
+        // Gamepad input needs an explicit focus-visible hint.
+        element.focus({ preventScroll: true, focusVisible: !usingMouse });
         window.__wolfUiScrollIntoView?.(element, options);
         return true;
     }
@@ -190,6 +195,13 @@
     window.__wolfUiFocusSelector = (selector, options = {}) => {
         const element = document.querySelector(selector);
         return focusAndScrollElement(element, options);
+    };
+
+    window.__wolfUiFocusAutofocus = () => {
+        const scope = activeFocusTrap() ?? document;
+        const candidates = Array.from(scope.querySelectorAll(`${FOCUSABLE_SELECTOR}[${AUTOFOCUS_ATTRIBUTE}='true']`));
+        const element = candidates.find(isVisible);
+        return focusAndScrollElement(element);
     };
 
     function focusFirst(scope) {
@@ -205,7 +217,8 @@
             return true;
         }
 
-        return focusFirst(scopeFor(document.activeElement));
+        if (focusFirst(scopeFor(document.activeElement))) return true;
+        return focusFirst(document);
     }
 
     window.__wolfUiEnsureFocusableActiveElement = ensureFocusableActiveElement;
@@ -346,6 +359,7 @@
     }
 
     window.__wolfUiDispatchAction = (action) => {
+        usingMouse = false;
         switch (action) {
             case "accept":
                 ensureFocusableActiveElement();

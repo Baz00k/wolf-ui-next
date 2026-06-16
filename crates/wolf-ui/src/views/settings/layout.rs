@@ -74,6 +74,7 @@ fn SettingsNavItem(category: SettingsCategory, active: SettingsCategory) -> Elem
             class: "w-full justify-start rounded-xl px-5 font-medium",
             to: category.route().to_string(),
             action_label: category.label(),
+            autofocus: selected,
             "{category.label()}"
         }
     }

@@ -57,16 +57,16 @@ pub fn Button(
             "bg-destructive text-destructive-foreground hover:bg-destructive/90"
         }
         ButtonVariant::Menu => {
-            "border border-transparent text-left hover:border-foreground/30 hover:bg-accent hover:text-accent-foreground focus:border-foreground focus:bg-accent focus:text-accent-foreground"
+            "border border-transparent text-left hover:border-foreground/30 hover:bg-accent hover:text-accent-foreground focus-visible:border-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
         }
         ButtonVariant::MenuActive => {
-            "border border-primary/40 bg-primary/15 text-left text-foreground shadow-lg shadow-primary/10 hover:bg-primary/20 focus:border-primary focus:bg-primary/20"
+            "border border-primary/40 bg-primary/15 text-left text-foreground shadow-lg shadow-primary/10 hover:bg-primary/20 focus-visible:border-primary focus-visible:bg-primary/20"
         }
         ButtonVariant::Chrome => {
-            "border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur hover:border-primary/50 hover:bg-primary/15 hover:text-foreground focus:border-primary/70 focus:bg-primary/15 focus:text-foreground"
+            "border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur hover:border-primary/50 hover:bg-primary/15 hover:text-foreground focus-visible:border-primary/70 focus-visible:bg-primary/15 focus-visible:text-foreground"
         }
         ButtonVariant::ChromeDestructive => {
-            "border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur hover:border-destructive/60 hover:bg-destructive/15 hover:text-destructive-foreground focus:border-destructive/70 focus:bg-destructive/15 focus:text-destructive-foreground"
+            "border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur hover:border-destructive/60 hover:bg-destructive/15 hover:text-destructive-foreground focus-visible:border-destructive/70 focus-visible:bg-destructive/15 focus-visible:text-destructive-foreground"
         }
     };
     let size_class = match size {
@@ -79,7 +79,7 @@ pub fn Button(
         ButtonSize::IconLg => "h-10 w-10 sm:h-12 sm:w-12",
     };
     let class = tw_merge!(
-        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium outline-none transition-colors focus:ring-2 focus:ring-ring/80 focus:ring-offset-2 focus:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
         variant_class,
         size_class,
         class,

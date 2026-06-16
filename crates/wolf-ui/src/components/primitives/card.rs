@@ -51,7 +51,7 @@ pub fn CardFooter(#[props(default)] class: String, children: Element) -> Element
 }
 
 /// Focusable grid-card wrapper (3:4 aspect) with the shared lift-on-focus
-/// motion. Style the inner [`Card`] with `group-focus:`/`group-hover:`
+/// motion. Style the inner [`Card`] with `group-focus-visible:`/`group-hover:`
 /// variants.
 #[component]
 pub fn CardTrigger(
@@ -65,7 +65,7 @@ pub fn CardTrigger(
     children: Element,
 ) -> Element {
     let class = tw_merge!(
-        "group relative flex aspect-[3/4] w-full border-0 p-0 outline-none transition duration-200 ease-out hover:-translate-y-1 focus:-translate-y-1 active:scale-95",
+        "group relative flex aspect-[3/4] w-full border-0 p-0 outline-none transition duration-200 ease-out hover:-translate-y-1 focus-visible:-translate-y-1 active:scale-95",
         class,
     );
 

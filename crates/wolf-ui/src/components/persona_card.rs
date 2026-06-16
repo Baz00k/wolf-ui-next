@@ -24,9 +24,9 @@ pub fn PersonaCard(
             to,
             autofocus,
             onclick,
-            Card { class: "relative flex h-full w-full flex-col items-center overflow-hidden shadow-black/30 transition duration-200 ease-out group-hover:border-foreground/35 group-hover:bg-accent group-focus:border-foreground group-focus:ring-4 group-focus:ring-ring/60 group-focus:ring-offset-2 group-focus:ring-offset-background",
+            Card { class: "relative flex h-full w-full flex-col items-center overflow-hidden shadow-black/30 transition duration-200 ease-out group-hover:border-foreground/35 group-hover:bg-accent group-focus-visible:border-foreground group-focus-visible:ring-4 group-focus-visible:ring-ring/60 group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background",
                 PersonaCardMedia {
-                    div { class: "mb-6 flex h-44 w-44 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground transition group-hover:bg-secondary group-hover:text-secondary-foreground group-focus:bg-secondary group-focus:text-secondary-foreground",
+                    div { class: "mb-6 flex h-44 w-44 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground transition group-hover:bg-secondary group-hover:text-secondary-foreground group-focus-visible:bg-secondary group-focus-visible:text-secondary-foreground",
                         {avatar}
                     }
                 }

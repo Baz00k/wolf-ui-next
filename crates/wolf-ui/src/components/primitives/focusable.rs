@@ -20,14 +20,15 @@ pub fn Focusable(
 ) -> Element {
     let actions = native_action(UiAction::Accept, action_label);
     let index = index.map(|index| index.to_string());
+    let autofocus = autofocus.then_some("true");
     let handle_click = move |event| {
         if let Some(handler) = onclick {
             handler.call(event);
         }
     };
-    let handle_mounted = move |event: MountedEvent| async move {
-        if autofocus {
-            let _ = event.data().set_focus(true).await;
+    let handle_mounted = move |_: MountedEvent| {
+        if autofocus.is_some() {
+            let _ = document::eval("window.__wolfUiFocusAutofocus?.();");
         }
     };
 
@@ -37,6 +38,7 @@ pub fn Focusable(
                 to,
                 class,
                 "data-focusable": "true",
+                "data-autofocus": autofocus,
                 "data-actions": actions,
                 "data-grid-index": index,
                 onclick: handle_click,
@@ -50,6 +52,7 @@ pub fn Focusable(
         button {
             class,
             "data-focusable": "true",
+            "data-autofocus": autofocus,
             "data-actions": actions,
             "data-grid-index": index,
             disabled,
