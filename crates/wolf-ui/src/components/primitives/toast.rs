@@ -54,13 +54,11 @@ impl ToastOptions {
         }
     }
 
-    #[allow(dead_code)]
     pub fn dismissible(mut self) -> Self {
         self.dismissible = true;
         self
     }
 
-    #[allow(dead_code)]
     pub fn persistent(mut self) -> Self {
         self.auto_hide = None;
         self

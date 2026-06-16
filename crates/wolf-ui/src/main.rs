@@ -7,6 +7,8 @@ mod input;
 mod views;
 
 use api::ApiContext;
+use components::StartupAutoUpdate;
+use components::primitives::ToastViewport;
 use views::{AppLayout, ProfileApps, Profiles, Settings, SettingsImageUpdates, SettingsLayout};
 
 #[derive(Debug, Clone, Routable, PartialEq)]
@@ -80,5 +82,7 @@ fn App() -> Element {
         input::InputProvider {
             Router::<Route> {}
         }
+        ToastViewport {}
+        StartupAutoUpdate {}
     }
 }

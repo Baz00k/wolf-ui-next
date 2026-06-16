@@ -5,6 +5,7 @@ use wolf_api::types::{RflReflectorWolfCoreEventsAppReflTypeRunner, WolfConfigApp
 use crate::api::ApiContext;
 
 pub(crate) const SETTINGS_ENABLED_ENV: &str = "WOLF_UI_SETTINGS_ENABLED";
+pub(crate) const AUTO_UPDATE_ENV: &str = "WOLF_UI_AUTOUPDATE";
 
 #[derive(Clone, PartialEq, Eq)]
 pub(crate) struct WolfUiImageState {
@@ -15,14 +16,22 @@ pub(crate) struct WolfUiImageState {
 }
 
 pub(crate) fn settings_enabled() -> bool {
-    std::env::var(SETTINGS_ENABLED_ENV)
+    env_flag(SETTINGS_ENABLED_ENV, false)
+}
+
+pub(crate) fn auto_update_enabled() -> bool {
+    env_flag(AUTO_UPDATE_ENV, false)
+}
+
+fn env_flag(key: &str, default: bool) -> bool {
+    std::env::var(key)
         .map(|value| {
             matches!(
                 value.to_ascii_lowercase().as_str(),
                 "1" | "true" | "yes" | "on"
             )
         })
-        .unwrap_or(false)
+        .unwrap_or(default)
 }
 
 pub(crate) async fn load_wolf_ui_image_state() -> Result<WolfUiImageState, String> {
@@ -84,6 +93,11 @@ pub(crate) async fn update_wolf_ui_image(
     }
 
     Ok(downloaded)
+}
+
+pub(crate) async fn run_startup_auto_update() -> Result<bool, String> {
+    let state = load_wolf_ui_image_state().await?;
+    update_wolf_ui_image(state.source, |_| {}).await
 }
 
 fn is_wolf_ui_app(app: &App) -> bool {
@@ -157,6 +171,32 @@ mod tests {
     use wolf_api::types::{RflReflectorWolfCoreEventsAppReflType, WolfConfigAppCMDTagged};
 
     use super::*;
+
+    #[test]
+    fn env_flag_uses_default_when_unset() {
+        assert!(!env_flag("WOLF_UI_TEST_FLAG_MISSING", false));
+        assert!(env_flag("WOLF_UI_TEST_FLAG_MISSING", true));
+    }
+
+    #[test]
+    fn env_flag_parses_truthy_values() {
+        for value in ["1", "true", "TRUE", "Yes", "on"] {
+            unsafe { std::env::set_var("WOLF_UI_TEST_FLAG", value) };
+            assert!(env_flag("WOLF_UI_TEST_FLAG", false), "{value} should be true");
+        }
+
+        unsafe { std::env::remove_var("WOLF_UI_TEST_FLAG") };
+    }
+
+    #[test]
+    fn env_flag_parses_other_values_as_false() {
+        for value in ["0", "false", "off", ""] {
+            unsafe { std::env::set_var("WOLF_UI_TEST_FLAG", value) };
+            assert!(!env_flag("WOLF_UI_TEST_FLAG", true), "{value} should be false");
+        }
+
+        unsafe { std::env::remove_var("WOLF_UI_TEST_FLAG") };
+    }
 
     #[test]
     fn detects_wolf_ui_from_title_runner_name_or_image() {
