@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 ARG BASE_APP_IMAGE=ghcr.io/games-on-whales/base-app:edge
-ARG RUST_VERSION=1.95.0
+ARG RUST_VERSION=1.96.0
 ARG DIOXUS_CLI_VERSION=0.7.9
 
 FROM rust:${RUST_VERSION}-trixie AS chef
