@@ -2,11 +2,10 @@
     if (window.__wolfUiSoundsInstalled) return;
     window.__wolfUiSoundsInstalled = true;
 
-    // Playback gain per sound, kept explicit so volume balancing lives in one place.
     const SOUND_GAINS = {
-        navigate: 0.4,
+        navigate: 0.2,
         select: 0.6,
-        back: 0.4,
+        back: 0.3,
     };
     const DEFAULT_GAIN = 0.5;
 
