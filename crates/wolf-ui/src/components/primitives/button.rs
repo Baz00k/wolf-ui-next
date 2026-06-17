@@ -70,16 +70,16 @@ pub fn Button(
         }
     };
     let size_class = match size {
-        ButtonSize::Default => "h-10 px-4 py-2",
-        ButtonSize::Sm => "h-9 rounded-md px-3",
-        ButtonSize::Lg => "h-11 rounded-xl px-8",
-        ButtonSize::Xl => "h-14 rounded-xl px-8 text-base font-semibold",
-        ButtonSize::IconSm => "h-9 w-9 rounded-full",
-        ButtonSize::Icon => "h-10 w-10",
-        ButtonSize::IconLg => "h-10 w-10 sm:h-12 sm:w-12",
+        ButtonSize::Default => "min-h-14 px-6 py-3 text-base",
+        ButtonSize::Sm => "min-h-12 rounded-lg px-4 py-2 text-base",
+        ButtonSize::Lg => "min-h-16 rounded-xl px-8 py-4 text-lg",
+        ButtonSize::Xl => "min-h-18 rounded-xl px-8 py-4 text-lg font-semibold",
+        ButtonSize::IconSm => "h-12 w-12 rounded-full text-base",
+        ButtonSize::Icon => "h-14 w-14 text-base",
+        ButtonSize::IconLg => "h-14 w-14 text-lg sm:h-16 sm:w-16",
     };
     let class = tw_merge!(
-        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-lg font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
         variant_class,
         size_class,
         class,

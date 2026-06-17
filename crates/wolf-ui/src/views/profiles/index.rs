@@ -128,7 +128,7 @@ fn ProfilesHeader() -> Element {
                         onclick: move |_| {
                             navigator.push(Route::SettingsImageUpdates {});
                         },
-                        Icon { icon: HiCog, class: "h-5 w-5", width: None, height: None, title: None }
+                        Icon { icon: HiCog, class: "h-7 w-7 sm:h-8 sm:w-8", width: None, height: None, title: None }
                     }
                 }
             }

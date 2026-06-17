@@ -22,7 +22,7 @@ pub fn SessionShutdownControl() -> Element {
             action_label: "End session",
             disabled: stop_session.pending(),
             onclick: move |_| dialog_open.set(true),
-            Icon { icon: HiLogout, class: "h-5 w-5", width: None, height: None, title: None }
+            Icon { icon: HiLogout, class: "h-7 w-7 sm:h-8 sm:w-8", width: None, height: None, title: None }
         }
         if dialog_open() {
             SessionShutdownDialog {
