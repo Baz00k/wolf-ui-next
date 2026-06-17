@@ -6,7 +6,7 @@ use crate::components::primitives::Focusable;
 #[component]
 pub fn Card(#[props(default)] class: String, children: Element) -> Element {
     let class = tw_merge!(
-        "rounded-4xl border border-border bg-card text-card-foreground shadow-2xl",
+        "rounded-4xl border-2 border-border bg-card text-card-foreground shadow-2xl",
         class,
     );
 
@@ -19,7 +19,7 @@ pub fn Card(#[props(default)] class: String, children: Element) -> Element {
 
 #[component]
 pub fn CardHeader(#[props(default)] class: String, children: Element) -> Element {
-    let class = tw_merge!("border-b border-border/70 px-6 py-6", class);
+    let class = tw_merge!("border-b-2 border-border/70 px-6 py-6", class);
 
     rsx! {
         div { class,
@@ -41,7 +41,7 @@ pub fn CardContent(#[props(default)] class: String, children: Element) -> Elemen
 
 #[component]
 pub fn CardFooter(#[props(default)] class: String, children: Element) -> Element {
-    let class = tw_merge!("border-t border-border/70 px-4 py-4", class);
+    let class = tw_merge!("border-t-2 border-border/70 px-4 py-4", class);
 
     rsx! {
         div { class,
@@ -50,9 +50,7 @@ pub fn CardFooter(#[props(default)] class: String, children: Element) -> Element
     }
 }
 
-/// Focusable grid-card wrapper (3:4 aspect) with the shared lift-on-focus
-/// motion. Style the inner [`Card`] with `group-focus-visible:`/`group-hover:`
-/// variants.
+/// Focusable grid-card wrapper with the shared lift-on-focus motion.
 #[component]
 pub fn CardTrigger(
     #[props(default)] class: String,
