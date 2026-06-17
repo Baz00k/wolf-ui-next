@@ -3,10 +3,10 @@ use dioxus::prelude::*;
 use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::hi_solid_icons::{HiCheck, HiLockClosed};
 
-use crate::components::primitives::ActionDialog;
 use crate::components::primitives::{
-    Button, ButtonSize, ButtonVariant, CardContent, CardFooter, DialogCancelButton, Numpad,
+    Button, ButtonSize, ButtonVariant, CardContent, CardFooter, Numpad,
 };
+use crate::components::{ActionDialog, DialogCancelButton};
 use crate::input::{UiAction, use_ui_action};
 
 const MAX_PIN_DIGITS: usize = 8;

@@ -15,7 +15,6 @@ pub use badge::{Badge, BadgeVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::{Card, CardContent, CardFooter, CardHeader, CardTrigger};
 pub use card_grid::{CardGrid, CardGridViewport};
-pub use dialog::{ActionDialog, ActionDialogItem, DialogCancelButton};
 #[allow(unused_imports)]
 pub use dialog::{Dialog, DialogDescription, DialogHeader, DialogTitle};
 pub use focusable::Focusable;

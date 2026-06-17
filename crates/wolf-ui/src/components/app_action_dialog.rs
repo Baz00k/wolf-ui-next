@@ -7,9 +7,9 @@ use dioxus_free_icons::icons::hi_solid_icons::{
 use crate::components::app_card::AppCardData;
 use crate::components::pin_dialog::{PinInputDialog, PinProtectQuestionDialog};
 use crate::components::primitives::{
-    ActionDialog, ActionDialogItem, CardContent, CardFooter, DialogCancelButton, ProgressPanel,
-    ProgressTone, ToastContext, ToastOptions, use_toasts,
+    CardContent, CardFooter, ProgressPanel, ProgressTone, ToastContext, ToastOptions, use_toasts,
 };
+use crate::components::{ActionDialog, ActionDialogItem, DialogCancelButton};
 use crate::input::{UiAction, use_ui_action};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

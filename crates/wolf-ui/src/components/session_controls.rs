@@ -3,9 +3,10 @@ use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::hi_solid_icons::HiLogout;
 
 use crate::components::primitives::{
-    ActionDialog, Button, ButtonSize, ButtonVariant, CardContent, CardFooter, DialogCancelButton,
-    Spinner, StatusAlert, StatusAlertVariant,
+    Button, ButtonSize, ButtonVariant, CardContent, CardFooter, Spinner, StatusAlert,
+    StatusAlertVariant,
 };
+use crate::components::{ActionDialog, DialogCancelButton};
 use crate::domain::session::stop_current_session;
 use crate::input::{UiAction, use_ui_action};
 

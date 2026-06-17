@@ -3,11 +3,10 @@ use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::hi_solid_icons::{HiPlay, HiStop};
 use wolf_api::lobbies::Lobby;
 
-use crate::components::PinInputDialog;
 use crate::components::primitives::{
-    ActionDialog, ActionDialogItem, CardContent, CardFooter, DialogCancelButton, ToastContext,
-    ToastOptions, use_toasts,
+    CardContent, CardFooter, ToastContext, ToastOptions, use_toasts,
 };
+use crate::components::{ActionDialog, ActionDialogItem, DialogCancelButton, PinInputDialog};
 use crate::input::{UiAction, use_ui_action};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
