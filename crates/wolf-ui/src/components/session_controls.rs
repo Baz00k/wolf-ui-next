@@ -52,7 +52,7 @@ fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandle
             title: "End session?".to_string(),
             scope_actions: cancel_actions,
             class: "max-w-xl",
-            CardContent { class: "space-y-4 px-6 py-6",
+            CardContent { class: "space-y-4 px-6 py-6 min-h-48",
                 p { class: "text-lg leading-8 text-muted-foreground",
                     "Are you sure you want to end this session? This will disconnect your stream."
                 }
