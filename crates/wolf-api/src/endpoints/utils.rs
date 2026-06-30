@@ -12,7 +12,7 @@ impl<'api> Utils<'api> {
 
     pub async fn icon(&self, icon_path: &str) -> Result<Vec<u8>, ApiError> {
         self.api
-            .get_bytes_with_query("/api/v1/utils/get-icon", &[("icon_path", icon_path)])
+            .get_bytes_with_raw_query("/api/v1/utils/get-icon", &format!("icon_path={icon_path}"))
             .await
     }
 }

@@ -113,17 +113,17 @@ impl WolfApi {
         Err(error)
     }
 
-    pub(crate) async fn get_bytes_with_query<T>(
+    pub(crate) async fn get_bytes_with_raw_query(
         &self,
         path: &str,
-        query: &T,
-    ) -> Result<Vec<u8>, ApiError>
-    where
-        T: Serialize + ?Sized,
-    {
+        query: &str,
+    ) -> Result<Vec<u8>, ApiError> {
         let context = self.request_context("GET", path);
         let response = self
-            .send(context, self.http_client.get(self.url(path)).query(query))
+            .send(
+                context,
+                self.http_client.get(self.url_with_raw_query(path, query)),
+            )
             .await?;
 
         self.decode_bytes(context, response).await
@@ -160,6 +160,15 @@ impl WolfApi {
         let mut url = String::with_capacity(self.base_url.len() + path.len());
         url.push_str(&self.base_url);
         url.push_str(path);
+        url
+    }
+
+    fn url_with_raw_query(&self, path: &str, query: &str) -> String {
+        let mut url = String::with_capacity(self.base_url.len() + path.len() + query.len() + 1);
+        url.push_str(&self.base_url);
+        url.push_str(path);
+        url.push('?');
+        url.push_str(query);
         url
     }
 
@@ -301,4 +310,22 @@ pub(crate) async fn response_error(response: reqwest::Response) -> ApiError {
     }
 
     ApiError::Status { status, body }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn raw_query_url_keeps_local_paths_unescaped() {
+        let api = WolfApi::new("http://wolf.local", reqwest::Client::new());
+
+        assert_eq!(
+            api.url_with_raw_query(
+                "/api/v1/utils/get-icon",
+                "icon_path=/etc/wolf/covers/Gustav_Cover.png"
+            ),
+            "http://wolf.local/api/v1/utils/get-icon?icon_path=/etc/wolf/covers/Gustav_Cover.png"
+        );
+    }
 }
