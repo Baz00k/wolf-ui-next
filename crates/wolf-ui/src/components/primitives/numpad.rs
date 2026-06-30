@@ -11,14 +11,14 @@ pub fn Numpad(
     onclear: EventHandler<()>,
 ) -> Element {
     rsx! {
-        div { class: "mt-5 grid grid-cols-3 gap-3",
+        div { class: "mt-4 grid grid-cols-3 gap-2 xl:mt-5 xl:gap-3",
             for digit in 1..=9 {
                 NumpadDigit { digit, autofocus: digit == 1, ondigit }
             }
             Button {
                 variant: ButtonVariant::Menu,
                 size: ButtonSize::Xl,
-                class: "h-16 px-3 text-sm sm:text-base",
+                class: "h-13 px-3 text-sm sm:text-base xl:h-16",
                 action_label: "Delete digit".to_string(),
                 onclick: move |_| onbackspace.call(()),
                 Icon { icon: HiBackspace, class: "h-5 w-5", width: None, height: None }
@@ -28,7 +28,7 @@ pub fn Numpad(
             Button {
                 variant: ButtonVariant::Menu,
                 size: ButtonSize::Xl,
-                class: "h-16 px-3 text-sm sm:text-base",
+                class: "h-13 px-3 text-sm sm:text-base xl:h-16",
                 action_label: "Clear input".to_string(),
                 onclick: move |_| onclear.call(()),
                 Icon { icon: HiTrash, class: "h-5 w-5", width: None, height: None }
@@ -44,7 +44,7 @@ fn NumpadDigit(digit: i64, autofocus: bool, ondigit: EventHandler<i64>) -> Eleme
         Button {
             variant: ButtonVariant::Secondary,
             size: ButtonSize::Xl,
-            class: "h-16 text-2xl font-bold",
+            class: "h-13 text-xl font-bold xl:h-16 xl:text-2xl",
             autofocus,
             action_label: format!("Enter {digit}"),
             onclick: move |_| ondigit.call(digit),

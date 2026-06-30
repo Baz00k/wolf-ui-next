@@ -48,7 +48,7 @@ pub fn PinInputDialog(
             description,
             scope_actions: close_actions,
             class: "max-w-md overflow-hidden",
-            CardContent { class: "space-y-5 overflow-hidden",
+            CardContent { class: "space-y-4 overflow-hidden xl:space-y-5",
                 div { onkeydown,
                     PinDisplay { len: pin().len() }
                     Numpad {
@@ -135,15 +135,15 @@ pub fn PinProtectQuestionDialog(
 #[component]
 fn PinDisplay(len: usize) -> Element {
     rsx! {
-        div { class: "overflow-hidden rounded-2xl border border-border bg-background/70 px-6 py-5 text-center shadow-inner shadow-black/20",
+        div { class: "overflow-hidden rounded-2xl border border-border bg-background/70 px-6 py-4 text-center shadow-inner shadow-black/20 xl:py-5",
             div { class: "mx-auto flex max-w-full items-center justify-center gap-3 sm:gap-4",
                 for index in 0..MAX_PIN_DIGITS {
                     span {
-                        class: if index < len { "h-4 w-4 rounded-full bg-foreground" } else { "h-4 w-4 rounded-full border border-muted-foreground/40" },
+                        class: if index < len { "h-3 w-3 rounded-full bg-foreground xl:h-4 xl:w-4" } else { "h-3 w-3 rounded-full border border-muted-foreground/40 xl:h-4 xl:w-4" },
                     }
                 }
             }
-            p { class: "mt-3 text-sm font-medium text-muted-foreground", "{len}/{MAX_PIN_DIGITS} digits" }
+            p { class: "mt-2 text-sm font-medium text-muted-foreground xl:mt-3", "{len}/{MAX_PIN_DIGITS} digits" }
             p { class: "mt-1 text-xs font-medium text-muted-foreground", "Use the keypad, keyboard, or controller" }
         }
     }
