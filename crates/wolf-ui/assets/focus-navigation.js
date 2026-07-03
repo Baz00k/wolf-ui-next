@@ -6,7 +6,7 @@
     const ACTIONS_ATTRIBUTE = "data-actions";
     const SCOPE_ACTIONS_ATTRIBUTE = "data-scope-actions";
     const FOCUS_REGION_ATTRIBUTE = "data-focus-region";
-    const MAX_NAVIGATION_ANGLE_DEGREES = 60;
+    const MAX_NAVIGATION_ANGLE_DEGREES = 85;
     const MAX_NAVIGATION_ANGLE_RADIANS = (MAX_NAVIGATION_ANGLE_DEGREES * Math.PI) / 180;
     const ACTION_TO_HINT = {
         accept: "accept",
