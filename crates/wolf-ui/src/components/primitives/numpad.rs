@@ -21,7 +21,12 @@ pub fn Numpad(
                 class: "h-13 px-3 text-sm sm:text-base xl:h-16",
                 action_label: "Delete digit".to_string(),
                 onclick: move |_| onbackspace.call(()),
-                Icon { icon: HiBackspace, class: "h-5 w-5", width: None, height: None }
+                Icon {
+                    icon: HiBackspace,
+                    class: "h-5 w-5",
+                    width: None,
+                    height: None,
+                }
                 "Delete"
             }
             NumpadDigit { digit: 0, autofocus: false, ondigit }
@@ -31,7 +36,12 @@ pub fn Numpad(
                 class: "h-13 px-3 text-sm sm:text-base xl:h-16",
                 action_label: "Clear input".to_string(),
                 onclick: move |_| onclear.call(()),
-                Icon { icon: HiTrash, class: "h-5 w-5", width: None, height: None }
+                Icon {
+                    icon: HiTrash,
+                    class: "h-5 w-5",
+                    width: None,
+                    height: None,
+                }
                 "Clear"
             }
         }

@@ -31,12 +31,21 @@ pub fn PersonaCard(
                     }
                 }
                 PersonaCardLabel {
-                    h2 { class: "max-w-full truncate text-4xl font-bold tracking-tight", "{name}" }
+                    h2 { class: "max-w-full truncate text-4xl font-bold tracking-tight",
+                        "{name}"
+                    }
                 }
                 {badges}
                 if pin_locked {
-                    Badge { variant: BadgeVariant::Neutral, class: "absolute right-4 top-4 lg:right-5 lg:top-5",
-                        Icon { icon: HiLockClosed, class: "h-3.5 w-3.5", width: None, height: None }
+                    Badge {
+                        variant: BadgeVariant::Neutral,
+                        class: "absolute right-4 top-4 lg:right-5 lg:top-5",
+                        Icon {
+                            icon: HiLockClosed,
+                            class: "h-3.5 w-3.5",
+                            width: None,
+                            height: None,
+                        }
                         "PIN"
                     }
                 }

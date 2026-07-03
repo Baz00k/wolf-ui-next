@@ -41,8 +41,7 @@ pub fn Profiles() -> Element {
 
     rsx! {
         div { class: "h-full min-h-0",
-            section {
-                class: "relative flex h-full min-h-0 flex-col px-6 pt-8 sm:px-10 sm:pt-10 lg:px-16 lg:pt-12",
+            section { class: "relative flex h-full min-h-0 flex-col px-6 pt-8 sm:px-10 sm:pt-10 lg:px-16 lg:pt-12",
                 ProfilesHeader {}
                 div {
                     class: "flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-py-8 scrollbar-hide sm:scroll-py-10 lg:scroll-py-12",
@@ -58,21 +57,18 @@ pub fn Profiles() -> Element {
                             }
                         },
                         Some(Err(message)) => rsx! {
-                            div {
-                                class: "w-full h-full grid place-items-center",
+                            div { class: "w-full h-full grid place-items-center",
                                 StatusAlert {
                                     title: Some("Profiles unavailable".to_string()),
                                     message: message.clone(),
                                     variant: StatusAlertVariant::Error,
-                                    Button {
-                                        size: ButtonSize::Lg,
-                                        onclick: move |_| profiles.restart(),
-                                        "Retry"
-                                    }
+                                    Button { size: ButtonSize::Lg, onclick: move |_| profiles.restart(), "Retry" }
                                 }
                             }
                         },
-                        None => rsx! { ProfilesLoading {} },
+                        None => rsx! {
+                            ProfilesLoading {}
+                        },
                     }
                 }
             }
@@ -128,11 +124,19 @@ fn ProfilesHeader() -> Element {
                         onclick: move |_| {
                             navigator.push(Route::SettingsImageUpdates {});
                         },
-                        Icon { icon: HiCog, class: "h-7 w-7 sm:h-8 sm:w-8", width: None, height: None, title: None }
+                        Icon {
+                            icon: HiCog,
+                            class: "h-7 w-7 sm:h-8 sm:w-8",
+                            width: None,
+                            height: None,
+                            title: None,
+                        }
                     }
                 }
             }
-            h1 { class: "text-5xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl", "Who's playing?" }
+            h1 { class: "text-5xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl",
+                "Who's playing?"
+            }
             div { class: "justify-self-end", SessionShutdownControl {} }
         }
     }

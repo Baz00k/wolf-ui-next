@@ -22,7 +22,13 @@ pub fn SessionShutdownControl() -> Element {
             action_label: "End session",
             disabled: stop_session.pending(),
             onclick: move |_| dialog_open.set(true),
-            Icon { icon: HiLogout, class: "h-7 w-7 sm:h-8 sm:w-8", width: None, height: None, title: None }
+            Icon {
+                icon: HiLogout,
+                class: "h-7 w-7 sm:h-8 sm:w-8",
+                width: None,
+                height: None,
+                title: None,
+            }
         }
         if dialog_open() {
             SessionShutdownDialog {
@@ -64,10 +70,7 @@ fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandle
                 }
             }
             CardFooter { class: "grid gap-3 sm:grid-cols-2",
-                DialogCancelButton {
-                    disabled: pending,
-                    onclick: move |_| oncancel.call(()),
-                }
+                DialogCancelButton { disabled: pending, onclick: move |_| oncancel.call(()) }
                 Button {
                     variant: ButtonVariant::Destructive,
                     size: ButtonSize::Xl,
@@ -79,7 +82,9 @@ fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandle
                         spawn(async move {
                             stop_session.call().await;
                             if let Some(Err(error)) = stop_session.value() {
-                                tracing::warn!(target: "wolf-ui-session", "failed to end session: {error}");
+                                tracing::warn!(
+                                    target : "wolf-ui-session", "failed to end session: {error}"
+                                );
                             }
                         });
                     },

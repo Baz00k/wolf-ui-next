@@ -89,8 +89,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
     rsx! {
         div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-6 text-foreground sm:px-8 sm:pt-8 lg:px-12 lg:pt-10",
             AppsHeader { filter, selected_index, pending_focus_index }
-            section {
-                class: "relative min-h-0 flex-1 pt-4 sm:pt-5 lg:pt-6",
+            section { class: "relative min-h-0 flex-1 pt-4 sm:pt-5 lg:pt-6",
                 div {
                     class: "h-full w-full",
                     "data-focus-scope": "true",
@@ -99,7 +98,10 @@ pub fn ProfileApps(profile_id: String) -> Element {
                     match &*apps.read_unchecked() {
                         Some(Ok(state)) => rsx! {
                             AppsContent {
-                                response: AppListResponse { success: true, apps: state.apps.clone() },
+                                response: AppListResponse {
+                                    success: true,
+                                    apps: state.apps.clone(),
+                                },
                                 profile_id: profile_id.clone(),
                                 lobbies: lobbies(),
                                 images: state.images.clone(),
@@ -117,14 +119,12 @@ pub fn ProfileApps(profile_id: String) -> Element {
                                 title: Some("Apps unavailable".to_string()),
                                 message: message.clone(),
                                 variant: StatusAlertVariant::Error,
-                                Button {
-                                    size: ButtonSize::Lg,
-                                    onclick: move |_| apps.restart(),
-                                    "Retry"
-                                }
+                                Button { size: ButtonSize::Lg, onclick: move |_| apps.restart(), "Retry" }
                             }
                         },
-                        None => rsx! { AppsLoading {} },
+                        None => rsx! {
+                            AppsLoading {}
+                        },
                     }
                 }
             }

@@ -9,8 +9,6 @@ pub fn Spinner(#[props(default)] class: String) -> Element {
     );
 
     rsx! {
-        div {
-            class,
-        }
+        div { class }
     }
 }

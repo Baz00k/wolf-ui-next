@@ -34,16 +34,11 @@ pub fn SettingsImageUpdates() -> Element {
                     title: Some("Update settings unavailable".to_string()),
                     message: message.clone(),
                     variant: StatusAlertVariant::Error,
-                    Button {
-                        size: ButtonSize::Lg,
-                        onclick: move |_| image_state.restart(),
-                        "Retry"
-                    }
+                    Button { size: ButtonSize::Lg, onclick: move |_| image_state.restart(), "Retry" }
                 }
             },
             None => rsx! {
-                div {
-                    class: "w-full h-full grid place-items-center",
+                div { class: "w-full h-full grid place-items-center",
                     Spinner { class: "m-8 h-8 w-8" }
                 }
             },
@@ -73,9 +68,21 @@ fn UpdatePanel(
             CardContent { class: "space-y-8 px-6 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10",
                 PageHeader {}
                 div { class: "grid gap-4 xl:grid-cols-5 xl:items-stretch",
-                    ImageInfoTile { label: "Current image source".to_string(), value: state.repository.clone(), wide: true }
-                    ImageInfoTile { label: "Current image version".to_string(), value: state.version.clone(), wide: false }
-                    ImageInfoTile { label: "Image status".to_string(), value: image_status.to_string(), failed: update_failed }
+                    ImageInfoTile {
+                        label: "Current image source".to_string(),
+                        value: state.repository.clone(),
+                        wide: true,
+                    }
+                    ImageInfoTile {
+                        label: "Current image version".to_string(),
+                        value: state.version.clone(),
+                        wide: false,
+                    }
+                    ImageInfoTile {
+                        label: "Image status".to_string(),
+                        value: image_status.to_string(),
+                        failed: update_failed,
+                    }
                     UpdateButton {
                         image: state.source.clone(),
                         disabled: update_disabled,
@@ -85,7 +92,10 @@ fn UpdatePanel(
                         onupdated,
                     }
                 }
-                ProgressBar { progress: progress_value, visible: pending || progress().is_some() }
+                ProgressBar {
+                    progress: progress_value,
+                    visible: pending || progress().is_some(),
+                }
             }
         }
     }
@@ -120,7 +130,9 @@ fn ImageInfoTile(
 
     rsx! {
         div { class,
-            p { class: "text-sm font-semibold uppercase tracking-widest text-muted-foreground", "{label}" }
+            p { class: "text-sm font-semibold uppercase tracking-widest text-muted-foreground",
+                "{label}"
+            }
             p { class: value_class, "{value}" }
         }
     }

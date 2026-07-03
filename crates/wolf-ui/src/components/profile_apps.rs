@@ -95,7 +95,8 @@ pub fn AppsContent(
             div { class: "flex h-full items-center justify-center",
                 StatusAlert {
                     title: Some("Apps unavailable".to_string()),
-                    message: "Wolf returned an unsuccessful app response. Try again once the service is ready.".to_string(),
+                    message: "Wolf returned an unsuccessful app response. Try again once the service is ready."
+                        .to_string(),
                     variant: StatusAlertVariant::Error,
                 }
             }

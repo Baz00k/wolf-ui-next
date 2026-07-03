@@ -160,7 +160,12 @@ pub fn Toast(
                     class: "shrink-0 text-muted-foreground focus-visible:text-foreground",
                     action_label: "Dismiss notification",
                     onclick: move |_| ondismiss.call(()),
-                    Icon { icon: HiX, class: "h-4 w-4", width: None, height: None }
+                    Icon {
+                        icon: HiX,
+                        class: "h-4 w-4",
+                        width: None,
+                        height: None,
+                    }
                 }
             }
         }

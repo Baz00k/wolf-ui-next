@@ -111,7 +111,9 @@ fn StatusBadge(label: &'static str, #[props(default)] pulse: bool) -> Element {
             if pulse {
                 span { class: "h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" }
             }
-            span { class: "text-xs font-semibold uppercase tracking-widest text-muted-foreground", "{label}" }
+            span { class: "text-xs font-semibold uppercase tracking-widest text-muted-foreground",
+                "{label}"
+            }
         }
     }
 }

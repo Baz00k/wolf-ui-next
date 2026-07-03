@@ -100,10 +100,7 @@ pub fn AppActionDialog(
                 }
             }
             CardFooter {
-                DialogCancelButton {
-                    disabled: is_loading,
-                    onclick: move |_| onclose.call(()),
-                }
+                DialogCancelButton { disabled: is_loading, onclick: move |_| onclose.call(()) }
             }
         }
         if let Some(prompt) = pin_prompt() {
@@ -219,19 +216,44 @@ fn start_dialog_action(
 fn ActionIcon(action: AppAction) -> Element {
     match action {
         AppAction::Start | AppAction::Connect => rsx! {
-            Icon { icon: HiPlay, class: "h-5 w-5 text-emerald-400", width: None, height: None }
+            Icon {
+                icon: HiPlay,
+                class: "h-5 w-5 text-emerald-400",
+                width: None,
+                height: None,
+            }
         },
         AppAction::StartCoop => rsx! {
-            Icon { icon: HiUserGroup, class: "h-5 w-5 text-blue-400", width: None, height: None }
+            Icon {
+                icon: HiUserGroup,
+                class: "h-5 w-5 text-blue-400",
+                width: None,
+                height: None,
+            }
         },
         AppAction::Stop => rsx! {
-            Icon { icon: HiStop, class: "h-5 w-5 text-red-400", width: None, height: None }
+            Icon {
+                icon: HiStop,
+                class: "h-5 w-5 text-red-400",
+                width: None,
+                height: None,
+            }
         },
         AppAction::CheckUpdate => rsx! {
-            Icon { icon: HiRefresh, class: "h-5 w-5 text-yellow-300", width: None, height: None }
+            Icon {
+                icon: HiRefresh,
+                class: "h-5 w-5 text-yellow-300",
+                width: None,
+                height: None,
+            }
         },
         AppAction::Download => rsx! {
-            Icon { icon: HiDownload, class: "h-5 w-5 text-yellow-300", width: None, height: None }
+            Icon {
+                icon: HiDownload,
+                class: "h-5 w-5 text-yellow-300",
+                width: None,
+                height: None,
+            }
         },
     }
 }

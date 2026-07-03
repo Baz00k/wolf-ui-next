@@ -29,9 +29,7 @@ pub fn CardGrid(
     );
 
     rsx! {
-        div { class, style: max_width,
-            {children}
-        }
+        div { class, style: max_width, {children} }
     }
 }
 
@@ -45,8 +43,6 @@ pub fn CardGridViewport(#[props(default)] class: String, children: Element) -> E
     );
 
     rsx! {
-        div { class,
-            {children}
-        }
+        div { class, {children} }
     }
 }

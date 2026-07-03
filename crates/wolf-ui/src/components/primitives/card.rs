@@ -11,9 +11,7 @@ pub fn Card(#[props(default)] class: String, children: Element) -> Element {
     );
 
     rsx! {
-        div { class,
-            {children}
-        }
+        div { class, {children} }
     }
 }
 
@@ -22,9 +20,7 @@ pub fn CardHeader(#[props(default)] class: String, children: Element) -> Element
     let class = tw_merge!("border-b-2 border-border/70 px-6 py-6", class);
 
     rsx! {
-        div { class,
-            {children}
-        }
+        div { class, {children} }
     }
 }
 
@@ -33,9 +29,7 @@ pub fn CardContent(#[props(default)] class: String, children: Element) -> Elemen
     let class = tw_merge!("px-4 py-4", class);
 
     rsx! {
-        div { class,
-            {children}
-        }
+        div { class, {children} }
     }
 }
 
@@ -44,9 +38,7 @@ pub fn CardFooter(#[props(default)] class: String, children: Element) -> Element
     let class = tw_merge!("border-t-2 border-border/70 px-4 py-4", class);
 
     rsx! {
-        div { class,
-            {children}
-        }
+        div { class, {children} }
     }
 }
 

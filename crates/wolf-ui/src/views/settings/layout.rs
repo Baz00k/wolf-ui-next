@@ -38,7 +38,9 @@ pub fn SettingsLayout() -> Element {
     rsx! {
         div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-8 text-foreground sm:px-10 sm:pt-10 lg:px-16 lg:pt-12",
             header { class: "shrink-0 pb-6 lg:pb-8",
-                h1 { class: "text-5xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl", "Settings" }
+                h1 { class: "text-5xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl",
+                    "Settings"
+                }
             }
             div {
                 class: "flex min-h-0 flex-1 flex-col gap-4 lg:flex-row lg:gap-6",

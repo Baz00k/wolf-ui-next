@@ -38,7 +38,8 @@ pub fn ProfilesContent(
         return rsx! {
             StatusAlert {
                 title: Some("Profiles unavailable".to_string()),
-                message: "Wolf returned an unsuccessful profiles response. Try again once the service is ready.".to_string(),
+                message: "Wolf returned an unsuccessful profiles response. Try again once the service is ready."
+                    .to_string(),
                 variant: StatusAlertVariant::Error,
             }
         };
@@ -57,11 +58,7 @@ pub fn ProfilesContent(
     rsx! {
         ProfilesGrid {
             for (index, profile) in response.profiles.iter().cloned().enumerate() {
-                ProfileCard {
-                    key: "{profile.id}",
-                    profile,
-                    autofocus: index == 0,
-                }
+                ProfileCard { key: "{profile.id}", profile, autofocus: index == 0 }
             }
             for (index, lobby) in lobbies.iter().cloned().enumerate() {
                 LobbyCard {
@@ -80,9 +77,7 @@ pub fn ProfilesContent(
 fn ProfilesGrid(children: Element) -> Element {
     rsx! {
         div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-8 lg:py-10",
-            CardGrid { columns: 5, fit: true,
-                {children}
-            }
+            CardGrid { columns: 5, fit: true, {children} }
         }
     }
 }
@@ -109,11 +104,7 @@ fn ProfileCard(profile: Profile, autofocus: bool) -> Element {
         PersonaCard {
             name: profile.name.clone(),
             to: if pin.is_none() { Some(route.clone()) } else { None },
-            onclick: if pin.is_some() {
-                Some(EventHandler::new(move |_| show_pin_prompt.set(true)))
-            } else {
-                None
-            },
+            onclick: if pin.is_some() { Some(EventHandler::new(move |_| show_pin_prompt.set(true))) } else { None },
             autofocus,
             pin_locked: profile.pin.is_some(),
             avatar: rsx! {
@@ -125,7 +116,12 @@ fn ProfileCard(profile: Profile, autofocus: bool) -> Element {
                         draggable: "false",
                     }
                 } else {
-                    Icon { icon: HiUser, class: "mb-2 h-24 w-24", width: None, height: None }
+                    Icon {
+                        icon: HiUser,
+                        class: "mb-2 h-24 w-24",
+                        width: None,
+                        height: None,
+                    }
                 }
             },
         }
@@ -165,11 +161,23 @@ fn LobbyCard(
             pin_locked: lobby.pin_required,
             onclick: move |event| onclick.call(event),
             avatar: rsx! {
-                Icon { icon: HiUserGroup, class: "mb-2 h-24 w-24", width: None, height: None }
+                Icon {
+                    icon: HiUserGroup,
+                    class: "mb-2 h-24 w-24",
+                    width: None,
+                    height: None,
+                }
             },
             badges: rsx! {
-                Badge { variant: BadgeVariant::Success, class: "absolute left-4 top-4 lg:left-5 lg:top-5",
-                    Icon { icon: HiUserGroup, class: "h-3.5 w-3.5", width: None, height: None }
+                Badge {
+                    variant: BadgeVariant::Success,
+                    class: "absolute left-4 top-4 lg:left-5 lg:top-5",
+                    Icon {
+                        icon: HiUserGroup,
+                        class: "h-3.5 w-3.5",
+                        width: None,
+                        height: None,
+                    }
                     "{connected_users}"
                 }
             },

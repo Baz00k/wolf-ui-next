@@ -80,7 +80,12 @@ pub fn DialogCancelButton(
             action_label: label.clone(),
             disabled,
             onclick: move |event| onclick.call(event),
-            Icon { icon: HiX, class: "h-5 w-5", width: None, height: None }
+            Icon {
+                icon: HiX,
+                class: "h-5 w-5",
+                width: None,
+                height: None,
+            }
             "{label}"
         }
     }

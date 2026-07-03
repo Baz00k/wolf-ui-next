@@ -87,9 +87,7 @@ fn App() -> Element {
         script { src: UI_SOUNDS_JS }
         script { src: SCROLL_ANIMATION_JS }
         script { src: FOCUS_NAVIGATION_JS }
-        input::InputProvider {
-            Router::<Route> {}
-        }
+        input::InputProvider { Router::<Route> {} }
         ToastViewport {}
         StartupAutoUpdate {}
     }
