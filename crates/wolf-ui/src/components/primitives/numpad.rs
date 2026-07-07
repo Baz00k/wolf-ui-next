@@ -16,7 +16,7 @@ pub fn Numpad(
                 NumpadDigit { digit, autofocus: digit == 1, ondigit }
             }
             Button {
-                variant: ButtonVariant::Menu,
+                variant: ButtonVariant::Ghost,
                 size: ButtonSize::Xl,
                 class: "h-13 px-3 text-sm sm:text-base xl:h-16",
                 action_label: "Delete digit".to_string(),
@@ -31,7 +31,7 @@ pub fn Numpad(
             }
             NumpadDigit { digit: 0, autofocus: false, ondigit }
             Button {
-                variant: ButtonVariant::Menu,
+                variant: ButtonVariant::Ghost,
                 size: ButtonSize::Xl,
                 class: "h-13 px-3 text-sm sm:text-base xl:h-16",
                 action_label: "Clear input".to_string(),

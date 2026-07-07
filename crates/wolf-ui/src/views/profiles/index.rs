@@ -118,7 +118,7 @@ fn ProfilesHeader() -> Element {
             div { class: "justify-self-start",
                 if show_settings {
                     Button {
-                        variant: ButtonVariant::Chrome,
+                        variant: ButtonVariant::Outline,
                         size: ButtonSize::IconLg,
                         action_label: "Open settings".to_string(),
                         onclick: move |_| {

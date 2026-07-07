@@ -110,7 +110,7 @@ pub fn PinProtectQuestionDialog(
             }
             CardFooter { class: "grid grid-cols-2 gap-3",
                 Button {
-                    variant: ButtonVariant::Menu,
+                    variant: ButtonVariant::Ghost,
                     size: ButtonSize::Xl,
                     class: "w-full",
                     action_label: "No PIN".to_string(),

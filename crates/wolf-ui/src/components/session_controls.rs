@@ -17,8 +17,9 @@ pub fn SessionShutdownControl() -> Element {
 
     rsx! {
         Button {
-            variant: ButtonVariant::ChromeDestructive,
+            variant: ButtonVariant::Outline,
             size: ButtonSize::IconLg,
+            class: "focus-visible:border-destructive/70 focus-visible:bg-destructive/15 focus-visible:text-destructive-foreground",
             action_label: "End session",
             disabled: stop_session.pending(),
             onclick: move |_| dialog_open.set(true),

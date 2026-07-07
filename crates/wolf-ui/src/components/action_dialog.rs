@@ -48,7 +48,7 @@ pub fn ActionDialogItem(
 ) -> Element {
     rsx! {
         Button {
-            variant: ButtonVariant::Menu,
+            variant: ButtonVariant::Ghost,
             size: ButtonSize::Xl,
             class: "w-full justify-start",
             action_label: label.clone(),
@@ -74,7 +74,7 @@ pub fn DialogCancelButton(
 ) -> Element {
     rsx! {
         Button {
-            variant: ButtonVariant::Menu,
+            variant: ButtonVariant::Ghost,
             size: ButtonSize::Xl,
             class: "w-full text-muted-foreground",
             action_label: label.clone(),

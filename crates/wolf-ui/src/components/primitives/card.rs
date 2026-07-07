@@ -6,7 +6,7 @@ use crate::components::primitives::Focusable;
 #[component]
 pub fn Card(#[props(default)] class: String, children: Element) -> Element {
     let class = tw_merge!(
-        "rounded-4xl border-2 border-border bg-card text-card-foreground shadow-2xl",
+        "rounded-4xl border-2 border-border bg-card text-card-foreground shadow-2xl transition duration-200 ease-out group-focus-visible:border-foreground group-focus-visible:ring-4 group-focus-visible:ring-ring/60 group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background",
         class,
     );
 

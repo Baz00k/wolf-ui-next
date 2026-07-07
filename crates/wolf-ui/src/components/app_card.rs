@@ -55,7 +55,7 @@ pub fn AppCard(
             autofocus,
             onfocus,
             onclick,
-            Card { class: "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-80 shadow-black/25 transition duration-300 ease-out group-focus-visible:border-foreground group-focus-visible:text-card-foreground group-focus-visible:opacity-100 group-focus-visible:shadow-[0_1.5rem_3rem_oklch(0_0_0/0.5)] group-focus-visible:ring-4 group-focus-visible:ring-ring/60 group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background",
+            Card { class: "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-80 shadow-black/25 transition duration-300 ease-out group-focus-visible:text-card-foreground group-focus-visible:opacity-100 group-focus-visible:shadow-[0_1.5rem_3rem_oklch(0_0_0/0.5)]",
                 div { class: "pointer-events-none absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground md:inset-x-5 md:top-5 xl:inset-x-6 xl:top-6",
                     if show_runner {
                         span { "{app.runner}" }

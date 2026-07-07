@@ -71,9 +71,9 @@ fn SettingsNavItem(category: SettingsCategory, active: SettingsCategory) -> Elem
 
     rsx! {
         Button {
-            variant: if selected { ButtonVariant::MenuActive } else { ButtonVariant::Menu },
+            variant: if selected { ButtonVariant::Default } else { ButtonVariant::Outline },
             size: ButtonSize::Xl,
-            class: "w-full justify-start rounded-xl px-5 font-medium",
+            class: "w-full justify-start",
             to: category.route().to_string(),
             action_label: category.label(),
             autofocus: selected,
