@@ -17,8 +17,8 @@ pub fn Numpad(
             }
             Button {
                 variant: ButtonVariant::Ghost,
-                size: ButtonSize::Xl,
-                class: "h-13 px-3 text-sm sm:text-base xl:h-16",
+                size: ButtonSize::Lg,
+                class: "px-1",
                 action_label: "Delete digit".to_string(),
                 onclick: move |_| onbackspace.call(()),
                 Icon {
@@ -32,8 +32,8 @@ pub fn Numpad(
             NumpadDigit { digit: 0, autofocus: false, ondigit }
             Button {
                 variant: ButtonVariant::Ghost,
-                size: ButtonSize::Xl,
-                class: "h-13 px-3 text-sm sm:text-base xl:h-16",
+                size: ButtonSize::Lg,
+                class: "px-1",
                 action_label: "Clear input".to_string(),
                 onclick: move |_| onclear.call(()),
                 Icon {
@@ -53,8 +53,8 @@ fn NumpadDigit(digit: i64, autofocus: bool, ondigit: EventHandler<i64>) -> Eleme
     rsx! {
         Button {
             variant: ButtonVariant::Secondary,
-            size: ButtonSize::Xl,
-            class: "h-13 text-xl font-bold xl:h-16 xl:text-2xl",
+            size: ButtonSize::Lg,
+            class: "text-2xl font-bold",
             autofocus,
             action_label: format!("Enter {digit}"),
             onclick: move |_| ondigit.call(digit),

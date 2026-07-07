@@ -47,8 +47,8 @@ pub fn PinInputDialog(
             title,
             description,
             scope_actions: close_actions,
-            class: "max-w-md overflow-hidden",
-            CardContent { class: "space-y-4 overflow-hidden xl:space-y-5",
+            class: "max-w-md",
+            CardContent { class: "space-y-4 xl:space-y-5",
                 div { onkeydown,
                     PinDisplay { len: pin().len() }
                     Numpad {
