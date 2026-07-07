@@ -10,7 +10,7 @@ pub fn Dialog(
     use_hook(capture_dialog_opener);
     use_drop(restore_dialog_opener);
     let class = tw_merge!(
-        "fixed inset-0 z-100 flex items-center justify-center bg-black/75 backdrop-blur-sm px-5",
+        "fixed inset-0 z-100 grid place-items-center bg-black/75 backdrop-blur-sm px-5",
         class,
     );
 
