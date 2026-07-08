@@ -271,7 +271,9 @@ fn action_label(action: AppAction) -> &'static str {
 
 fn success_message(action: AppAction, downloaded: bool) -> Option<&'static str> {
     match action {
+        AppAction::CheckUpdate if downloaded => Some("Image updated."),
         AppAction::CheckUpdate if !downloaded => Some("Image is up to date."),
+        AppAction::Download => Some("Image downloaded."),
         _ => None,
     }
 }
