@@ -39,7 +39,7 @@ pub fn PersonaCard(
                 if pin_locked {
                     Badge {
                         variant: BadgeVariant::Neutral,
-                        class: "absolute right-4 top-4 lg:right-5 lg:top-5",
+                        class: "absolute right-4 top-4 sm:right-5 sm:top-5",
                         Icon {
                             icon: HiLockClosed,
                             class: "h-3.5 w-3.5",
@@ -71,7 +71,7 @@ pub fn PersonaCardSkeleton() -> Element {
 #[component]
 fn PersonaCardMedia(children: Element) -> Element {
     rsx! {
-        div { class: "flex flex-1 items-center justify-center pt-8 md:pt-10 lg:pt-12 2xl:pt-16",
+        div { class: "flex flex-1 items-center justify-center pt-8 sm:pt-12 md:pt-16",
             {children}
         }
     }
@@ -80,7 +80,7 @@ fn PersonaCardMedia(children: Element) -> Element {
 #[component]
 fn PersonaCardLabel(children: Element) -> Element {
     rsx! {
-        div { class: "relative flex w-full flex-col items-center px-6 pb-12 md:px-7 lg:px-8",
+        div { class: "relative flex w-full flex-col items-center px-6 pb-12 sm:px-8",
             {children}
         }
     }

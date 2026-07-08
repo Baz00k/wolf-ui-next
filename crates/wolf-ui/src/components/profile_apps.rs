@@ -28,7 +28,7 @@ pub fn AppsHeader(
             "data-focus-region": "top-bar",
             "data-scope-actions": navigate_hint("Navigate"),
             div { class: "min-w-0",
-                h1 { class: "text-4xl font-bold tracking-tight lg:text-5xl", "Applications" }
+                h1 { class: "text-4xl font-bold tracking-tight sm:text-5xl", "Applications" }
             }
             div { class: "flex min-w-0 items-center justify-end gap-3 sm:gap-4",
                 AppsFilter { filter, selected_index, pending_focus_index }

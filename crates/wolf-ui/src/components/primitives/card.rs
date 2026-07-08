@@ -35,7 +35,7 @@ pub fn CardContent(#[props(default)] class: String, children: Element) -> Elemen
 
 #[component]
 pub fn CardFooter(#[props(default)] class: String, children: Element) -> Element {
-    let class = tw_merge!("border-t-2 border-border/70 p-3 xl:p-4", class);
+    let class = tw_merge!("border-t-2 border-border/70 p-3 sm:p-4", class);
 
     rsx! {
         div { class, {children} }

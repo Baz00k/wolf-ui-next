@@ -2,6 +2,11 @@
 @source "./src/**/*.{rs,html,css}";
 
 @theme inline {
+    --breakpoint-sm: 80rem;
+    --breakpoint-md: 96rem;
+    --breakpoint-lg: 120rem;
+    --breakpoint-xl: 160rem;
+    --breakpoint-2xl: 240rem;
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);

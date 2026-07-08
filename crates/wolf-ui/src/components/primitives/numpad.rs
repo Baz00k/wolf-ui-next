@@ -11,7 +11,7 @@ pub fn Numpad(
     onclear: EventHandler<()>,
 ) -> Element {
     rsx! {
-        div { class: "mt-4 grid grid-cols-3 gap-2 xl:mt-5 xl:gap-3",
+        div { class: "mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3",
             for digit in 1..=9 {
                 NumpadDigit { digit, autofocus: digit == 1, ondigit }
             }

@@ -76,7 +76,7 @@ pub fn ProfilesContent(
 #[component]
 fn ProfilesGrid(children: Element) -> Element {
     rsx! {
-        div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-8 lg:py-10",
+        div { class: "my-auto flex min-h-full w-full items-center justify-center py-6 sm:py-10",
             CardGrid { columns: 5, fit: true, {children} }
         }
     }
@@ -171,7 +171,7 @@ fn LobbyCard(
             badges: rsx! {
                 Badge {
                     variant: BadgeVariant::Success,
-                    class: "absolute left-4 top-4 lg:left-5 lg:top-5",
+                    class: "absolute left-4 top-4 sm:left-5 sm:top-5",
                     Icon {
                         icon: HiUserGroup,
                         class: "h-3.5 w-3.5",

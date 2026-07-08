@@ -14,12 +14,12 @@ pub fn CardGrid(
     children: Element,
 ) -> Element {
     let columns_class = if fit {
-        "grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),18rem))] sm:grid-cols-[repeat(auto-fit,minmax(16rem,20rem))] xl:grid-cols-[repeat(auto-fit,minmax(18rem,22rem))]"
+        "grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),18rem))] sm:grid-cols-[repeat(auto-fit,minmax(18rem,22rem))]"
     } else {
-        "grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),18rem))] sm:grid-cols-[repeat(auto-fill,minmax(16rem,20rem))] xl:grid-cols-[repeat(auto-fill,minmax(18rem,22rem))]"
+        "grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),18rem))] sm:grid-cols-[repeat(auto-fill,minmax(18rem,22rem))]"
     };
     let class = tw_merge!(
-        "mx-auto grid w-full justify-center gap-4 p-2 sm:gap-5 sm:p-3 xl:gap-6 lg:p-4 2xl:gap-8 2xl:p-5",
+        "mx-auto grid w-full justify-center gap-4 p-2 sm:gap-6 sm:p-4 md:gap-8 md:p-5",
         columns_class,
         class,
     );
@@ -38,7 +38,7 @@ pub fn CardGrid(
 #[component]
 pub fn CardGridViewport(#[props(default)] class: String, children: Element) -> Element {
     let class = tw_merge!(
-        "h-full w-full overflow-y-auto overflow-x-hidden scroll-py-6 scrollbar-hide sm:scroll-py-7 lg:scroll-py-8",
+        "h-full w-full overflow-y-auto overflow-x-hidden scrollbar-hide",
         class,
     );
 

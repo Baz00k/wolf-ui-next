@@ -87,9 +87,9 @@ pub fn ProfileApps(profile_id: String) -> Element {
     });
 
     rsx! {
-        div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-6 text-foreground sm:px-8 sm:pt-8 lg:px-12 lg:pt-10",
+        div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-6 text-foreground sm:px-12 sm:pt-10",
             AppsHeader { filter, selected_index, pending_focus_index }
-            section { class: "relative min-h-0 flex-1 pt-4 sm:pt-5 lg:pt-6",
+            section { class: "relative min-h-0 flex-1 pt-4 sm:pt-6",
                 div {
                     class: "h-full w-full",
                     "data-focus-scope": "true",

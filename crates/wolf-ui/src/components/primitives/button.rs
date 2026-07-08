@@ -50,13 +50,13 @@ pub enum ButtonSize {
 impl ButtonSize {
     fn class(self) -> &'static str {
         match self {
-            ButtonSize::Default => "h-12 xl:h-14 px-6 py-3 text-base",
-            ButtonSize::Sm => "h-10 xl:h-12 rounded-lg px-4 py-2 text-base",
-            ButtonSize::Lg => "h-14 xl:h-16 rounded-xl px-8 py-4 text-lg",
-            ButtonSize::Xl => "h-16 xl:h-18 rounded-xl px-8 py-4 text-lg font-semibold",
-            ButtonSize::IconSm => "h-10 xl:h-12 w-10 xl:w-12 rounded-full text-base",
-            ButtonSize::Icon => "h-12 xl:h-14 w-12 xl:w-14 text-base",
-            ButtonSize::IconLg => "h-14 xl:h-16 w-14 xl:w-16 text-lg",
+            ButtonSize::Default => "h-12 px-6 py-3 text-base sm:h-14",
+            ButtonSize::Sm => "h-10 rounded-lg px-4 py-2 text-base sm:h-12",
+            ButtonSize::Lg => "h-14 rounded-xl px-8 py-4 text-lg sm:h-16",
+            ButtonSize::Xl => "h-16 rounded-xl px-8 py-4 text-lg font-semibold sm:h-18",
+            ButtonSize::IconSm => "h-10 w-10 rounded-full text-base sm:h-12 sm:w-12",
+            ButtonSize::Icon => "h-12 w-12 text-base sm:h-14 sm:w-14",
+            ButtonSize::IconLg => "h-14 w-14 text-lg sm:h-16 sm:w-16",
         }
     }
 }

@@ -41,10 +41,10 @@ pub fn Profiles() -> Element {
 
     rsx! {
         div { class: "h-full min-h-0",
-            section { class: "relative flex h-full min-h-0 flex-col px-6 pt-8 sm:px-10 sm:pt-10 lg:px-16 lg:pt-12",
+            section { class: "relative flex h-full min-h-0 flex-col px-6 pt-8 sm:px-16 sm:pt-12",
                 ProfilesHeader {}
                 div {
-                    class: "flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-py-8 scrollbar-hide sm:scroll-py-10 lg:scroll-py-12",
+                    class: "flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-py-8 scrollbar-hide sm:scroll-py-12",
                     "data-focus-scope": "true",
                     "data-focus-region": "main",
                     "data-scope-actions": navigate_hint("Navigate"),
@@ -134,7 +134,7 @@ fn ProfilesHeader() -> Element {
                     }
                 }
             }
-            h1 { class: "text-5xl font-bold tracking-tight lg:text-6xl 2xl:text-7xl",
+            h1 { class: "text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl",
                 "Who's playing?"
             }
             div { class: "justify-self-end", SessionShutdownControl {} }
