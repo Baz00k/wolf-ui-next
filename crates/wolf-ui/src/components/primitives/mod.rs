@@ -13,13 +13,17 @@ pub mod toast;
 
 pub use badge::{Badge, BadgeVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};
-pub use card::{Card, CardContent, CardFooter, CardHeader, CardTrigger};
+#[allow(unused_imports)]
+pub use card::{
+    Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CardTrigger,
+};
 pub use card_grid::{CardGrid, CardGridViewport};
 #[allow(unused_imports)]
 pub use dialog::{Dialog, DialogDescription, DialogHeader, DialogTitle};
 pub use focusable::Focusable;
 pub use numpad::Numpad;
-pub use progress::{ProgressPanel, ProgressTone};
+#[allow(unused_imports)]
+pub use progress::{Progress, ProgressPanel, ProgressTone};
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;
 pub use status_alert::{StatusAlert, StatusAlertVariant};

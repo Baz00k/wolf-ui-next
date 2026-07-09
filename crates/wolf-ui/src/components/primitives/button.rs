@@ -92,3 +92,30 @@ pub fn Button(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn render(component: fn() -> Element) -> String {
+        let mut dom = VirtualDom::new(component);
+        dom.rebuild_in_place();
+        dioxus_ssr::render(&dom)
+    }
+
+    #[test]
+    fn button_uses_focusable_contract() {
+        let html = render(|| {
+            rsx! {
+                Button {
+                    action_label: "Delete",
+                    "Remove"
+                }
+            }
+        });
+
+        assert!(html.contains("<button"));
+        assert!(html.contains(r#"data-focusable="true""#));
+        assert!(html.contains("Delete"));
+    }
+}

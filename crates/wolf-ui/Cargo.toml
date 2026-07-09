@@ -22,3 +22,6 @@ wolf-api.workspace = true
 [features]
 default = ["desktop"]
 desktop = ["dioxus/desktop"]
+
+[dev-dependencies]
+dioxus-ssr = "0.7.1"

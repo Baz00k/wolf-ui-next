@@ -11,7 +11,7 @@ pub fn Card(#[props(default)] class: String, children: Element) -> Element {
     );
 
     rsx! {
-        div { class, {children} }
+        div { class, "data-slot": "card", {children} }
     }
 }
 
@@ -20,7 +20,34 @@ pub fn CardHeader(#[props(default)] class: String, children: Element) -> Element
     let class = tw_merge!("border-b-2 border-border/70 px-6 py-6", class);
 
     rsx! {
-        div { class, {children} }
+        div { class, "data-slot": "card-header", {children} }
+    }
+}
+
+#[component]
+pub fn CardTitle(#[props(default)] class: String, children: Element) -> Element {
+    let class = tw_merge!("text-2xl font-bold tracking-tight", class);
+
+    rsx! {
+        h2 { class, "data-slot": "card-title", {children} }
+    }
+}
+
+#[component]
+pub fn CardDescription(#[props(default)] class: String, children: Element) -> Element {
+    let class = tw_merge!("text-sm leading-6 text-muted-foreground", class);
+
+    rsx! {
+        p { class, "data-slot": "card-description", {children} }
+    }
+}
+
+#[component]
+pub fn CardAction(#[props(default)] class: String, children: Element) -> Element {
+    let class = tw_merge!("ml-auto flex items-center gap-2", class);
+
+    rsx! {
+        div { class, "data-slot": "card-action", {children} }
     }
 }
 
@@ -29,7 +56,7 @@ pub fn CardContent(#[props(default)] class: String, children: Element) -> Elemen
     let class = tw_merge!("px-4 py-4", class);
 
     rsx! {
-        div { class, {children} }
+        div { class, "data-slot": "card-content", {children} }
     }
 }
 
@@ -38,7 +65,7 @@ pub fn CardFooter(#[props(default)] class: String, children: Element) -> Element
     let class = tw_merge!("border-t-2 border-border/70 p-3 sm:p-4", class);
 
     rsx! {
-        div { class, {children} }
+        div { class, "data-slot": "card-footer", {children} }
     }
 }
 
@@ -62,6 +89,7 @@ pub fn CardTrigger(
     rsx! {
         Focusable {
             class,
+            data_slot: "card-trigger",
             to,
             action_label,
             index,
@@ -70,5 +98,54 @@ pub fn CardTrigger(
             onfocus,
             {children}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn render(component: fn() -> Element) -> String {
+        let mut dom = VirtualDom::new(component);
+        dom.rebuild_in_place();
+        dioxus_ssr::render(&dom)
+    }
+
+    #[test]
+    fn card_parts_render_stable_slots() {
+        let html = render(|| {
+            rsx! {
+                Card {
+                    CardHeader {
+                        CardTitle { "Title" }
+                        CardDescription { "Description" }
+                        CardAction { "Action" }
+                    }
+                    CardContent { "Content" }
+                    CardFooter { "Footer" }
+                }
+            }
+        });
+
+        assert!(html.contains(r#"data-slot="card""#));
+        assert!(html.contains(r#"data-slot="card-header""#));
+        assert!(html.contains(r#"data-slot="card-title""#));
+        assert!(html.contains(r#"data-slot="card-description""#));
+        assert!(html.contains(r#"data-slot="card-action""#));
+        assert!(html.contains(r#"data-slot="card-content""#));
+        assert!(html.contains(r#"data-slot="card-footer""#));
+    }
+
+    #[test]
+    fn card_trigger_keeps_focus_contract() {
+        let html = render(|| {
+            rsx! {
+                CardTrigger { index: 3, "Launch" }
+            }
+        });
+
+        assert!(html.contains(r#"data-slot="card-trigger""#));
+        assert!(html.contains(r#"data-focusable="true""#));
+        assert!(html.contains(r#"data-grid-index="3""#));
     }
 }

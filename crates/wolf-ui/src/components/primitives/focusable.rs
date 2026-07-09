@@ -9,6 +9,7 @@ use crate::input::{UiAction, native_action};
 #[component]
 pub fn Focusable(
     #[props(default)] class: String,
+    #[props(default)] data_slot: Option<String>,
     #[props(default)] to: Option<String>,
     #[props(default = "Select".to_string())] action_label: String,
     #[props(default)] index: Option<usize>,
@@ -37,6 +38,7 @@ pub fn Focusable(
             Link {
                 to,
                 class,
+                "data-slot": data_slot.clone(),
                 "data-focusable": "true",
                 "data-autofocus": autofocus,
                 "data-actions": actions,
@@ -51,6 +53,7 @@ pub fn Focusable(
     rsx! {
         button {
             class,
+            "data-slot": data_slot,
             "data-focusable": "true",
             "data-autofocus": autofocus,
             "data-actions": actions,
@@ -65,5 +68,38 @@ pub fn Focusable(
             onmounted: handle_mounted,
             {children}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn render(component: fn() -> Element) -> String {
+        let mut dom = VirtualDom::new(component);
+        dom.rebuild_in_place();
+        dioxus_ssr::render(&dom)
+    }
+
+    #[test]
+    fn focusable_button_renders_focus_metadata() {
+        let html = render(|| {
+            rsx! {
+                Focusable {
+                    data_slot: "test-trigger",
+                    action_label: "Launch",
+                    index: 2,
+                    autofocus: true,
+                    "Play"
+                }
+            }
+        });
+
+        assert!(html.contains("<button"));
+        assert!(html.contains(r#"data-slot="test-trigger""#));
+        assert!(html.contains(r#"data-focusable="true""#));
+        assert!(html.contains(r#"data-autofocus="true""#));
+        assert!(html.contains(r#"data-grid-index="2""#));
+        assert!(html.contains("Launch"));
     }
 }
