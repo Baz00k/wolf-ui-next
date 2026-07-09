@@ -57,13 +57,11 @@ pub fn Progress(
     );
 
     rsx! {
-        div {
-            class,
-            "data-slot": "progress",
+        div { class, "data-slot": "progress",
             div {
                 class: indicator_class,
                 "data-slot": "progress-indicator",
-                style: "width: {value}%;"
+                style: "width: {value}%;",
             }
         }
     }
@@ -100,7 +98,9 @@ mod tests {
 
     #[test]
     fn progress_clamps_width() {
-        let html = render(|| rsx! { Progress { value: 200 } });
+        let html = render(|| rsx! {
+            Progress { value: 200 }
+        });
 
         assert!(html.contains(r#"data-slot="progress""#));
         assert!(html.contains(r#"data-slot="progress-indicator""#));
@@ -109,7 +109,9 @@ mod tests {
 
     #[test]
     fn progress_panel_clamps_labelled_value() {
-        let html = render(|| rsx! { ProgressPanel { label: "Installing", progress: 200 } });
+        let html = render(|| rsx! {
+            ProgressPanel { label: "Installing", progress: 200 }
+        });
 
         assert!(html.contains("Installing"));
         assert!(html.contains("100%"));

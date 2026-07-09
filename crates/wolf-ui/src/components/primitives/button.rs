@@ -107,10 +107,7 @@ mod tests {
     fn button_uses_focusable_contract() {
         let html = render(|| {
             rsx! {
-                Button {
-                    action_label: "Delete",
-                    "Remove"
-                }
+                Button { action_label: "Delete", "Remove" }
             }
         });
 

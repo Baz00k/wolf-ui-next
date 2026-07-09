@@ -115,7 +115,11 @@ fn ImageInfoTile(
 ) -> Element {
     let class = tw_merge!(
         "rounded-2xl border border-border/80 bg-background/35 p-5",
-        if wide { "sm:col-span-2 lg:col-span-2" } else { "" },
+        if wide {
+            "sm:col-span-2 lg:col-span-2"
+        } else {
+            ""
+        },
     );
     let value_class = tw_merge!(
         "mt-3 break-words text-2xl font-bold tracking-tight text-foreground",
