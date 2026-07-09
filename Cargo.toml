@@ -30,7 +30,7 @@ strip = false
 
 [workspace.dependencies]
 base64 = "0.22"
-dioxus = { version = "0.7.1", features = ["router"] }
+dioxus = { version = "0.7.9", features = ["router"] }
 dioxus-free-icons = { version = "0.10", features = ["hero-icons-solid"] }
 futures-util = "0.3"
 gilrs = "0.11"

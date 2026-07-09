@@ -24,4 +24,4 @@ default = ["desktop"]
 desktop = ["dioxus/desktop"]
 
 [dev-dependencies]
-dioxus-ssr = "0.7.1"
+dioxus-ssr = "0.7.9"
