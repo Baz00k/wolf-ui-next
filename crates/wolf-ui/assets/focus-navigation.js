@@ -33,7 +33,7 @@
     function visibleRect(element) {
         const style = window.getComputedStyle(element);
         if (style.display === "none" || style.visibility === "hidden") return null;
-        if (element.matches(':disabled,[aria-disabled="true"],[inert]')) return null;
+        if (element.matches(':disabled,[aria-disabled="true"]') || element.closest("[inert]")) return null;
         const rect = element.getBoundingClientRect();
         return rect.width > 0 && rect.height > 0 ? rect : null;
     }
@@ -187,6 +187,7 @@
 
         // Gamepad input needs an explicit focus-visible hint.
         element.focus({ preventScroll: true, focusVisible: !usingMouse });
+        if (document.activeElement !== element) return false;
         window.__wolfUiScrollIntoView?.(element, options);
         return true;
     }
