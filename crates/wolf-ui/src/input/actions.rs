@@ -114,8 +114,18 @@ pub(super) fn use_action_bridge(registry: ActionRegistry) {
                 "#,
             );
 
-            while let Ok(handler_id) = eval.recv::<String>().await {
-                registry.call(&handler_id);
+            loop {
+                match eval.recv::<String>().await {
+                    Ok(handler_id) => {
+                        if !registry.call(&handler_id) {
+                            tracing::warn!(target: "wolf-ui-input", %handler_id, "unknown UI action handler");
+                        }
+                    }
+                    Err(error) => {
+                        tracing::warn!(target: "wolf-ui-input", "UI action bridge closed: {error}");
+                        break;
+                    }
+                }
             }
         });
     });

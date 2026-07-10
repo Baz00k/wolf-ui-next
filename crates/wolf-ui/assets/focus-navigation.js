@@ -329,7 +329,7 @@
 
     function dispatchRustAction(action) {
         const hint = activeAction(action);
-        if (!hint?.handler) return false;
+        if (typeof hint?.handler !== "string") return false;
         document.dispatchEvent(new CustomEvent("wolf-ui-action", { detail: hint }));
         return true;
     }
