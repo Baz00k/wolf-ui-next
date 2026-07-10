@@ -70,10 +70,6 @@ pub fn native_action(action: UiAction, label: impl Into<String>) -> String {
     action_hints([ActionHint::new(UiHint::from(action), label)])
 }
 
-pub fn navigate_hint(label: impl Into<String>) -> String {
-    action_hints([ActionHint::new(UiHint::Navigate, label)])
-}
-
 pub fn use_ui_action(
     action: UiAction,
     label: impl Into<String>,

@@ -2,7 +2,6 @@ use dioxus::prelude::*;
 
 use crate::Route;
 use crate::components::primitives::{Button, ButtonSize, ButtonVariant};
-use crate::input::navigate_hint;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum SettingsCategory {
@@ -46,7 +45,6 @@ pub fn SettingsLayout() -> Element {
                 class: "flex min-h-0 flex-1 flex-col gap-4 sm:flex-row sm:gap-6",
                 "data-focus-scope": "true",
                 "data-focus-region": "main",
-                "data-scope-actions": navigate_hint("Navigate"),
                 SettingsSidebar { active }
                 main { class: "min-h-0 flex-1 overflow-y-auto scroll-py-4 pb-6 scrollbar-hide",
                     Outlet::<Route> {}

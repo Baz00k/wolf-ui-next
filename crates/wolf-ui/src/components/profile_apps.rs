@@ -9,7 +9,6 @@ use crate::components::primitives::{
 };
 use crate::components::{AppCard, AppCardData, AppCardSkeleton, SessionShutdownControl};
 use crate::domain::apps::{AppFilter, filter_label, sorted_apps};
-use crate::input::navigate_hint;
 
 const LOADING_CARD_COUNT: usize = 8;
 const APP_GRID_COLUMNS: usize = 6;
@@ -26,7 +25,6 @@ pub fn AppsHeader(
             class: "grid grid-cols-[1fr_auto] items-start gap-4",
             "data-focus-scope": "true",
             "data-focus-region": "top-bar",
-            "data-scope-actions": navigate_hint("Navigate"),
             div { class: "min-w-0",
                 h1 { class: "text-4xl font-bold tracking-tight sm:text-5xl", "Applications" }
             }

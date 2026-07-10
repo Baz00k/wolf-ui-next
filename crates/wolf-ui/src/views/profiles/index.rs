@@ -13,7 +13,6 @@ use crate::components::{
 use crate::domain::app_actions::{join_lobby, stop_lobby};
 use crate::domain::profiles::{ProfilesState, listen_for_lobby_events, load_profiles_state};
 use crate::domain::settings::settings_enabled;
-use crate::input::navigate_hint;
 
 #[component]
 pub fn Profiles() -> Element {
@@ -47,7 +46,6 @@ pub fn Profiles() -> Element {
                     class: "flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-py-8 scrollbar-hide sm:scroll-py-12",
                     "data-focus-scope": "true",
                     "data-focus-region": "main",
-                    "data-scope-actions": navigate_hint("Navigate"),
                     match &*profiles.read_unchecked() {
                         Some(Ok(state)) => rsx! {
                             ProfilesContent {
@@ -114,7 +112,6 @@ fn ProfilesHeader() -> Element {
             class: "grid grid-cols-[1fr_auto_1fr] items-start gap-4 text-center",
             "data-focus-scope": "true",
             "data-focus-region": "top-bar",
-            "data-scope-actions": navigate_hint("Navigate"),
             div { class: "justify-self-start",
                 if show_settings {
                     Button {
