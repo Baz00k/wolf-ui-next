@@ -223,6 +223,30 @@
 
     window.__wolfUiEnsureFocusableActiveElement = ensureFocusableActiveElement;
 
+    const dialogOpeners = [];
+
+    window.__wolfUiCaptureDialogOpener = (dialogId) => {
+        const element = document.activeElement?.matches?.(FOCUSABLE_SELECTOR) ? document.activeElement : null;
+        dialogOpeners.push({ dialogId, element });
+    };
+
+    window.__wolfUiRestoreDialogOpener = (dialogId) => {
+        const index = dialogOpeners.findIndex((entry) => entry.dialogId === dialogId);
+        if (index === -1) return;
+
+        const [{ element }] = dialogOpeners.splice(index, 1);
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+                const trap = activeFocusTrap();
+                if (element?.isConnected && (!trap || trap.contains(element)) && isVisible(element)) {
+                    if (focusAndScrollElement(element, { inline: "nearest" })) return;
+                }
+
+                ensureFocusableActiveElement();
+            }),
+        );
+    };
+
     function moveFocus(action) {
         const active = document.activeElement?.matches?.(FOCUSABLE_SELECTOR) ? document.activeElement : null;
         const scope = scopeFor(active);
