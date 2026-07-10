@@ -201,7 +201,8 @@ rsx! {
 
 Directional actions (`Left`, `Right`, `Up`, `Down`) display as one `navigate`
 footer hint. `Accept`, `Cancel`, `Menu`, `PageUp`, and `PageDown` each have
-their own footer hint.
+their own footer hint. Page actions are keyboard-only and scroll the nearest
+scrollable container; they are hidden from gamepad hints.
 
 ## Navigation Rules
 

@@ -419,16 +419,14 @@
                     uiSounds.play("navigate");
                     break;
                 }
-                window.scrollBy({ top: -window.innerHeight * 0.8, behavior: "smooth" });
-                uiSounds.play("navigate");
+                if (window.__wolfUiScrollPage?.(document.activeElement, -1)) uiSounds.play("navigate");
                 break;
             case "page-down":
                 if (dispatchRustAction(action)) {
                     uiSounds.play("navigate");
                     break;
                 }
-                window.scrollBy({ top: window.innerHeight * 0.8, behavior: "smooth" });
-                uiSounds.play("navigate");
+                if (window.__wolfUiScrollPage?.(document.activeElement, 1)) uiSounds.play("navigate");
                 break;
             case "cancel":
                 if (dispatchRustAction(action)) {

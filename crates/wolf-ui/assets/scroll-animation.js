@@ -133,7 +133,23 @@
         return true;
     }
 
+    function scrollPage(element, direction) {
+        const container = nearestScroller(element) ?? document.scrollingElement;
+        if (!container || direction === 0) return false;
+
+        const maxScrollTop = container.scrollHeight - container.clientHeight;
+        const targetTop = clampScrollTop(container, container.scrollTop + direction * container.clientHeight * 0.8);
+        if (Math.abs(targetTop - container.scrollTop) < 1 || maxScrollTop <= 0) return false;
+
+        container.scrollTo({
+            top: targetTop,
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        });
+        return true;
+    }
+
     window.__wolfUiScrollIntoView = scrollIntoView;
+    window.__wolfUiScrollPage = scrollPage;
     window.__wolfUiScrollSelectorIntoView = (selector, options = {}) => {
         return scrollIntoView(document.querySelector(selector), options);
     };
