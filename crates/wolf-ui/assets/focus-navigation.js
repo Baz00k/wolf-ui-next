@@ -6,8 +6,8 @@
     const ACTIONS_ATTRIBUTE = "data-actions";
     const SCOPE_ACTIONS_ATTRIBUTE = "data-scope-actions";
     const FOCUS_REGION_ATTRIBUTE = "data-focus-region";
-    const MAX_NAVIGATION_ANGLE_DEGREES = 85;
-    const MAX_NAVIGATION_ANGLE_RADIANS = (MAX_NAVIGATION_ANGLE_DEGREES * Math.PI) / 180;
+    const MAX_NAVIGATION_ANGLE_RADIANS = (60 * Math.PI) / 180;
+    const MAX_REGION_FALLBACK_ANGLE_RADIANS = (85 * Math.PI) / 180;
     const ACTION_TO_HINT = {
         accept: "accept",
         cancel: "cancel",
@@ -93,7 +93,7 @@
             let bestScore = Infinity;
             for (const candidate of candidateEntriesIn(regions[index])) {
                 const score = directionScore(action, currentRect, candidate.rect, {
-                    enforceAngle: true,
+                    maxAngle: MAX_REGION_FALLBACK_ANGLE_RADIANS,
                 });
                 if (score !== null && score < bestScore) {
                     best = candidate.element;
@@ -158,15 +158,15 @@
         return Math.acos(cosine);
     }
 
-    function isWithinNavigationAngle(action, dx, dy) {
-        return angleFromDirection(action, dx, dy) <= MAX_NAVIGATION_ANGLE_RADIANS;
+    function isWithinNavigationAngle(action, dx, dy, maxAngle) {
+        return angleFromDirection(action, dx, dy) <= maxAngle;
     }
 
     function directionScore(action, current, candidate, options = {}) {
         const delta = directionDelta(action, current, candidate);
         if (!delta) return null;
 
-        if (options.enforceAngle && !isWithinNavigationAngle(action, delta.dx, delta.dy)) {
+        if (!isWithinNavigationAngle(action, delta.dx, delta.dy, options.maxAngle)) {
             return null;
         }
 
@@ -259,7 +259,9 @@
 
         for (const candidate of candidateEntriesIn(scope)) {
             if (candidate.element === active) continue;
-            const score = directionScore(action, currentRect, candidate.rect);
+            const score = directionScore(action, currentRect, candidate.rect, {
+                maxAngle: MAX_NAVIGATION_ANGLE_RADIANS,
+            });
             if (score !== null && score < bestScore) {
                 best = candidate.element;
                 bestScore = score;
