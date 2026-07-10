@@ -22,6 +22,8 @@ pub fn Dialog(
     rsx! {
         div {
             class,
+            role: "dialog",
+            aria_modal: "true",
             "data-focus-scope": "true",
             "data-focus-trap": "true",
             "data-scope-actions": scope_actions,

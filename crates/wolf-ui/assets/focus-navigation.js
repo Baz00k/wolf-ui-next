@@ -200,6 +200,10 @@
 
     window.__wolfUiFocusAutofocus = () => {
         const scope = activeFocusTrap() ?? document;
+        const active = document.activeElement;
+        if (active?.matches?.(FOCUSABLE_SELECTOR) && scope.contains(active) && isVisible(active)) {
+            return true;
+        }
         const candidates = Array.from(scope.querySelectorAll(`${FOCUSABLE_SELECTOR}[${AUTOFOCUS_ATTRIBUTE}='true']`));
         const element = candidates.find(isVisible);
         return focusAndScrollElement(element);
@@ -359,6 +363,27 @@
 
     document.addEventListener("focusout", () => {
         queueMicrotask(() => dispatchActionHintsChanged(document.activeElement));
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Tab") return;
+
+        const trap = activeFocusTrap();
+        if (!trap) return;
+
+        const candidates = candidatesIn(trap);
+        if (candidates.length === 0) {
+            event.preventDefault();
+            return;
+        }
+
+        const activeIndex = candidates.indexOf(document.activeElement);
+        const shouldWrapBackward = event.shiftKey && activeIndex <= 0;
+        const shouldWrapForward = !event.shiftKey && activeIndex === candidates.length - 1;
+        if (!shouldWrapBackward && !shouldWrapForward) return;
+
+        event.preventDefault();
+        focusAndScrollElement(event.shiftKey ? candidates.at(-1) : candidates[0]);
     });
 
     let focusStateUpdatePending = false;
