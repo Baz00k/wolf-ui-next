@@ -12,8 +12,9 @@ fn main() {
     println!("cargo:rerun-if-changed={}", schema_path.display());
 
     let schema = fs::read_to_string(&schema_path).expect("read Wolf OpenAPI schema");
-    let spec: serde_json::Value =
+    let mut spec: serde_json::Value =
         serde_json::from_str(&schema).expect("parse Wolf OpenAPI schema JSON");
+    normalize_numeric_constraints(&mut spec);
 
     let mut analyzer = SchemaAnalyzer::new(spec).expect("create Wolf OpenAPI analyzer");
     let mut analysis = analyzer.analyze().expect("analyze Wolf OpenAPI schema");
@@ -38,6 +39,30 @@ fn main() {
 
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR set"));
     fs::write(out_dir.join("types.rs"), generated).expect("write generated Wolf API types");
+}
+
+fn normalize_numeric_constraints(value: &mut serde_json::Value) {
+    match value {
+        serde_json::Value::Array(values) => {
+            for value in values {
+                normalize_numeric_constraints(value);
+            }
+        }
+        serde_json::Value::Object(values) => {
+            for key in ["minItems", "maxItems"] {
+                if let Some(serde_json::Value::String(value)) = values.get(key)
+                    && let Ok(value) = value.parse::<u64>()
+                {
+                    values.insert(key.to_owned(), serde_json::Value::from(value));
+                }
+            }
+
+            for value in values.values_mut() {
+                normalize_numeric_constraints(value);
+            }
+        }
+        _ => {}
+    }
 }
 
 fn format_generated_types(generated: &str) -> String {
