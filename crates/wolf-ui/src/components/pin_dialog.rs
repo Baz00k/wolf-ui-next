@@ -7,7 +7,7 @@ use crate::components::primitives::{
     Button, ButtonSize, ButtonVariant, CardContent, CardFooter, Numpad,
 };
 use crate::components::{ActionDialog, DialogCancelButton};
-use crate::input::{UiAction, use_ui_action};
+use crate::input::{UiCommand, use_ui_action};
 
 const MAX_PIN_DIGITS: usize = 8;
 
@@ -20,7 +20,7 @@ pub fn PinInputDialog(
     oncancel: EventHandler<()>,
 ) -> Element {
     let mut pin = use_signal(Vec::<i64>::new);
-    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || oncancel.call(()));
+    let close_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || oncancel.call(()));
     let onkeydown = move |event: KeyboardEvent| match event.key() {
         Key::Character(value) => {
             if let Some(digit) = value
@@ -99,7 +99,7 @@ pub fn PinProtectQuestionDialog(
     onanswer: EventHandler<bool>,
     oncancel: EventHandler<()>,
 ) -> Element {
-    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || oncancel.call(()));
+    let close_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || oncancel.call(()));
 
     rsx! {
         ActionDialog { title: "Protect lobby?".to_string(), scope_actions: close_actions,

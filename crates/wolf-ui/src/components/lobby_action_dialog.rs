@@ -7,7 +7,7 @@ use crate::components::primitives::{
     CardContent, CardFooter, ToastContext, ToastOptions, use_toasts,
 };
 use crate::components::{ActionDialog, ActionDialogItem, DialogCancelButton, PinInputDialog};
-use crate::input::{UiAction, use_ui_action};
+use crate::input::{UiCommand, use_ui_action};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum LobbyAction {
@@ -44,7 +44,7 @@ pub fn LobbyActionDialog(
         onstopped,
         onclose,
     };
-    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || {
+    let close_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || {
         if loading_action().is_none() {
             onclose.call(());
         }

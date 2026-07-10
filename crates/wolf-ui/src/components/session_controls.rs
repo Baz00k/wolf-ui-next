@@ -8,7 +8,7 @@ use crate::components::primitives::{
 };
 use crate::components::{ActionDialog, DialogCancelButton};
 use crate::domain::session::stop_current_session;
-use crate::input::{UiAction, use_ui_action};
+use crate::input::{UiCommand, use_ui_action};
 
 #[component]
 pub fn SessionShutdownControl() -> Element {
@@ -47,7 +47,7 @@ pub fn SessionShutdownControl() -> Element {
 fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandler<()>) -> Element {
     let pending = stop_session.pending();
     let failed = matches!(stop_session.value(), Some(Err(_)));
-    let cancel_actions = use_ui_action(UiAction::Cancel, "Cancel", move || {
+    let cancel_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || {
         if !pending {
             oncancel.call(());
         }

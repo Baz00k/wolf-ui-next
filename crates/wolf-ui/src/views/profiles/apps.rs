@@ -11,7 +11,7 @@ use crate::components::{
 };
 use crate::domain::app_actions::run_app_action;
 use crate::domain::apps::{AppFilter, app_actions, listen_for_lobby_events, load_apps_state};
-use crate::input::{ActionHint, UiAction, UiHint, action_hints, use_ui_action_hint};
+use crate::input::{ActionHint, UiCommand, UiHint, action_hints, use_ui_action_hint};
 
 const ACTIVE_POLL_DELAY: Duration = Duration::from_secs(15);
 const BACKGROUND_POLL_DELAY: Duration = Duration::from_mins(1);
@@ -33,7 +33,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
         }
     });
 
-    let sort_focus_action = use_ui_action_hint(UiAction::Menu, "Sort", move || {
+    let sort_focus_action = use_ui_action_hint(UiCommand::Menu, "Sort", move || {
         let _ = document::eval("window.__wolfUiFocusSelector?.('#apps-filter button');");
     });
     let grid_actions = action_hints([

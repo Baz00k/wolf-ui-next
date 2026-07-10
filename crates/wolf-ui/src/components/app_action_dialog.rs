@@ -10,7 +10,7 @@ use crate::components::primitives::{
     CardContent, CardFooter, ProgressPanel, ProgressTone, ToastContext, ToastOptions, use_toasts,
 };
 use crate::components::{ActionDialog, ActionDialogItem, DialogCancelButton};
-use crate::input::{UiAction, use_ui_action};
+use crate::input::{UiCommand, use_ui_action};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AppAction {
@@ -55,7 +55,7 @@ pub fn AppActionDialog(
     let progress_value = progress().unwrap_or(0.0).round() as u8;
     let progress_action = loading_action().filter(|action| shows_progress(*action));
     let toasts = use_toasts();
-    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || {
+    let close_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || {
         if loading_action().is_none() {
             onclose.call(());
         }

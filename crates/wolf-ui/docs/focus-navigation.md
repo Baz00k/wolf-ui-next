@@ -188,7 +188,7 @@ it when a scope or element needs more than one footer glyph:
 when the action is triggered. Use it when the action needs to run Rust logic:
 
 ```rust
-let close_action = use_ui_action(UiAction::Cancel, "Close", move || onclose.call(()));
+let close_action = use_ui_action(UiCommand::Cancel, "Close", move || onclose.call(()));
 
 rsx! {
     Dialog { scope_actions: close_action,

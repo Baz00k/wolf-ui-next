@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use dioxus::prelude::*;
 
-use crate::input::{UiAction, UiHint};
+use crate::input::{UiAction, UiCommand, UiHint};
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
 pub struct ActionHint {
@@ -71,15 +71,15 @@ pub fn native_action(action: UiAction, label: impl Into<String>) -> String {
 }
 
 pub fn use_ui_action(
-    action: UiAction,
+    command: UiCommand,
     label: impl Into<String>,
     handler: impl FnMut() + 'static,
 ) -> String {
-    action_hints([use_ui_action_hint(action, label, handler)])
+    action_hints([use_ui_action_hint(command, label, handler)])
 }
 
 pub fn use_ui_action_hint(
-    action: UiAction,
+    command: UiCommand,
     label: impl Into<String>,
     mut handler: impl FnMut() + 'static,
 ) -> ActionHint {
@@ -96,7 +96,7 @@ pub fn use_ui_action_hint(
     });
 
     ActionHint {
-        action: UiHint::from(action),
+        action: UiHint::from(command),
         label: label.into(),
         handler: Some(handler_id),
     }

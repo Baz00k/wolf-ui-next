@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::Route;
 use crate::components::ActionFooter;
-use crate::input::{ActionHint, UiAction, UiHint, action_hints, use_ui_action_hint};
+use crate::input::{ActionHint, UiCommand, UiHint, action_hints, use_ui_action_hint};
 
 #[component]
 pub fn AppLayout() -> Element {
@@ -10,7 +10,7 @@ pub fn AppLayout() -> Element {
     let _route = use_route::<Route>();
     let mut global_actions = vec![ActionHint::new(UiHint::Navigate, "Navigate")];
 
-    let back_action = use_ui_action_hint(UiAction::Cancel, "Back", move || {
+    let back_action = use_ui_action_hint(UiCommand::Cancel, "Back", move || {
         if navigator.can_go_back() {
             navigator.go_back();
         }
