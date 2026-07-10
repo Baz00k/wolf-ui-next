@@ -232,3 +232,9 @@ in the requested direction.
 - Keep focusable elements visible, sized, and not disabled when they should be
   reachable.
 - Prefer Rust action helpers over hand-written JSON.
+
+## Controller Button Layouts
+
+Gamepad actions use the normalized button values reported by `gilrs`: `South`
+accepts and `East` cancels. Wolf UI does not swap these actions based on the
+detected controller family; family detection only changes the footer labels.
