@@ -98,8 +98,10 @@ mod tests {
 
     #[test]
     fn progress_clamps_width() {
-        let html = render(|| rsx! {
-            Progress { value: 200 }
+        let html = render(|| {
+            rsx! {
+                Progress { value: 200 }
+            }
         });
 
         assert!(html.contains(r#"data-slot="progress""#));
@@ -109,8 +111,10 @@ mod tests {
 
     #[test]
     fn progress_panel_clamps_labelled_value() {
-        let html = render(|| rsx! {
-            ProgressPanel { label: "Installing", progress: 200 }
+        let html = render(|| {
+            rsx! {
+                ProgressPanel { label: "Installing", progress: 200 }
+            }
         });
 
         assert!(html.contains("Installing"));
