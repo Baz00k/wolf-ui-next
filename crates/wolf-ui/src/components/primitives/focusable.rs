@@ -22,7 +22,11 @@ pub fn Focusable(
     let actions = native_action(UiAction::Accept, action_label);
     let index = index.map(|index| index.to_string());
     let autofocus = autofocus.then_some("true");
-    let handle_click = move |event| {
+    let handle_click = move |event: MouseEvent| {
+        if disabled {
+            event.prevent_default();
+            return;
+        }
         if let Some(handler) = onclick {
             handler.call(event);
         }
@@ -39,10 +43,12 @@ pub fn Focusable(
                 to,
                 class,
                 "data-slot": data_slot.clone(),
-                "data-focusable": "true",
+                "data-focusable": (!disabled).then_some("true"),
                 "data-autofocus": autofocus,
                 "data-actions": actions,
                 "data-grid-index": index,
+                aria_disabled: disabled.then_some("true"),
+                tabindex: disabled.then_some("-1"),
                 onclick: handle_click,
                 onmounted: handle_mounted,
                 {children}
@@ -52,6 +58,7 @@ pub fn Focusable(
 
     rsx! {
         button {
+            r#type: "button",
             class,
             "data-slot": data_slot,
             "data-focusable": "true",
@@ -96,6 +103,7 @@ mod tests {
         });
 
         assert!(html.contains("<button"));
+        assert!(html.contains(r#"type="button""#));
         assert!(html.contains(r#"data-slot="test-trigger""#));
         assert!(html.contains(r#"data-focusable="true""#));
         assert!(html.contains(r#"data-autofocus="true""#));
