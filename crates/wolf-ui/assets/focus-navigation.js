@@ -213,11 +213,18 @@
     }
 
     function ensureFocusableActiveElement() {
-        if (document.activeElement?.matches?.(FOCUSABLE_SELECTOR) && isVisible(document.activeElement)) {
+        const active = document.activeElement;
+        const trap = activeFocusTrap();
+        if (
+            active?.matches?.(FOCUSABLE_SELECTOR) &&
+            isVisible(active) &&
+            (!trap || trap.contains(active))
+        ) {
             return true;
         }
 
-        if (focusFirst(scopeFor(document.activeElement))) return true;
+        if (focusFirst(scopeFor(active))) return true;
+        if (trap) return false;
         return focusFirst(document);
     }
 
@@ -388,7 +395,7 @@
         usingMouse = false;
         switch (action) {
             case "accept":
-                ensureFocusableActiveElement();
+                if (!ensureFocusableActiveElement()) break;
                 if (dispatchRustAction(action) || activateFocused()) {
                     uiSounds.play("select");
                 }
