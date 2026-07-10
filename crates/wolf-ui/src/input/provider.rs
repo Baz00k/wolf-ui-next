@@ -224,11 +224,15 @@ fn update_source(mut source: Signal<InputSource>, next_source: InputSource) {
 }
 
 fn keyboard_action(event: &KeyboardEvent) -> Option<UiAction> {
-    match event.key() {
+    keyboard_action_for_key(&event.key())
+}
+
+fn keyboard_action_for_key(key: &Key) -> Option<UiAction> {
+    match key {
         Key::Enter => Some(UiAction::Accept),
         Key::Character(value) if value == " " => Some(UiAction::Accept),
         Key::Character(value) if value.eq_ignore_ascii_case("f") => Some(UiAction::Menu),
-        Key::Escape | Key::Backspace => Some(UiAction::Cancel),
+        Key::Escape => Some(UiAction::Cancel),
         Key::ArrowUp => Some(UiAction::Up),
         Key::ArrowDown => Some(UiAction::Down),
         Key::ArrowLeft => Some(UiAction::Left),
@@ -248,4 +252,18 @@ fn dispatch_action(action: UiAction) {
 
 fn recover_focus() {
     let _ = document::eval("window.__wolfUiEnsureFocusableActiveElement?.();");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn backspace_is_reserved_for_editing() {
+        assert_eq!(keyboard_action_for_key(&Key::Backspace), None);
+        assert_eq!(
+            keyboard_action_for_key(&Key::Escape),
+            Some(UiAction::Cancel)
+        );
+    }
 }
