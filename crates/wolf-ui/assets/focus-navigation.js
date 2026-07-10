@@ -361,8 +361,16 @@
         queueMicrotask(() => dispatchActionHintsChanged(document.activeElement));
     });
 
+    let focusStateUpdatePending = false;
     new MutationObserver(() => {
+        if (focusStateUpdatePending) return;
+        focusStateUpdatePending = true;
         queueMicrotask(() => {
+            focusStateUpdatePending = false;
+            const active = document.activeElement;
+            if (active?.matches?.(FOCUSABLE_SELECTOR) && !isVisible(active)) {
+                ensureFocusableActiveElement();
+            }
             dispatchActionHintsChanged(document.activeElement);
         });
     }).observe(document.body, {
@@ -373,8 +381,14 @@
             ACTIONS_ATTRIBUTE,
             SCOPE_ACTIONS_ATTRIBUTE,
             "data-focus-scope",
+            "data-focus-trap",
+            "data-focus-root",
             "data-focusable",
             "data-focus-region",
+            "disabled",
+            "aria-disabled",
+            "inert",
+            "hidden",
         ],
     });
 
