@@ -93,10 +93,7 @@ apt-get install -y --no-install-recommends \
 rm -rf /var/lib/apt/lists/*
 _INSTALL_RUNTIME_DEPS
 
-ENV PUID=0 \
-    PGID=0 \
-    UNAME=root \
-    GDK_BACKEND=wayland
+ENV GDK_BACKEND=wayland
 
 COPY --from=builder /app/dist/app /opt/wolf-ui
 RUN ln -s /opt/wolf-ui/wolf-ui /usr/local/bin/wolf-ui
