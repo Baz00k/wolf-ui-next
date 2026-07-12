@@ -215,8 +215,8 @@ in the requested direction.
   drift.
 - Candidates must be meaningfully left, right, above, or below the current
   element.
-- Region fallback uses a stricter angle so focus does not jump to surprising
-  places.
+- Normal movement rejects strongly perpendicular candidates. Region fallback
+  uses a wider angle so explicitly ordered regions remain connected.
 - If no element is focused, navigation focuses the first visible candidate in the
   active scope.
 
