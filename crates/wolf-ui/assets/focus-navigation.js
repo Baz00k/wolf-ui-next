@@ -392,7 +392,12 @@
         queueMicrotask(() => {
             focusStateUpdatePending = false;
             const active = document.activeElement;
-            if (active?.matches?.(FOCUSABLE_SELECTOR) && !isVisible(active)) {
+            const trap = activeFocusTrap();
+            const valid =
+                active?.matches?.(FOCUSABLE_SELECTOR) &&
+                isVisible(active) &&
+                (!trap || trap.contains(active));
+            if (!valid) {
                 ensureFocusableActiveElement();
             }
             dispatchActionHintsChanged(document.activeElement);
