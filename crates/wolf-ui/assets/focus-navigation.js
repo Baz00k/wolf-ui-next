@@ -211,9 +211,8 @@
 
     function focusFirst(scope) {
         const first = candidatesIn(scope)[0];
-        if (!first) return false;
-        focusAndScrollElement(first);
-        dispatchActionHintsChanged(first);
+        if (!first || !focusAndScrollElement(first)) return false;
+        dispatchActionHintsChanged(document.activeElement);
         return true;
     }
 
@@ -285,8 +284,8 @@
             if (!best) return false;
         }
 
-        focusAndScrollElement(best);
-        dispatchActionHintsChanged(best);
+        if (!focusAndScrollElement(best)) return false;
+        dispatchActionHintsChanged(document.activeElement);
         return true;
     }
 
