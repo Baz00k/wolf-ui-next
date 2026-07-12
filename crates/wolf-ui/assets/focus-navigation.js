@@ -201,12 +201,20 @@
 
     window.__wolfUiFocusAutofocus = () => {
         const scope = activeFocusTrap() ?? document;
-        const active = document.activeElement;
-        if (active?.matches?.(FOCUSABLE_SELECTOR) && scope.contains(active) && isVisible(active)) {
-            return true;
-        }
         const candidates = Array.from(scope.querySelectorAll(`${FOCUSABLE_SELECTOR}[${AUTOFOCUS_ATTRIBUTE}='true']`));
         const element = candidates.find(isVisible);
+        if (!element) return false;
+
+        const active = document.activeElement;
+        const targetScope = element.closest("[data-focus-scope]") ?? scope;
+        if (
+            active?.matches?.(FOCUSABLE_SELECTOR) &&
+            isVisible(active) &&
+            targetScope.contains(active)
+        ) {
+            return true;
+        }
+
         return focusAndScrollElement(element);
     };
 

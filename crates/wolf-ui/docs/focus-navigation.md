@@ -131,7 +131,10 @@ Focusable {
 ```
 
 If a focus trap is active, autofocus is resolved inside that trap. Otherwise it
-is resolved across the document.
+is resolved across the document. An autofocus target may replace focus in a
+different focus scope, which allows asynchronously loaded page content to take
+initial focus from temporary header controls. Existing focus inside the target's
+own scope is preserved.
 
 ## Actions
 
