@@ -32,7 +32,8 @@ pub fn client() -> Result<WolfApi, ClientBuildError> {
 }
 
 pub fn client_with_config(config: ClientConfig) -> Result<WolfApi, ClientBuildError> {
-    match config.transport_ref() {
+    let transport = config.transport_ref();
+    match transport {
         ApiTransport::UnixSocket => tracing::debug!(
             "Wolf API client connecting via Unix socket: {} (base URL: {})",
             config.unix_socket_path_ref().display(),
@@ -45,5 +46,12 @@ pub fn client_with_config(config: ClientConfig) -> Result<WolfApi, ClientBuildEr
     }
 
     let http_client = reqwest_client(&config)?;
-    Ok(WolfApi::new(config.into_base_url(), http_client))
+    let unix_socket_path =
+        (transport == ApiTransport::UnixSocket).then(|| config.unix_socket_path_ref().to_owned());
+    Ok(WolfApi::with_transport(
+        config.into_base_url(),
+        http_client,
+        transport,
+        unix_socket_path,
+    ))
 }
