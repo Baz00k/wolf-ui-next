@@ -5,26 +5,26 @@ use crate::components::primitives::{Button, ButtonSize, ButtonVariant};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum SettingsCategory {
-    Update,
+    ImageUpdates,
 }
 
 impl SettingsCategory {
     fn from_route(route: &Route) -> Self {
         match route {
-            Route::Settings {} | Route::SettingsImageUpdates {} => Self::Update,
-            _ => Self::Update,
+            Route::Settings {} | Route::SettingsImageUpdates {} => Self::ImageUpdates,
+            _ => Self::ImageUpdates,
         }
     }
 
     fn label(self) -> &'static str {
         match self {
-            Self::Update => "Update",
+            Self::ImageUpdates => "Image Updates",
         }
     }
 
     fn route(self) -> Route {
         match self {
-            Self::Update => Route::SettingsImageUpdates {},
+            Self::ImageUpdates => Route::SettingsImageUpdates {},
         }
     }
 }
@@ -58,7 +58,7 @@ pub fn SettingsLayout() -> Element {
 fn SettingsSidebar(active: SettingsCategory) -> Element {
     rsx! {
         nav { class: "shrink-0 rounded-2xl border border-border bg-card p-2 mb-4 shadow-2xl shadow-black/25 sm:w-72",
-            SettingsNavItem { category: SettingsCategory::Update, active }
+            SettingsNavItem { category: SettingsCategory::ImageUpdates, active }
         }
     }
 }
