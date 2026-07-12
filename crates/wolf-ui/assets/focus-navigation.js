@@ -3,6 +3,7 @@
     window.__wolfUiFocusInstalled = true;
 
     const FOCUSABLE_SELECTOR = '[data-focusable="true"]';
+    const ACTION_HANDLER_PATTERN = /^action-[1-9]\d*$/;
     const ACTIONS_ATTRIBUTE = "data-actions";
     const SCOPE_ACTIONS_ATTRIBUTE = "data-scope-actions";
     const FOCUS_REGION_ATTRIBUTE = "data-focus-region";
@@ -332,7 +333,7 @@
 
     function dispatchRustAction(action) {
         const hint = activeAction(action);
-        if (typeof hint?.handler !== "string") return false;
+        if (!ACTION_HANDLER_PATTERN.test(hint?.handler ?? "")) return false;
         document.dispatchEvent(new CustomEvent("wolf-ui-action", { detail: hint }));
         return true;
     }
