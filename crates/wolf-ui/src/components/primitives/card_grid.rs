@@ -38,7 +38,7 @@ pub fn CardGrid(
 #[component]
 pub fn CardGridViewport(#[props(default)] class: String, children: Element) -> Element {
     let class = tw_merge!(
-        "h-full w-full overflow-y-auto overflow-x-hidden scrollbar-hide",
+        "h-full w-full overflow-y-auto overflow-x-hidden scroll-py-6 scrollbar-hide sm:scroll-py-8 md:scroll-py-10",
         class,
     );
 

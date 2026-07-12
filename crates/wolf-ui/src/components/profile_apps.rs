@@ -68,7 +68,7 @@ fn AppsFilter(
 pub fn AppsLoading() -> Element {
     rsx! {
         CardGridViewport {
-            CardGrid { columns: APP_GRID_COLUMNS,
+            CardGrid { columns: APP_GRID_COLUMNS, class: "py-6 sm:py-8 md:py-10",
                 for _ in 0..LOADING_CARD_COUNT {
                     AppCardSkeleton {}
                 }
@@ -127,7 +127,7 @@ pub fn AppsContent(
 
     rsx! {
         CardGridViewport {
-            CardGrid { columns: APP_GRID_COLUMNS,
+            CardGrid { columns: APP_GRID_COLUMNS, class: "py-6 sm:py-8 md:py-10",
                 for (index, app) in apps.iter().cloned().enumerate() {
                     AppCard {
                         key: "{app.id}",

@@ -234,6 +234,8 @@ in the requested direction.
 - Use `data-focus-trap` only for modal UI.
 - Keep focusable elements visible, sized, and not disabled when they should be
   reachable.
+- Use CSS `scroll-padding` on scrollable focus containers to keep focused
+  elements clear of viewport edges. The scroll helper honors these insets.
 - Prefer Rust action helpers over hand-written JSON.
 
 ## Controller Button Layouts
