@@ -25,13 +25,15 @@ pub(crate) fn auto_update_enabled() -> bool {
 
 fn env_flag(key: &str, default: bool) -> bool {
     std::env::var(key)
-        .map(|value| {
-            matches!(
-                value.to_ascii_lowercase().as_str(),
-                "1" | "true" | "yes" | "on"
-            )
-        })
+        .map(|value| parse_env_flag(&value))
         .unwrap_or(default)
+}
+
+fn parse_env_flag(value: &str) -> bool {
+    matches!(
+        value.to_ascii_lowercase().as_str(),
+        "1" | "true" | "yes" | "on"
+    )
 }
 
 pub(crate) async fn load_wolf_ui_image_state() -> Result<WolfUiImageState, String> {
@@ -181,27 +183,15 @@ mod tests {
     #[test]
     fn env_flag_parses_truthy_values() {
         for value in ["1", "true", "TRUE", "Yes", "on"] {
-            unsafe { std::env::set_var("WOLF_UI_TEST_FLAG", value) };
-            assert!(
-                env_flag("WOLF_UI_TEST_FLAG", false),
-                "{value} should be true"
-            );
+            assert!(parse_env_flag(value), "{value} should be true");
         }
-
-        unsafe { std::env::remove_var("WOLF_UI_TEST_FLAG") };
     }
 
     #[test]
     fn env_flag_parses_other_values_as_false() {
         for value in ["0", "false", "off", ""] {
-            unsafe { std::env::set_var("WOLF_UI_TEST_FLAG", value) };
-            assert!(
-                !env_flag("WOLF_UI_TEST_FLAG", true),
-                "{value} should be false"
-            );
+            assert!(!parse_env_flag(value), "{value} should be false");
         }
-
-        unsafe { std::env::remove_var("WOLF_UI_TEST_FLAG") };
     }
 
     #[test]
