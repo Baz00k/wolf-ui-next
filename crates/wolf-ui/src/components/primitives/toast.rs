@@ -1,11 +1,7 @@
 use std::time::Duration;
 
 use dioxus::prelude::*;
-use dioxus_free_icons::Icon;
-use dioxus_free_icons::icons::hi_solid_icons::HiX;
 use tokio::time::sleep;
-
-use crate::components::primitives::{Button, ButtonSize, ButtonVariant};
 
 const DEFAULT_AUTO_HIDE: Duration = Duration::from_secs(5);
 
@@ -24,7 +20,6 @@ impl ToastContext {
             message: message.into(),
             variant: options.variant,
             auto_hide: options.auto_hide,
-            dismissible: options.dismissible,
         });
     }
 
@@ -43,7 +38,6 @@ impl ToastContext {
 pub struct ToastOptions {
     pub variant: ToastVariant,
     pub auto_hide: Option<Duration>,
-    pub dismissible: bool,
 }
 
 impl ToastOptions {
@@ -52,11 +46,6 @@ impl ToastOptions {
             variant: ToastVariant::Error,
             ..Self::default()
         }
-    }
-
-    pub fn dismissible(mut self) -> Self {
-        self.dismissible = true;
-        self
     }
 
     pub fn persistent(mut self) -> Self {
@@ -70,7 +59,6 @@ impl Default for ToastOptions {
         Self {
             variant: ToastVariant::Info,
             auto_hide: Some(DEFAULT_AUTO_HIDE),
-            dismissible: false,
         }
     }
 }
@@ -81,7 +69,6 @@ pub struct ToastMessage {
     message: String,
     variant: ToastVariant,
     auto_hide: Option<Duration>,
-    dismissible: bool,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -114,7 +101,6 @@ pub fn ToastViewport() -> Element {
                     message: message.message.clone(),
                     variant: message.variant,
                     auto_hide: message.auto_hide,
-                    dismissible: message.dismissible,
                     ondismiss: move |_| {
                         let mut toasts = toasts;
                         toasts.dismiss(message.id);
@@ -131,7 +117,6 @@ pub fn Toast(
     message: String,
     #[props(default = ToastVariant::Info)] variant: ToastVariant,
     #[props(default = Some(DEFAULT_AUTO_HIDE))] auto_hide: Option<Duration>,
-    #[props(default)] dismissible: bool,
     ondismiss: EventHandler<()>,
 ) -> Element {
     use_effect(move || {
@@ -151,18 +136,8 @@ pub fn Toast(
     rsx! {
         div {
             key: "{id}",
-            class: "pointer-events-auto wolf-toast-enter flex w-[min(28rem,calc(100vw-2rem))] items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur backdrop-brightness-75 {tone}",
+            class: "toast-enter flex w-[min(28rem,calc(100vw-2rem))] items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur backdrop-brightness-75 {tone}",
             p { class: "min-w-0 flex-1 text-sm font-semibold leading-6", "{message}" }
-            if dismissible {
-                Button {
-                    variant: ButtonVariant::Ghost,
-                    size: ButtonSize::IconSm,
-                    class: "shrink-0 text-muted-foreground focus-visible:text-foreground",
-                    action_label: "Dismiss notification",
-                    onclick: move |_| ondismiss.call(()),
-                    Icon { icon: HiX, class: "h-4 w-4", width: None, height: None }
-                }
-            }
         }
     }
 }

@@ -32,7 +32,9 @@ pub fn ActionFooter() -> Element {
     rsx! {
         footer { class: "h-14 pointer-events-none z-500 flex w-full flex-wrap items-center justify-end gap-x-6 gap-y-2 border-t border-border/30 bg-card/90 px-8 text-base font-medium text-muted-foreground",
             for hint in hints {
-                ActionHint { source, hint }
+                if hint_supported_by(source, hint.action) {
+                    ActionHint { source, hint }
+                }
             }
         }
     }
@@ -70,6 +72,11 @@ fn button_label(source: InputSource, action: UiHint) -> &'static str {
     }
 }
 
+fn hint_supported_by(source: InputSource, action: UiHint) -> bool {
+    matches!(source, InputSource::MouseKeyboard)
+        || !matches!(action, UiHint::PageUp | UiHint::PageDown)
+}
+
 fn keyboard_label(action: UiHint) -> &'static str {
     match action {
         UiHint::Accept => "Enter",
@@ -87,8 +94,8 @@ fn xbox_label(action: UiHint) -> &'static str {
         UiHint::Cancel => "B",
         UiHint::Menu => "Y",
         UiHint::Navigate => "D-pad",
-        UiHint::PageUp => "LB",
-        UiHint::PageDown => "RB",
+        UiHint::PageUp => "PgUp",
+        UiHint::PageDown => "PgDn",
     }
 }
 
@@ -98,8 +105,8 @@ fn playstation_label(action: UiHint) -> &'static str {
         UiHint::Cancel => "Circle",
         UiHint::Menu => "Triangle",
         UiHint::Navigate => "D-pad",
-        UiHint::PageUp => "L1",
-        UiHint::PageDown => "R1",
+        UiHint::PageUp => "PgUp",
+        UiHint::PageDown => "PgDn",
     }
 }
 
@@ -109,7 +116,7 @@ fn switch_label(action: UiHint) -> &'static str {
         UiHint::Cancel => "B",
         UiHint::Menu => "X",
         UiHint::Navigate => "D-pad",
-        UiHint::PageUp => "L",
-        UiHint::PageDown => "R",
+        UiHint::PageUp => "PgUp",
+        UiHint::PageDown => "PgDn",
     }
 }

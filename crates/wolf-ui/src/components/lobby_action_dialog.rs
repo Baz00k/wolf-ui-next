@@ -7,7 +7,7 @@ use crate::components::primitives::{
     CardContent, CardFooter, ToastContext, ToastOptions, use_toasts,
 };
 use crate::components::{ActionDialog, ActionDialogItem, DialogCancelButton, PinInputDialog};
-use crate::input::{UiAction, use_ui_action};
+use crate::input::{UiCommand, use_ui_action};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum LobbyAction {
@@ -44,7 +44,7 @@ pub fn LobbyActionDialog(
         onstopped,
         onclose,
     };
-    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || {
+    let close_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || {
         if loading_action().is_none() {
             onclose.call(());
         }
@@ -63,9 +63,21 @@ pub fn LobbyActionDialog(
                     disabled: is_loading,
                     onclick: {
                         let lobby_id = lobby.id.clone();
-                        move |_| request_or_run_lobby_action(lobby_id.clone(), lobby.pin_required, None, LobbyAction::Join, pin_prompt, action_context)
+                        move |_| request_or_run_lobby_action(
+                            lobby_id.clone(),
+                            lobby.pin_required,
+                            None,
+                            LobbyAction::Join,
+                            pin_prompt,
+                            action_context,
+                        )
                     },
-                    Icon { icon: HiPlay, class: "h-5 w-5 text-emerald-400", width: None, height: None }
+                    Icon {
+                        icon: HiPlay,
+                        class: "h-5 w-5 text-emerald-400",
+                        width: None,
+                        height: None,
+                    }
                 }
                 ActionDialogItem {
                     label: "Stop",
@@ -74,16 +86,25 @@ pub fn LobbyActionDialog(
                     onclick: {
                         let lobby_id = lobby.id.clone();
                         let owner_pin = owner_pin.clone();
-                        move |_| request_or_run_lobby_action(lobby_id.clone(), lobby.pin_required, owner_pin.clone(), LobbyAction::Stop, pin_prompt, action_context)
+                        move |_| request_or_run_lobby_action(
+                            lobby_id.clone(),
+                            lobby.pin_required,
+                            owner_pin.clone(),
+                            LobbyAction::Stop,
+                            pin_prompt,
+                            action_context,
+                        )
                     },
-                    Icon { icon: HiStop, class: "h-5 w-5 text-red-400", width: None, height: None }
+                    Icon {
+                        icon: HiStop,
+                        class: "h-5 w-5 text-red-400",
+                        width: None,
+                        height: None,
+                    }
                 }
             }
             CardFooter {
-                DialogCancelButton {
-                    disabled: is_loading,
-                    onclick: move |_| onclose.call(()),
-                }
+                DialogCancelButton { disabled: is_loading, onclick: move |_| onclose.call(()) }
             }
         }
         match pin_prompt() {
@@ -114,7 +135,12 @@ pub fn LobbyActionDialog(
                         move |pin: Vec<i64>| {
                             pin_prompt.set(None);
                             if owner_pin.as_ref() == Some(&pin) {
-                                run_lobby_action(lobby_id.clone(), LobbyAction::Stop, None, action_context);
+                                run_lobby_action(
+                                    lobby_id.clone(),
+                                    LobbyAction::Stop,
+                                    None,
+                                    action_context,
+                                );
                             } else {
                                 toasts.show("Incorrect PIN. Try again.", ToastOptions::error());
                             }

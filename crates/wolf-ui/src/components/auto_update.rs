@@ -16,7 +16,7 @@ pub fn StartupAutoUpdate() -> Element {
             match run_startup_auto_update().await {
                 Ok(true) => toasts.show(
                     "A new Wolf UI image was downloaded. Restart to apply the update.",
-                    ToastOptions::default().persistent().dismissible(),
+                    ToastOptions::default().persistent(),
                 ),
                 Ok(false) => {}
                 Err(error) => tracing::warn!(error, "startup auto-update failed"),

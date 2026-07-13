@@ -1,7 +1,8 @@
 use serde::{Serialize, de::DeserializeOwned};
+use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use crate::{endpoints, error::ApiError, types};
+use crate::{ApiTransport, endpoints, error::ApiError, types};
 
 const STREAM_REQUEST_TIMEOUT: Duration = Duration::from_hours(12);
 
@@ -16,6 +17,8 @@ pub(crate) struct RequestContext<'api> {
 pub struct WolfApi {
     base_url: String,
     http_client: reqwest::Client,
+    transport: ApiTransport,
+    unix_socket_path: Option<PathBuf>,
 }
 
 impl WolfApi {
@@ -24,6 +27,22 @@ impl WolfApi {
         Self {
             base_url: base_url.into(),
             http_client,
+            transport: ApiTransport::Tcp,
+            unix_socket_path: None,
+        }
+    }
+
+    pub(crate) fn with_transport(
+        base_url: impl Into<String>,
+        http_client: reqwest::Client,
+        transport: ApiTransport,
+        unix_socket_path: Option<PathBuf>,
+    ) -> Self {
+        Self {
+            base_url: base_url.into(),
+            http_client,
+            transport,
+            unix_socket_path,
         }
     }
 
@@ -194,7 +213,10 @@ impl WolfApi {
             method = context.method,
             path = context.path,
             base_url = context.base_url,
+            transport = ?self.transport,
+            socket_path = ?self.unix_socket_path,
             %error,
+            error_debug = ?error,
             message
         );
     }
@@ -221,8 +243,11 @@ impl WolfApi {
                 method = context.method,
                 path = context.path,
                 base_url = context.base_url,
+                transport = ?self.transport,
+                socket_path = ?self.unix_socket_path,
                 elapsed_ms,
                 %error,
+                error_debug = ?error,
                 "Wolf API request failed"
             ),
         }

@@ -11,27 +11,37 @@ pub fn Numpad(
     onclear: EventHandler<()>,
 ) -> Element {
     rsx! {
-        div { class: "mt-4 grid grid-cols-3 gap-2 xl:mt-5 xl:gap-3",
+        div { class: "mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3",
             for digit in 1..=9 {
                 NumpadDigit { digit, autofocus: digit == 1, ondigit }
             }
             Button {
-                variant: ButtonVariant::Menu,
-                size: ButtonSize::Xl,
-                class: "h-13 px-3 text-sm sm:text-base xl:h-16",
+                variant: ButtonVariant::Ghost,
+                size: ButtonSize::Lg,
+                class: "px-1",
                 action_label: "Delete digit".to_string(),
                 onclick: move |_| onbackspace.call(()),
-                Icon { icon: HiBackspace, class: "h-5 w-5", width: None, height: None }
+                Icon {
+                    icon: HiBackspace,
+                    class: "h-5 w-5",
+                    width: None,
+                    height: None,
+                }
                 "Delete"
             }
             NumpadDigit { digit: 0, autofocus: false, ondigit }
             Button {
-                variant: ButtonVariant::Menu,
-                size: ButtonSize::Xl,
-                class: "h-13 px-3 text-sm sm:text-base xl:h-16",
+                variant: ButtonVariant::Ghost,
+                size: ButtonSize::Lg,
+                class: "px-1",
                 action_label: "Clear input".to_string(),
                 onclick: move |_| onclear.call(()),
-                Icon { icon: HiTrash, class: "h-5 w-5", width: None, height: None }
+                Icon {
+                    icon: HiTrash,
+                    class: "h-5 w-5",
+                    width: None,
+                    height: None,
+                }
                 "Clear"
             }
         }
@@ -43,8 +53,8 @@ fn NumpadDigit(digit: i64, autofocus: bool, ondigit: EventHandler<i64>) -> Eleme
     rsx! {
         Button {
             variant: ButtonVariant::Secondary,
-            size: ButtonSize::Xl,
-            class: "h-13 text-xl font-bold xl:h-16 xl:text-2xl",
+            size: ButtonSize::Lg,
+            class: "text-2xl font-bold",
             autofocus,
             action_label: format!("Enter {digit}"),
             onclick: move |_| ondigit.call(digit),

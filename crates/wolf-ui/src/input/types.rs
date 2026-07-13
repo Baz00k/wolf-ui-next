@@ -41,6 +41,21 @@ pub enum UiHint {
     PageDown,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum UiCommand {
+    Cancel,
+    Menu,
+}
+
+impl From<UiCommand> for UiHint {
+    fn from(command: UiCommand) -> Self {
+        match command {
+            UiCommand::Cancel => Self::Cancel,
+            UiCommand::Menu => Self::Menu,
+        }
+    }
+}
+
 impl From<UiAction> for UiHint {
     fn from(action: UiAction) -> Self {
         match action {

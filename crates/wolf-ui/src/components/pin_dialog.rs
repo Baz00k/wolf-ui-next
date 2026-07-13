@@ -7,7 +7,7 @@ use crate::components::primitives::{
     Button, ButtonSize, ButtonVariant, CardContent, CardFooter, Numpad,
 };
 use crate::components::{ActionDialog, DialogCancelButton};
-use crate::input::{UiAction, use_ui_action};
+use crate::input::{UiCommand, use_ui_action};
 
 const MAX_PIN_DIGITS: usize = 8;
 
@@ -20,7 +20,7 @@ pub fn PinInputDialog(
     oncancel: EventHandler<()>,
 ) -> Element {
     let mut pin = use_signal(Vec::<i64>::new);
-    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || oncancel.call(()));
+    let close_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || oncancel.call(()));
     let onkeydown = move |event: KeyboardEvent| match event.key() {
         Key::Character(value) => {
             if let Some(digit) = value
@@ -47,8 +47,8 @@ pub fn PinInputDialog(
             title,
             description,
             scope_actions: close_actions,
-            class: "max-w-md overflow-hidden",
-            CardContent { class: "space-y-4 overflow-hidden xl:space-y-5",
+            class: "max-w-md",
+            CardContent { class: "space-y-4 sm:space-y-5",
                 div { onkeydown,
                     PinDisplay { len: pin().len() }
                     Numpad {
@@ -61,10 +61,7 @@ pub fn PinInputDialog(
                 }
             }
             CardFooter { class: "grid grid-cols-2 gap-3",
-                DialogCancelButton {
-                    disabled: false,
-                    onclick: move |_| oncancel.call(()),
-                }
+                DialogCancelButton { disabled: false, onclick: move |_| oncancel.call(()) }
                 Button {
                     variant: ButtonVariant::Default,
                     size: ButtonSize::Xl,
@@ -72,7 +69,12 @@ pub fn PinInputDialog(
                     action_label: submit_label.clone(),
                     disabled: pin().is_empty(),
                     onclick: move |_| submit_pin(pin(), onsubmit),
-                    Icon { icon: HiCheck, class: "h-5 w-5", width: None, height: None }
+                    Icon {
+                        icon: HiCheck,
+                        class: "h-5 w-5",
+                        width: None,
+                        height: None,
+                    }
                     "{submit_label}"
                 }
             }
@@ -97,12 +99,10 @@ pub fn PinProtectQuestionDialog(
     onanswer: EventHandler<bool>,
     oncancel: EventHandler<()>,
 ) -> Element {
-    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || oncancel.call(()));
+    let close_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || oncancel.call(()));
 
     rsx! {
-        ActionDialog {
-            title: "Protect lobby?".to_string(),
-            scope_actions: close_actions,
+        ActionDialog { title: "Protect lobby?".to_string(), scope_actions: close_actions,
             CardContent { class: "space-y-4",
                 p { class: "text-base font-medium leading-7 text-muted-foreground",
                     "Add a PIN so other players must enter it before joining this co-op lobby."
@@ -110,7 +110,7 @@ pub fn PinProtectQuestionDialog(
             }
             CardFooter { class: "grid grid-cols-2 gap-3",
                 Button {
-                    variant: ButtonVariant::Menu,
+                    variant: ButtonVariant::Ghost,
                     size: ButtonSize::Xl,
                     class: "w-full",
                     action_label: "No PIN".to_string(),
@@ -124,7 +124,12 @@ pub fn PinProtectQuestionDialog(
                     class: "w-full",
                     action_label: "Add PIN".to_string(),
                     onclick: move |_| onanswer.call(true),
-                    Icon { icon: HiLockClosed, class: "h-5 w-5", width: None, height: None }
+                    Icon {
+                        icon: HiLockClosed,
+                        class: "h-5 w-5",
+                        width: None,
+                        height: None,
+                    }
                     "Add PIN"
                 }
             }
@@ -135,16 +140,18 @@ pub fn PinProtectQuestionDialog(
 #[component]
 fn PinDisplay(len: usize) -> Element {
     rsx! {
-        div { class: "overflow-hidden rounded-2xl border border-border bg-background/70 px-6 py-4 text-center shadow-inner shadow-black/20 xl:py-5",
+        div { class: "overflow-hidden rounded-2xl border border-border bg-background/70 px-6 py-4 text-center shadow-inner shadow-black/20 sm:py-5",
             div { class: "mx-auto flex max-w-full items-center justify-center gap-3 sm:gap-4",
                 for index in 0..MAX_PIN_DIGITS {
-                    span {
-                        class: if index < len { "h-3 w-3 rounded-full bg-foreground xl:h-4 xl:w-4" } else { "h-3 w-3 rounded-full border border-muted-foreground/40 xl:h-4 xl:w-4" },
-                    }
+                    span { class: if index < len { "h-3 w-3 rounded-full bg-foreground sm:h-4 sm:w-4" } else { "h-3 w-3 rounded-full border border-muted-foreground/40 sm:h-4 sm:w-4" } }
                 }
             }
-            p { class: "mt-2 text-sm font-medium text-muted-foreground xl:mt-3", "{len}/{MAX_PIN_DIGITS} digits" }
-            p { class: "mt-1 text-xs font-medium text-muted-foreground", "Use the keypad, keyboard, or controller" }
+            p { class: "mt-2 text-sm font-medium text-muted-foreground sm:mt-3",
+                "{len}/{MAX_PIN_DIGITS} digits"
+            }
+            p { class: "mt-1 text-xs font-medium text-muted-foreground",
+                "Use the keypad, keyboard, or controller"
+            }
         }
     }
 }

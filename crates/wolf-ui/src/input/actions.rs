@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use dioxus::prelude::*;
 
-use crate::input::{UiAction, UiHint};
+use crate::input::{UiAction, UiCommand, UiHint};
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
 pub struct ActionHint {
@@ -70,20 +70,16 @@ pub fn native_action(action: UiAction, label: impl Into<String>) -> String {
     action_hints([ActionHint::new(UiHint::from(action), label)])
 }
 
-pub fn navigate_hint(label: impl Into<String>) -> String {
-    action_hints([ActionHint::new(UiHint::Navigate, label)])
-}
-
 pub fn use_ui_action(
-    action: UiAction,
+    command: UiCommand,
     label: impl Into<String>,
     handler: impl FnMut() + 'static,
 ) -> String {
-    action_hints([use_ui_action_hint(action, label, handler)])
+    action_hints([use_ui_action_hint(command, label, handler)])
 }
 
 pub fn use_ui_action_hint(
-    action: UiAction,
+    command: UiCommand,
     label: impl Into<String>,
     mut handler: impl FnMut() + 'static,
 ) -> ActionHint {
@@ -100,7 +96,7 @@ pub fn use_ui_action_hint(
     });
 
     ActionHint {
-        action: UiHint::from(action),
+        action: UiHint::from(command),
         label: label.into(),
         handler: Some(handler_id),
     }
@@ -118,8 +114,18 @@ pub(super) fn use_action_bridge(registry: ActionRegistry) {
                 "#,
             );
 
-            while let Ok(handler_id) = eval.recv::<String>().await {
-                registry.call(&handler_id);
+            loop {
+                match eval.recv::<String>().await {
+                    Ok(handler_id) => {
+                        if !registry.call(&handler_id) {
+                            tracing::warn!(target: "wolf-ui-input", %handler_id, "unknown UI action handler");
+                        }
+                    }
+                    Err(error) => {
+                        tracing::warn!(target: "wolf-ui-input", "UI action bridge closed: {error}");
+                        break;
+                    }
+                }
             }
         });
     });

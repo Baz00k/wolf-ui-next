@@ -10,7 +10,7 @@ use crate::components::primitives::{
     CardContent, CardFooter, ProgressPanel, ProgressTone, ToastContext, ToastOptions, use_toasts,
 };
 use crate::components::{ActionDialog, ActionDialogItem, DialogCancelButton};
-use crate::input::{UiAction, use_ui_action};
+use crate::input::{UiCommand, use_ui_action};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AppAction {
@@ -55,7 +55,7 @@ pub fn AppActionDialog(
     let progress_value = progress().unwrap_or(0.0).round() as u8;
     let progress_action = loading_action().filter(|action| shows_progress(*action));
     let toasts = use_toasts();
-    let close_actions = use_ui_action(UiAction::Cancel, "Cancel", move || {
+    let close_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || {
         if loading_action().is_none() {
             onclose.call(());
         }
@@ -100,10 +100,7 @@ pub fn AppActionDialog(
                 }
             }
             CardFooter {
-                DialogCancelButton {
-                    disabled: is_loading,
-                    onclick: move |_| onclose.call(()),
-                }
+                DialogCancelButton { disabled: is_loading, onclick: move |_| onclose.call(()) }
             }
         }
         if let Some(prompt) = pin_prompt() {
@@ -219,19 +216,44 @@ fn start_dialog_action(
 fn ActionIcon(action: AppAction) -> Element {
     match action {
         AppAction::Start | AppAction::Connect => rsx! {
-            Icon { icon: HiPlay, class: "h-5 w-5 text-emerald-400", width: None, height: None }
+            Icon {
+                icon: HiPlay,
+                class: "h-5 w-5 text-emerald-400",
+                width: None,
+                height: None,
+            }
         },
         AppAction::StartCoop => rsx! {
-            Icon { icon: HiUserGroup, class: "h-5 w-5 text-blue-400", width: None, height: None }
+            Icon {
+                icon: HiUserGroup,
+                class: "h-5 w-5 text-blue-400",
+                width: None,
+                height: None,
+            }
         },
         AppAction::Stop => rsx! {
-            Icon { icon: HiStop, class: "h-5 w-5 text-red-400", width: None, height: None }
+            Icon {
+                icon: HiStop,
+                class: "h-5 w-5 text-red-400",
+                width: None,
+                height: None,
+            }
         },
         AppAction::CheckUpdate => rsx! {
-            Icon { icon: HiRefresh, class: "h-5 w-5 text-yellow-300", width: None, height: None }
+            Icon {
+                icon: HiRefresh,
+                class: "h-5 w-5 text-yellow-300",
+                width: None,
+                height: None,
+            }
         },
         AppAction::Download => rsx! {
-            Icon { icon: HiDownload, class: "h-5 w-5 text-yellow-300", width: None, height: None }
+            Icon {
+                icon: HiDownload,
+                class: "h-5 w-5 text-yellow-300",
+                width: None,
+                height: None,
+            }
         },
     }
 }
@@ -249,7 +271,9 @@ fn action_label(action: AppAction) -> &'static str {
 
 fn success_message(action: AppAction, downloaded: bool) -> Option<&'static str> {
     match action {
+        AppAction::CheckUpdate if downloaded => Some("Image updated."),
         AppAction::CheckUpdate if !downloaded => Some("Image is up to date."),
+        AppAction::Download => Some("Image downloaded."),
         _ => None,
     }
 }

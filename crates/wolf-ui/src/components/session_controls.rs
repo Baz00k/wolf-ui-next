@@ -8,7 +8,7 @@ use crate::components::primitives::{
 };
 use crate::components::{ActionDialog, DialogCancelButton};
 use crate::domain::session::stop_current_session;
-use crate::input::{UiAction, use_ui_action};
+use crate::input::{UiCommand, use_ui_action};
 
 #[component]
 pub fn SessionShutdownControl() -> Element {
@@ -17,12 +17,19 @@ pub fn SessionShutdownControl() -> Element {
 
     rsx! {
         Button {
-            variant: ButtonVariant::ChromeDestructive,
+            variant: ButtonVariant::Outline,
             size: ButtonSize::IconLg,
+            class: "focus-visible:border-destructive/70 focus-visible:bg-destructive/15 focus-visible:text-destructive-foreground",
             action_label: "End session",
             disabled: stop_session.pending(),
             onclick: move |_| dialog_open.set(true),
-            Icon { icon: HiLogout, class: "h-7 w-7 sm:h-8 sm:w-8", width: None, height: None, title: None }
+            Icon {
+                icon: HiLogout,
+                class: "h-7 w-7 sm:h-8 sm:w-8",
+                width: None,
+                height: None,
+                title: None,
+            }
         }
         if dialog_open() {
             SessionShutdownDialog {
@@ -40,7 +47,7 @@ pub fn SessionShutdownControl() -> Element {
 fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandler<()>) -> Element {
     let pending = stop_session.pending();
     let failed = matches!(stop_session.value(), Some(Err(_)));
-    let cancel_actions = use_ui_action(UiAction::Cancel, "Cancel", move || {
+    let cancel_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || {
         if !pending {
             oncancel.call(());
         }
@@ -64,10 +71,7 @@ fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandle
                 }
             }
             CardFooter { class: "grid gap-3 sm:grid-cols-2",
-                DialogCancelButton {
-                    disabled: pending,
-                    onclick: move |_| oncancel.call(()),
-                }
+                DialogCancelButton { disabled: pending, onclick: move |_| oncancel.call(()) }
                 Button {
                     variant: ButtonVariant::Destructive,
                     size: ButtonSize::Xl,
@@ -79,7 +83,9 @@ fn SessionShutdownDialog(mut stop_session: Action<(), ()>, oncancel: EventHandle
                         spawn(async move {
                             stop_session.call().await;
                             if let Some(Err(error)) = stop_session.value() {
-                                tracing::warn!(target: "wolf-ui-session", "failed to end session: {error}");
+                                tracing::warn!(
+                                    target : "wolf-ui-session", "failed to end session: {error}"
+                                );
                             }
                         });
                     },

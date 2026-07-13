@@ -29,5 +29,8 @@ pub fn Badge(
         class,
     );
 
-    rsx! { span { class, {children} } }
+    rsx! {
+        span { class, {children} }
+
+    }
 }

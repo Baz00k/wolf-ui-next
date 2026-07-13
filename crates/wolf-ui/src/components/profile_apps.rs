@@ -9,7 +9,6 @@ use crate::components::primitives::{
 };
 use crate::components::{AppCard, AppCardData, AppCardSkeleton, SessionShutdownControl};
 use crate::domain::apps::{AppFilter, filter_label, sorted_apps};
-use crate::input::navigate_hint;
 
 const LOADING_CARD_COUNT: usize = 8;
 const APP_GRID_COLUMNS: usize = 6;
@@ -26,9 +25,8 @@ pub fn AppsHeader(
             class: "grid grid-cols-[1fr_auto] items-start gap-4",
             "data-focus-scope": "true",
             "data-focus-region": "top-bar",
-            "data-scope-actions": navigate_hint("Navigate"),
             div { class: "min-w-0",
-                h1 { class: "text-4xl font-bold tracking-tight lg:text-5xl", "Applications" }
+                h1 { class: "text-4xl font-bold tracking-tight sm:text-5xl", "Applications" }
             }
             div { class: "flex min-w-0 items-center justify-end gap-3 sm:gap-4",
                 AppsFilter { filter, selected_index, pending_focus_index }
@@ -70,7 +68,7 @@ fn AppsFilter(
 pub fn AppsLoading() -> Element {
     rsx! {
         CardGridViewport {
-            CardGrid { columns: APP_GRID_COLUMNS,
+            CardGrid { columns: APP_GRID_COLUMNS, class: "py-6 sm:py-8 md:py-10",
                 for _ in 0..LOADING_CARD_COUNT {
                     AppCardSkeleton {}
                 }
@@ -95,7 +93,8 @@ pub fn AppsContent(
             div { class: "flex h-full items-center justify-center",
                 StatusAlert {
                     title: Some("Apps unavailable".to_string()),
-                    message: "Wolf returned an unsuccessful app response. Try again once the service is ready.".to_string(),
+                    message: "Wolf returned an unsuccessful app response. Try again once the service is ready."
+                        .to_string(),
                     variant: StatusAlertVariant::Error,
                 }
             }
@@ -128,7 +127,7 @@ pub fn AppsContent(
 
     rsx! {
         CardGridViewport {
-            CardGrid { columns: APP_GRID_COLUMNS,
+            CardGrid { columns: APP_GRID_COLUMNS, class: "py-6 sm:py-8 md:py-10",
                 for (index, app) in apps.iter().cloned().enumerate() {
                     AppCard {
                         key: "{app.id}",

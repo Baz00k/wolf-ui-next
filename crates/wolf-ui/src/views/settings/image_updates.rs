@@ -34,16 +34,11 @@ pub fn SettingsImageUpdates() -> Element {
                     title: Some("Update settings unavailable".to_string()),
                     message: message.clone(),
                     variant: StatusAlertVariant::Error,
-                    Button {
-                        size: ButtonSize::Lg,
-                        onclick: move |_| image_state.restart(),
-                        "Retry"
-                    }
+                    Button { size: ButtonSize::Lg, onclick: move |_| image_state.restart(), "Retry" }
                 }
             },
             None => rsx! {
-                div {
-                    class: "w-full h-full grid place-items-center",
+                div { class: "w-full h-full grid place-items-center",
                     Spinner { class: "m-8 h-8 w-8" }
                 }
             },
@@ -67,25 +62,38 @@ fn UpdatePanel(
     let update_failed = matches!(update_result, Some(Err(_)));
     let image_status = image_status(&state, update_downloaded);
     let update_disabled = pending || update_downloaded.is_some();
+    let progress_visible = pending || progress().is_some();
 
     rsx! {
         Card { class: "overflow-hidden rounded-2xl bg-card shadow-black/35",
-            CardContent { class: "space-y-8 px-6 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10",
+            CardContent { class: "space-y-6 px-6 py-6 sm:px-10 sm:py-8",
                 PageHeader {}
-                div { class: "grid gap-4 xl:grid-cols-5 xl:items-stretch",
-                    ImageInfoTile { label: "Current image source".to_string(), value: state.repository.clone(), wide: true }
-                    ImageInfoTile { label: "Current image version".to_string(), value: state.version.clone(), wide: false }
-                    ImageInfoTile { label: "Image status".to_string(), value: image_status.to_string(), failed: update_failed }
-                    UpdateButton {
-                        image: state.source.clone(),
-                        disabled: update_disabled,
-                        pending,
-                        progress,
-                        update_runner,
-                        onupdated,
+                div { class: "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4",
+                    ImageInfoTile {
+                        label: "Current image source".to_string(),
+                        value: state.repository.clone(),
+                        wide: true,
+                    }
+                    ImageInfoTile {
+                        label: "Current image version".to_string(),
+                        value: state.version.clone(),
+                    }
+                    ImageInfoTile {
+                        label: "Image status".to_string(),
+                        value: image_status.to_string(),
+                        failed: update_failed,
                     }
                 }
-                ProgressBar { progress: progress_value, visible: pending || progress().is_some() }
+                UpdateAction {
+                    image: state.source.clone(),
+                    disabled: update_disabled,
+                    pending,
+                    progress,
+                    progress_value,
+                    progress_visible,
+                    update_runner,
+                    onupdated,
+                }
             }
         }
     }
@@ -107,7 +115,11 @@ fn ImageInfoTile(
 ) -> Element {
     let class = tw_merge!(
         "rounded-2xl border border-border/80 bg-background/35 p-5",
-        if wide { "xl:col-span-2" } else { "" },
+        if wide {
+            "sm:col-span-2 lg:col-span-2"
+        } else {
+            ""
+        },
     );
     let value_class = tw_merge!(
         "mt-3 break-words text-2xl font-bold tracking-tight text-foreground",
@@ -120,50 +132,51 @@ fn ImageInfoTile(
 
     rsx! {
         div { class,
-            p { class: "text-sm font-semibold uppercase tracking-widest text-muted-foreground", "{label}" }
+            p { class: "text-sm font-semibold uppercase tracking-widest text-muted-foreground",
+                "{label}"
+            }
             p { class: value_class, "{value}" }
         }
     }
 }
 
 #[component]
-fn UpdateButton(
+fn UpdateAction(
     image: String,
     disabled: bool,
     pending: bool,
     progress: Signal<Option<f64>>,
+    progress_value: u8,
+    progress_visible: bool,
     update_runner: Action<(String, Signal<Option<f64>>), bool>,
     onupdated: EventHandler<()>,
 ) -> Element {
     let toasts = use_toasts();
 
     rsx! {
-        div { class: "flex items-center justify-start xl:justify-end",
-            Button {
-                size: ButtonSize::Xl,
-                class: "mx-auto my-2 font-bold",
-                action_label: "Update image",
-                disabled,
-                onclick: move |_| {
-                    start_image_update(image.clone(), progress, update_runner, toasts, onupdated);
-                },
-                if pending {
-                    Spinner { class: "h-5 w-5" }
-                    "Updating"
-                } else {
-                    "Update Image"
+        div { class: "flex flex-col gap-4",
+            div { class: "flex justify-center sm:justify-end",
+                Button {
+                    size: ButtonSize::Xl,
+                    class: "font-bold",
+                    action_label: "Update image",
+                    disabled,
+                    onclick: move |_| {
+                        start_image_update(image.clone(), progress, update_runner, toasts, onupdated);
+                    },
+                    if pending {
+                        Spinner { class: "h-5 w-5" }
+                        "Updating"
+                    } else {
+                        "Update Image"
+                    }
                 }
             }
-        }
-    }
-}
-
-#[component]
-fn ProgressBar(progress: u8, visible: bool) -> Element {
-    rsx! {
-        div { class: "mt-6 h-12",
-            if visible {
-                ProgressPanel { label: "Downloading image".to_string(), progress }
+            if progress_visible {
+                ProgressPanel {
+                    label: "Downloading image".to_string(),
+                    progress: progress_value,
+                }
             }
         }
     }

@@ -3,11 +3,12 @@
     window.__wolfUiFocusInstalled = true;
 
     const FOCUSABLE_SELECTOR = '[data-focusable="true"]';
+    const ACTION_HANDLER_PATTERN = /^action-[1-9]\d*$/;
     const ACTIONS_ATTRIBUTE = "data-actions";
     const SCOPE_ACTIONS_ATTRIBUTE = "data-scope-actions";
     const FOCUS_REGION_ATTRIBUTE = "data-focus-region";
-    const MAX_NAVIGATION_ANGLE_DEGREES = 60;
-    const MAX_NAVIGATION_ANGLE_RADIANS = (MAX_NAVIGATION_ANGLE_DEGREES * Math.PI) / 180;
+    const MAX_NAVIGATION_ANGLE_RADIANS = (60 * Math.PI) / 180;
+    const MAX_REGION_FALLBACK_ANGLE_RADIANS = (85 * Math.PI) / 180;
     const ACTION_TO_HINT = {
         accept: "accept",
         cancel: "cancel",
@@ -33,7 +34,7 @@
     function visibleRect(element) {
         const style = window.getComputedStyle(element);
         if (style.display === "none" || style.visibility === "hidden") return null;
-        if (element.matches(':disabled,[aria-disabled="true"],[inert]')) return null;
+        if (element.matches(':disabled,[aria-disabled="true"]') || element.closest("[inert]")) return null;
         const rect = element.getBoundingClientRect();
         return rect.width > 0 && rect.height > 0 ? rect : null;
     }
@@ -93,7 +94,7 @@
             let bestScore = Infinity;
             for (const candidate of candidateEntriesIn(regions[index])) {
                 const score = directionScore(action, currentRect, candidate.rect, {
-                    enforceAngle: true,
+                    maxAngle: MAX_REGION_FALLBACK_ANGLE_RADIANS,
                 });
                 if (score !== null && score < bestScore) {
                     best = candidate.element;
@@ -158,15 +159,15 @@
         return Math.acos(cosine);
     }
 
-    function isWithinNavigationAngle(action, dx, dy) {
-        return angleFromDirection(action, dx, dy) <= MAX_NAVIGATION_ANGLE_RADIANS;
+    function isWithinNavigationAngle(action, dx, dy, maxAngle) {
+        return angleFromDirection(action, dx, dy) <= maxAngle;
     }
 
     function directionScore(action, current, candidate, options = {}) {
         const delta = directionDelta(action, current, candidate);
         if (!delta) return null;
 
-        if (options.enforceAngle && !isWithinNavigationAngle(action, delta.dx, delta.dy)) {
+        if (!isWithinNavigationAngle(action, delta.dx, delta.dy, options.maxAngle)) {
             return null;
         }
 
@@ -187,6 +188,7 @@
 
         // Gamepad input needs an explicit focus-visible hint.
         element.focus({ preventScroll: true, focusVisible: !usingMouse });
+        if (document.activeElement !== element) return false;
         window.__wolfUiScrollIntoView?.(element, options);
         return true;
     }
@@ -201,27 +203,69 @@
         const scope = activeFocusTrap() ?? document;
         const candidates = Array.from(scope.querySelectorAll(`${FOCUSABLE_SELECTOR}[${AUTOFOCUS_ATTRIBUTE}='true']`));
         const element = candidates.find(isVisible);
+        if (!element) return false;
+
+        const active = document.activeElement;
+        const targetScope = element.closest("[data-focus-scope]") ?? scope;
+        if (
+            active?.matches?.(FOCUSABLE_SELECTOR) &&
+            isVisible(active) &&
+            targetScope.contains(active)
+        ) {
+            return true;
+        }
+
         return focusAndScrollElement(element);
     };
 
     function focusFirst(scope) {
         const first = candidatesIn(scope)[0];
-        if (!first) return false;
-        focusAndScrollElement(first);
-        dispatchActionHintsChanged(first);
+        if (!first || !focusAndScrollElement(first)) return false;
+        dispatchActionHintsChanged(document.activeElement);
         return true;
     }
 
     function ensureFocusableActiveElement() {
-        if (document.activeElement?.matches?.(FOCUSABLE_SELECTOR) && isVisible(document.activeElement)) {
+        const active = document.activeElement;
+        const trap = activeFocusTrap();
+        if (
+            active?.matches?.(FOCUSABLE_SELECTOR) &&
+            isVisible(active) &&
+            (!trap || trap.contains(active))
+        ) {
             return true;
         }
 
-        if (focusFirst(scopeFor(document.activeElement))) return true;
+        if (focusFirst(scopeFor(active))) return true;
+        if (trap) return false;
         return focusFirst(document);
     }
 
     window.__wolfUiEnsureFocusableActiveElement = ensureFocusableActiveElement;
+
+    const dialogOpeners = [];
+
+    window.__wolfUiCaptureDialogOpener = (dialogId) => {
+        const element = document.activeElement?.matches?.(FOCUSABLE_SELECTOR) ? document.activeElement : null;
+        dialogOpeners.push({ dialogId, element });
+    };
+
+    window.__wolfUiRestoreDialogOpener = (dialogId) => {
+        const index = dialogOpeners.findIndex((entry) => entry.dialogId === dialogId);
+        if (index === -1) return;
+
+        const [{ element }] = dialogOpeners.splice(index, 1);
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+                const trap = activeFocusTrap();
+                if (element?.isConnected && (!trap || trap.contains(element)) && isVisible(element)) {
+                    if (focusAndScrollElement(element, { inline: "nearest" })) return;
+                }
+
+                ensureFocusableActiveElement();
+            }),
+        );
+    };
 
     function moveFocus(action) {
         const active = document.activeElement?.matches?.(FOCUSABLE_SELECTOR) ? document.activeElement : null;
@@ -235,7 +279,9 @@
 
         for (const candidate of candidateEntriesIn(scope)) {
             if (candidate.element === active) continue;
-            const score = directionScore(action, currentRect, candidate.rect);
+            const score = directionScore(action, currentRect, candidate.rect, {
+                maxAngle: MAX_NAVIGATION_ANGLE_RADIANS,
+            });
             if (score !== null && score < bestScore) {
                 best = candidate.element;
                 bestScore = score;
@@ -247,8 +293,8 @@
             if (!best) return false;
         }
 
-        focusAndScrollElement(best);
-        dispatchActionHintsChanged(best);
+        if (!focusAndScrollElement(best)) return false;
+        dispatchActionHintsChanged(document.activeElement);
         return true;
     }
 
@@ -295,7 +341,7 @@
 
     function dispatchRustAction(action) {
         const hint = activeAction(action);
-        if (!hint?.handler) return false;
+        if (!ACTION_HANDLER_PATTERN.test(hint?.handler ?? "")) return false;
         document.dispatchEvent(new CustomEvent("wolf-ui-action", { detail: hint }));
         return true;
     }
@@ -327,8 +373,42 @@
         queueMicrotask(() => dispatchActionHintsChanged(document.activeElement));
     });
 
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Tab") return;
+
+        const trap = activeFocusTrap();
+        if (!trap) return;
+
+        const candidates = candidatesIn(trap);
+        if (candidates.length === 0) {
+            event.preventDefault();
+            return;
+        }
+
+        const activeIndex = candidates.indexOf(document.activeElement);
+        const shouldWrapBackward = event.shiftKey && activeIndex <= 0;
+        const shouldWrapForward = !event.shiftKey && activeIndex === candidates.length - 1;
+        if (!shouldWrapBackward && !shouldWrapForward) return;
+
+        event.preventDefault();
+        focusAndScrollElement(event.shiftKey ? candidates.at(-1) : candidates[0]);
+    });
+
+    let focusStateUpdatePending = false;
     new MutationObserver(() => {
+        if (focusStateUpdatePending) return;
+        focusStateUpdatePending = true;
         queueMicrotask(() => {
+            focusStateUpdatePending = false;
+            const active = document.activeElement;
+            const trap = activeFocusTrap();
+            const valid =
+                active?.matches?.(FOCUSABLE_SELECTOR) &&
+                isVisible(active) &&
+                (!trap || trap.contains(active));
+            if (!valid) {
+                ensureFocusableActiveElement();
+            }
             dispatchActionHintsChanged(document.activeElement);
         });
     }).observe(document.body, {
@@ -339,8 +419,14 @@
             ACTIONS_ATTRIBUTE,
             SCOPE_ACTIONS_ATTRIBUTE,
             "data-focus-scope",
+            "data-focus-trap",
+            "data-focus-root",
             "data-focusable",
             "data-focus-region",
+            "disabled",
+            "aria-disabled",
+            "inert",
+            "hidden",
         ],
     });
 
@@ -362,7 +448,7 @@
         usingMouse = false;
         switch (action) {
             case "accept":
-                ensureFocusableActiveElement();
+                if (!ensureFocusableActiveElement()) break;
                 if (dispatchRustAction(action) || activateFocused()) {
                     uiSounds.play("select");
                 }
@@ -386,16 +472,14 @@
                     uiSounds.play("navigate");
                     break;
                 }
-                window.scrollBy({ top: -window.innerHeight * 0.8, behavior: "smooth" });
-                uiSounds.play("navigate");
+                if (window.__wolfUiScrollPage?.(document.activeElement, -1)) uiSounds.play("navigate");
                 break;
             case "page-down":
                 if (dispatchRustAction(action)) {
                     uiSounds.play("navigate");
                     break;
                 }
-                window.scrollBy({ top: window.innerHeight * 0.8, behavior: "smooth" });
-                uiSounds.play("navigate");
+                if (window.__wolfUiScrollPage?.(document.activeElement, 1)) uiSounds.play("navigate");
                 break;
             case "cancel":
                 if (dispatchRustAction(action)) {

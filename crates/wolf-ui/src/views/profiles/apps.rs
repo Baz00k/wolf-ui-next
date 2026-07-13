@@ -11,7 +11,7 @@ use crate::components::{
 };
 use crate::domain::app_actions::run_app_action;
 use crate::domain::apps::{AppFilter, app_actions, listen_for_lobby_events, load_apps_state};
-use crate::input::{ActionHint, UiAction, UiHint, action_hints, use_ui_action_hint};
+use crate::input::{ActionHint, UiCommand, UiHint, action_hints, use_ui_action_hint};
 
 const ACTIVE_POLL_DELAY: Duration = Duration::from_secs(15);
 const BACKGROUND_POLL_DELAY: Duration = Duration::from_mins(1);
@@ -33,7 +33,7 @@ pub fn ProfileApps(profile_id: String) -> Element {
         }
     });
 
-    let sort_focus_action = use_ui_action_hint(UiAction::Menu, "Sort", move || {
+    let sort_focus_action = use_ui_action_hint(UiCommand::Menu, "Sort", move || {
         let _ = document::eval("window.__wolfUiFocusSelector?.('#apps-filter button');");
     });
     let grid_actions = action_hints([
@@ -87,10 +87,9 @@ pub fn ProfileApps(profile_id: String) -> Element {
     });
 
     rsx! {
-        div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-6 text-foreground sm:px-8 sm:pt-8 lg:px-12 lg:pt-10",
+        div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-6 text-foreground sm:px-12 sm:pt-10",
             AppsHeader { filter, selected_index, pending_focus_index }
-            section {
-                class: "relative min-h-0 flex-1 pt-4 sm:pt-5 lg:pt-6",
+            section { class: "relative min-h-0 flex-1 pt-4 sm:pt-6",
                 div {
                     class: "h-full w-full",
                     "data-focus-scope": "true",
@@ -99,7 +98,10 @@ pub fn ProfileApps(profile_id: String) -> Element {
                     match &*apps.read_unchecked() {
                         Some(Ok(state)) => rsx! {
                             AppsContent {
-                                response: AppListResponse { success: true, apps: state.apps.clone() },
+                                response: AppListResponse {
+                                    success: true,
+                                    apps: state.apps.clone(),
+                                },
                                 profile_id: profile_id.clone(),
                                 lobbies: lobbies(),
                                 images: state.images.clone(),
@@ -117,14 +119,12 @@ pub fn ProfileApps(profile_id: String) -> Element {
                                 title: Some("Apps unavailable".to_string()),
                                 message: message.clone(),
                                 variant: StatusAlertVariant::Error,
-                                Button {
-                                    size: ButtonSize::Lg,
-                                    onclick: move |_| apps.restart(),
-                                    "Retry"
-                                }
+                                Button { size: ButtonSize::Lg, onclick: move |_| apps.restart(), "Retry" }
                             }
                         },
-                        None => rsx! { AppsLoading {} },
+                        None => rsx! {
+                            AppsLoading {}
+                        },
                     }
                 }
             }

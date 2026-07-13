@@ -4,6 +4,22 @@
 
     const activeScrolls = new WeakMap();
 
+    function cssPixels(value, referenceSize) {
+        const pixels = Number.parseFloat(value);
+        if (!Number.isFinite(pixels)) return 0;
+        return value.trim().endsWith("%") ? (pixels / 100) * referenceSize : pixels;
+    }
+
+    function scrollPadding(container) {
+        const style = window.getComputedStyle(container);
+        return {
+            top: cssPixels(style.scrollPaddingTop, container.clientHeight),
+            right: cssPixels(style.scrollPaddingRight, container.clientWidth),
+            bottom: cssPixels(style.scrollPaddingBottom, container.clientHeight),
+            left: cssPixels(style.scrollPaddingLeft, container.clientWidth),
+        };
+    }
+
     function nearestScroller(element) {
         let current = element?.parentElement;
 
@@ -21,7 +37,7 @@
         return null;
     }
 
-    function targetScrollLeft(container, element, inline = "center") {
+    function targetScrollLeft(container, element, padding, inline = "center") {
         const containerRect = container.getBoundingClientRect();
         const elementRect = element.getBoundingClientRect();
         const current = container.scrollLeft;
@@ -29,24 +45,26 @@
         const elementRight = elementLeft + elementRect.width;
 
         if (inline === "nearest") {
-            const visibleLeft = current;
-            const visibleRight = current + container.clientWidth;
+            const visibleLeft = current + padding.left;
+            const visibleRight = current + container.clientWidth - padding.right;
 
             if (elementLeft >= visibleLeft && elementRight <= visibleRight) return current;
+            if (elementLeft <= visibleLeft && elementRight >= visibleRight) return current;
 
-            const alignLeft = elementLeft;
-            const alignRight = elementRight - container.clientWidth;
-            return Math.abs(alignLeft - current) < Math.abs(alignRight - current) ? alignLeft : alignRight;
+            const alignLeft = elementLeft - padding.left;
+            const alignRight = elementRight - container.clientWidth + padding.right;
+            return elementLeft < visibleLeft ? alignLeft : alignRight;
         }
 
-        return elementLeft - (container.clientWidth - elementRect.width) / 2;
+        const visibleWidth = container.clientWidth - padding.left - padding.right;
+        return elementLeft - padding.left - (visibleWidth - elementRect.width) / 2;
     }
 
     function clampScrollLeft(container, value) {
         return Math.max(0, Math.min(value, container.scrollWidth - container.clientWidth));
     }
 
-    function targetScrollTop(container, element, block = "nearest") {
+    function targetScrollTop(container, element, padding, block = "nearest") {
         const containerRect = container.getBoundingClientRect();
         const elementRect = element.getBoundingClientRect();
         const current = container.scrollTop;
@@ -54,17 +72,19 @@
         const elementBottom = elementTop + elementRect.height;
 
         if (block === "center") {
-            return elementTop - (container.clientHeight - elementRect.height) / 2;
+            const visibleHeight = container.clientHeight - padding.top - padding.bottom;
+            return elementTop - padding.top - (visibleHeight - elementRect.height) / 2;
         }
 
-        const visibleTop = current;
-        const visibleBottom = current + container.clientHeight;
+        const visibleTop = current + padding.top;
+        const visibleBottom = current + container.clientHeight - padding.bottom;
 
         if (elementTop >= visibleTop && elementBottom <= visibleBottom) return current;
+        if (elementTop <= visibleTop && elementBottom >= visibleBottom) return current;
 
-        const alignTop = elementTop;
-        const alignBottom = elementBottom - container.clientHeight;
-        return Math.abs(alignTop - current) < Math.abs(alignBottom - current) ? alignTop : alignBottom;
+        const alignTop = elementTop - padding.top;
+        const alignBottom = elementBottom - container.clientHeight + padding.bottom;
+        return elementTop < visibleTop ? alignTop : alignBottom;
     }
 
     function clampScrollTop(container, value) {
@@ -84,8 +104,15 @@
             return true;
         }
 
-        const targetLeft = clampScrollLeft(container, targetScrollLeft(container, element, options.inline ?? "nearest"));
-        const targetTop = clampScrollTop(container, targetScrollTop(container, element, options.block ?? "nearest"));
+        const padding = scrollPadding(container);
+        const targetLeft = clampScrollLeft(
+            container,
+            targetScrollLeft(container, element, padding, options.inline ?? "nearest"),
+        );
+        const targetTop = clampScrollTop(
+            container,
+            targetScrollTop(container, element, padding, options.block ?? "nearest"),
+        );
         const existing = activeScrolls.get(container);
         if (existing?.frame) cancelAnimationFrame(existing.frame);
 
@@ -133,7 +160,23 @@
         return true;
     }
 
+    function scrollPage(element, direction) {
+        const container = nearestScroller(element) ?? document.scrollingElement;
+        if (!container || direction === 0) return false;
+
+        const maxScrollTop = container.scrollHeight - container.clientHeight;
+        const targetTop = clampScrollTop(container, container.scrollTop + direction * container.clientHeight * 0.8);
+        if (Math.abs(targetTop - container.scrollTop) < 1 || maxScrollTop <= 0) return false;
+
+        container.scrollTo({
+            top: targetTop,
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        });
+        return true;
+    }
+
     window.__wolfUiScrollIntoView = scrollIntoView;
+    window.__wolfUiScrollPage = scrollPage;
     window.__wolfUiScrollSelectorIntoView = (selector, options = {}) => {
         return scrollIntoView(document.querySelector(selector), options);
     };

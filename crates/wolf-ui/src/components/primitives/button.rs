@@ -3,28 +3,41 @@ use tw_merge::tw_merge;
 
 use crate::components::primitives::Focusable;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub enum ButtonVariant {
     /// Solid primary action.
+    #[default]
     Default,
     Secondary,
     Outline,
-    Ghost,
     Destructive,
-    /// Menu/list row: transparent until hovered or focused.
-    Menu,
-    /// Selected menu/list row.
-    MenuActive,
-    /// Floating chrome control (header icon buttons).
-    Chrome,
-    /// Floating chrome control with destructive intent.
-    ChromeDestructive,
+    Ghost,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+impl ButtonVariant {
+    fn class(self) -> &'static str {
+        match self {
+            ButtonVariant::Default => "bg-primary text-primary-foreground hover:bg-primary/90",
+            ButtonVariant::Secondary => {
+                "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            }
+            ButtonVariant::Outline => {
+                "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+            }
+            ButtonVariant::Destructive => {
+                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            }
+            ButtonVariant::Ghost => {
+                "hover:border-foreground/30 hover:bg-accent hover:text-accent-foreground focus-visible:border-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
+            }
+        }
+    }
+}
+
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum ButtonSize {
+    #[default]
     Default,
     Sm,
     Lg,
@@ -34,10 +47,24 @@ pub enum ButtonSize {
     IconLg,
 }
 
+impl ButtonSize {
+    fn class(self) -> &'static str {
+        match self {
+            ButtonSize::Default => "h-12 px-6 py-3 text-base sm:h-14",
+            ButtonSize::Sm => "h-10 rounded-lg px-4 py-2 text-base sm:h-12",
+            ButtonSize::Lg => "h-14 rounded-xl px-8 py-4 text-lg sm:h-16",
+            ButtonSize::Xl => "h-16 rounded-xl px-8 py-4 text-lg font-semibold sm:h-18",
+            ButtonSize::IconSm => "h-10 w-10 rounded-full text-base sm:h-12 sm:w-12",
+            ButtonSize::Icon => "h-12 w-12 text-base sm:h-14 sm:w-14",
+            ButtonSize::IconLg => "h-14 w-14 text-lg sm:h-16 sm:w-16",
+        }
+    }
+}
+
 #[component]
 pub fn Button(
-    #[props(default = ButtonVariant::Default)] variant: ButtonVariant,
-    #[props(default = ButtonSize::Default)] size: ButtonSize,
+    #[props(default)] variant: ButtonVariant,
+    #[props(default)] size: ButtonSize,
     #[props(default)] class: String,
     #[props(default)] to: Option<String>,
     #[props(default = "Select".to_string())] action_label: String,
@@ -46,42 +73,10 @@ pub fn Button(
     #[props(default)] onclick: Option<EventHandler<MouseEvent>>,
     children: Element,
 ) -> Element {
-    let variant_class = match variant {
-        ButtonVariant::Default => "bg-primary text-primary-foreground hover:bg-primary/90",
-        ButtonVariant::Secondary => "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ButtonVariant::Outline => {
-            "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-        }
-        ButtonVariant::Ghost => "hover:bg-accent hover:text-accent-foreground",
-        ButtonVariant::Destructive => {
-            "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-        }
-        ButtonVariant::Menu => {
-            "border border-transparent text-left hover:border-foreground/30 hover:bg-accent hover:text-accent-foreground focus-visible:border-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
-        }
-        ButtonVariant::MenuActive => {
-            "border border-primary/40 bg-primary/15 text-left text-foreground shadow-lg shadow-primary/10 hover:bg-primary/20 focus-visible:border-primary focus-visible:bg-primary/20"
-        }
-        ButtonVariant::Chrome => {
-            "border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur hover:border-primary/50 hover:bg-primary/15 hover:text-foreground focus-visible:border-primary/70 focus-visible:bg-primary/15 focus-visible:text-foreground"
-        }
-        ButtonVariant::ChromeDestructive => {
-            "border border-border/70 bg-card/70 text-muted-foreground shadow-lg shadow-black/20 backdrop-blur hover:border-destructive/60 hover:bg-destructive/15 hover:text-destructive-foreground focus-visible:border-destructive/70 focus-visible:bg-destructive/15 focus-visible:text-destructive-foreground"
-        }
-    };
-    let size_class = match size {
-        ButtonSize::Default => "min-h-14 px-6 py-3 text-base",
-        ButtonSize::Sm => "min-h-12 rounded-lg px-4 py-2 text-base",
-        ButtonSize::Lg => "min-h-16 rounded-xl px-8 py-4 text-lg",
-        ButtonSize::Xl => "min-h-18 rounded-xl px-8 py-4 text-lg font-semibold",
-        ButtonSize::IconSm => "h-12 w-12 rounded-full text-base",
-        ButtonSize::Icon => "h-14 w-14 text-base",
-        ButtonSize::IconLg => "h-14 w-14 text-lg sm:h-16 sm:w-16",
-    };
     let class = tw_merge!(
-        "inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-lg font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
-        variant_class,
-        size_class,
+        "inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-lg border border-transparent font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
+        variant.class(),
+        size.class(),
         class,
     );
 
@@ -95,5 +90,29 @@ pub fn Button(
             onclick,
             {children}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn render(component: fn() -> Element) -> String {
+        let mut dom = VirtualDom::new(component);
+        dom.rebuild_in_place();
+        dioxus_ssr::render(&dom)
+    }
+
+    #[test]
+    fn button_uses_focusable_contract() {
+        let html = render(|| {
+            rsx! {
+                Button { action_label: "Delete", "Remove" }
+            }
+        });
+
+        assert!(html.contains("<button"));
+        assert!(html.contains(r#"data-focusable="true""#));
+        assert!(html.contains("Delete"));
     }
 }
