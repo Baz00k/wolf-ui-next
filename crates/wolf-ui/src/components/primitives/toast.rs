@@ -136,7 +136,7 @@ pub fn Toast(
     rsx! {
         div {
             key: "{id}",
-            class: "wolf-toast-enter flex w-[min(28rem,calc(100vw-2rem))] items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur backdrop-brightness-75 {tone}",
+            class: "toast-enter flex w-[min(28rem,calc(100vw-2rem))] items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur backdrop-brightness-75 {tone}",
             p { class: "min-w-0 flex-1 text-sm font-semibold leading-6", "{message}" }
         }
     }
