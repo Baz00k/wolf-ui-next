@@ -17,7 +17,7 @@ serde_json = "1"
 thiserror = "2"
 
 [build-dependencies]
-openapi-to-rust = "0.5"
+openapi-to-rust = "0.6"
 prettyplease = "0.2"
 serde_json = "1"
 syn = "2"
