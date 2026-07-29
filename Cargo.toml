@@ -29,7 +29,7 @@ inherits = "release"
 strip = false
 
 [workspace.dependencies]
-base64 = "0.22"
+base64 = "0.23"
 dioxus = { version = "0.7.9", features = ["router"] }
 dioxus-free-icons = { version = "0.10", features = ["hero-icons-solid"] }
 futures-util = "0.3"
