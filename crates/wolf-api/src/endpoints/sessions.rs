@@ -2,9 +2,9 @@ use serde::Serialize;
 
 use crate::{ApiError, WolfApi, types};
 
-pub type Session = types::RflReflectorWolfCoreEventsStreamSessionReflType;
-pub type SessionListResponse = types::WolfApiStreamSessionListResponse;
-pub type StopSessionResponse = types::WolfApiGenericSuccessResponse;
+pub type Session = types::StreamSession;
+pub type SessionListResponse = types::StreamSessionListResponse;
+pub type StopSessionResponse = types::GenericSuccessResponse;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Sessions<'api> {

@@ -6,9 +6,9 @@ use crate::{ApiError, WolfApi, types};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum WolfEvent {
-    LobbyCreated(Box<types::RflReflectorWolfCoreEventsLobbyReflType>),
-    LobbyJoined(types::WolfCoreEventsJoinLobbyEvent),
-    LobbyLeft(types::WolfCoreEventsLeaveLobbyEvent),
+    LobbyCreated(Box<types::Lobby>),
+    LobbyJoined(types::JoinLobbyEvent),
+    LobbyLeft(types::LeaveLobbyEvent),
     LobbyStopped(String),
     Other(String),
 }
@@ -22,7 +22,7 @@ struct CreateLobbyEvent {
     pin: Option<Vec<i64>>,
     multi_user: bool,
     stop_when_everyone_leaves: bool,
-    runner: types::RflReflectorWolfCoreEventsLobbyReflTypeRunner,
+    runner: types::Runner,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -108,17 +108,15 @@ fn parse_event(event: String, data: String) -> Result<WolfEvent, ApiError> {
             .map(WolfEvent::LobbyCreated),
         "wolf::core::events::JoinLobbyEvent" => parse_json(&data).map(WolfEvent::LobbyJoined),
         "wolf::core::events::LeaveLobbyEvent" => parse_json(&data).map(WolfEvent::LobbyLeft),
-        "wolf::core::events::StopLobbyEvent" => {
-            parse_json::<types::WolfCoreEventsStopLobbyEvent>(&data)
-                .map(|event| WolfEvent::LobbyStopped(event.lobby_id))
-        }
+        "wolf::core::events::StopLobbyEvent" => parse_json::<types::StopLobbyEvent>(&data)
+            .map(|event| WolfEvent::LobbyStopped(event.lobby_id)),
         _ => Ok(WolfEvent::Other(event)),
     }
 }
 
 impl CreateLobbyEvent {
-    fn into_lobby(self) -> types::RflReflectorWolfCoreEventsLobbyReflType {
-        types::RflReflectorWolfCoreEventsLobbyReflType {
+    fn into_lobby(self) -> types::Lobby {
+        types::Lobby {
             connected_sessions: Vec::new(),
             icon_png_path: self.icon_png_path,
             id: self.id,

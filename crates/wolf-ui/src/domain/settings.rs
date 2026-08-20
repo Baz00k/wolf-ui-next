@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 use wolf_api::apps::App;
-use wolf_api::types::{RflReflectorWolfCoreEventsAppReflTypeRunner, WolfConfigAppDockerTagged};
+use wolf_api::types::{AppDocker, Runner};
 
 use crate::api::ApiContext;
 
@@ -135,12 +135,10 @@ fn app_summary(app: &App) -> String {
     }
 }
 
-fn docker_runner(app: &App) -> Option<&WolfConfigAppDockerTagged> {
+fn docker_runner(app: &App) -> Option<&AppDocker> {
     match &app.runner {
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(runner) => {
-            Some(runner)
-        }
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(_) => None,
+        Runner::Docker(runner) => Some(runner),
+        Runner::Cmd(_) => None,
     }
 }
 
@@ -170,7 +168,7 @@ fn image_repository(image: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use wolf_api::types::{RflReflectorWolfCoreEventsAppReflType, WolfConfigAppCMDTagged};
+    use wolf_api::types::{AppCmd, AppCmdType, AppDockerType};
 
     use super::*;
 
@@ -252,13 +250,8 @@ mod tests {
         );
     }
 
-    fn docker_app(
-        id: &str,
-        title: &str,
-        name: &str,
-        image: &str,
-    ) -> RflReflectorWolfCoreEventsAppReflType {
-        RflReflectorWolfCoreEventsAppReflType {
+    fn docker_app(id: &str, title: &str, name: &str, image: &str) -> App {
+        App {
             av1_gst_pipeline: String::new(),
             h264_gst_pipeline: String::new(),
             hevc_gst_pipeline: String::new(),
@@ -266,17 +259,16 @@ mod tests {
             id: id.to_string(),
             opus_gst_pipeline: String::new(),
             render_node: String::new(),
-            runner: RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(
-                WolfConfigAppDockerTagged {
-                    base_create_json: None,
-                    devices: Vec::new(),
-                    env: Vec::new(),
-                    image: image.to_string(),
-                    mounts: Vec::new(),
-                    name: name.to_string(),
-                    ports: Vec::new(),
-                },
-            ),
+            runner: Runner::Docker(AppDocker {
+                base_create_json: None,
+                devices: Vec::new(),
+                env: Vec::new(),
+                image: image.to_string(),
+                mounts: Vec::new(),
+                name: name.to_string(),
+                ports: Vec::new(),
+                type_: AppDockerType::Docker,
+            }),
             start_audio_server: false,
             start_virtual_compositor: false,
             support_hdr: false,
@@ -284,8 +276,8 @@ mod tests {
         }
     }
 
-    fn cmd_app(id: &str, title: &str) -> RflReflectorWolfCoreEventsAppReflType {
-        RflReflectorWolfCoreEventsAppReflType {
+    fn cmd_app(id: &str, title: &str) -> App {
+        App {
             av1_gst_pipeline: String::new(),
             h264_gst_pipeline: String::new(),
             hevc_gst_pipeline: String::new(),
@@ -293,11 +285,10 @@ mod tests {
             id: id.to_string(),
             opus_gst_pipeline: String::new(),
             render_node: String::new(),
-            runner: RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(
-                WolfConfigAppCMDTagged {
-                    run_cmd: String::new(),
-                },
-            ),
+            runner: Runner::Cmd(AppCmd {
+                run_cmd: String::new(),
+                type_: AppCmdType::Process,
+            }),
             start_audio_server: false,
             start_virtual_compositor: false,
             support_hdr: false,

@@ -288,7 +288,7 @@ where
     }
 
     let body = response.text().await.map_err(ApiError::from_reqwest)?;
-    if let Ok(error) = serde_json::from_str::<types::WolfApiGenericErrorResponse>(&body) {
+    if let Ok(error) = serde_json::from_str::<types::GenericErrorResponse>(&body) {
         return Err(ApiError::Wolf {
             status,
             message: error.error,
@@ -310,7 +310,7 @@ pub(crate) async fn decode_bytes(response: reqwest::Response) -> Result<Vec<u8>,
     }
 
     let body = response.text().await.map_err(ApiError::from_reqwest)?;
-    if let Ok(error) = serde_json::from_str::<types::WolfApiGenericErrorResponse>(&body) {
+    if let Ok(error) = serde_json::from_str::<types::GenericErrorResponse>(&body) {
         return Err(ApiError::Wolf {
             status,
             message: error.error,
@@ -327,7 +327,7 @@ pub(crate) async fn response_error(response: reqwest::Response) -> ApiError {
         Err(error) => return ApiError::from_reqwest(error),
     };
 
-    if let Ok(error) = serde_json::from_str::<types::WolfApiGenericErrorResponse>(&body) {
+    if let Ok(error) = serde_json::from_str::<types::GenericErrorResponse>(&body) {
         return ApiError::Wolf {
             status,
             message: error.error,

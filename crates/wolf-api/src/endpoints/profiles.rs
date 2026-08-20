@@ -1,9 +1,9 @@
 use crate::{ApiError, WolfApi, types};
 
-pub type App = types::RflReflectorWolfCoreEventsAppReflType;
-pub type AppListResponse = types::WolfApiAppListResponse;
-pub type Profile = types::RflReflectorWolfCoreEventsProfileReflType;
-pub type ProfileListResponse = types::WolfApiProfileListResponse;
+pub type App = types::App;
+pub type AppListResponse = types::AppListResponse;
+pub type Profile = types::Profile;
+pub type ProfileListResponse = types::ProfileListResponse;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Profiles<'api> {

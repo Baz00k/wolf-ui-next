@@ -1,0 +1,15 @@
+[package]
+name = "wolf-api-gen"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+rustfmt-wrapper = "0.2"
+schemars = "0.8"
+serde_json.workspace = true
+typify = "=0.7.0"
+
+[lints]
+workspace = true

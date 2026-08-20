@@ -2,8 +2,8 @@ use serde::Serialize;
 
 use crate::{ApiError, WolfApi, types};
 
-pub type Lobby = types::RflReflectorWolfCoreEventsLobbyReflType;
-pub type LobbyListResponse = types::WolfApiLobbiesResponse;
+pub type Lobby = types::Lobby;
+pub type LobbyListResponse = types::LobbiesResponse;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Lobbies<'api> {
@@ -21,8 +21,8 @@ impl<'api> Lobbies<'api> {
 
     pub async fn create(
         &self,
-        lobby: &types::WolfApiCreateLobbyRequest,
-    ) -> Result<types::WolfApiLobbyCreateResponse, ApiError> {
+        lobby: &types::CreateLobbyRequest,
+    ) -> Result<types::LobbyCreateResponse, ApiError> {
         self.api.post_json("/api/v1/lobbies/create", lobby).await
     }
 
@@ -31,7 +31,7 @@ impl<'api> Lobbies<'api> {
         lobby_id: String,
         moonlight_session_id: String,
         pin: Option<Vec<i64>>,
-    ) -> Result<types::WolfApiGenericSuccessResponse, ApiError> {
+    ) -> Result<types::GenericSuccessResponse, ApiError> {
         self.api
             .post_json(
                 "/api/v1/lobbies/join",
@@ -48,11 +48,11 @@ impl<'api> Lobbies<'api> {
         &self,
         lobby_id: String,
         pin: Option<Vec<i64>>,
-    ) -> Result<types::WolfApiGenericSuccessResponse, ApiError> {
+    ) -> Result<types::GenericSuccessResponse, ApiError> {
         self.api
             .post_json(
                 "/api/v1/lobbies/stop",
-                &types::WolfCoreEventsStopLobbyEvent { lobby_id, pin },
+                &types::StopLobbyEvent { lobby_id, pin },
             )
             .await
     }
