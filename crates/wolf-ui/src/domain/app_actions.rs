@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
 use wolf_api::ApiError;
 use wolf_api::types::{
-    AudioSettings, ClientSettings, ClientSettingsControllersOverrideItem, CreateLobbyRequest,
-    Lobby, PartialClientSettings, PartialClientSettingsControllersOverrideItem, Runner,
-    VideoSettings,
+    AudioSettings, ClientSettings, ClientSettingsControllersOverrideItem,
+    ClientSettingsMotionControllerOverride, CreateLobbyRequest, Lobby, PartialClientSettings,
+    PartialClientSettingsControllersOverrideItem, PartialClientSettingsMotionControllerOverride,
+    Runner, VideoSettings,
 };
 
 use crate::api::ApiContext;
@@ -246,10 +247,32 @@ fn partial_client_settings(settings: &ClientSettings) -> PartialClientSettings {
                 .collect(),
         ),
         h_scroll_acceleration: Some(settings.h_scroll_acceleration),
+        motion_controller_override: Some(partial_motion_controller_override(
+            settings.motion_controller_override,
+        )),
         mouse_acceleration: Some(settings.mouse_acceleration),
         run_gid: Some(settings.run_gid),
         run_uid: Some(settings.run_uid),
         v_scroll_acceleration: Some(settings.v_scroll_acceleration),
+    }
+}
+
+fn partial_motion_controller_override(
+    controller: ClientSettingsMotionControllerOverride,
+) -> PartialClientSettingsMotionControllerOverride {
+    match controller {
+        ClientSettingsMotionControllerOverride::Xbox => {
+            PartialClientSettingsMotionControllerOverride::Xbox
+        }
+        ClientSettingsMotionControllerOverride::Ps => {
+            PartialClientSettingsMotionControllerOverride::Ps
+        }
+        ClientSettingsMotionControllerOverride::Nintendo => {
+            PartialClientSettingsMotionControllerOverride::Nintendo
+        }
+        ClientSettingsMotionControllerOverride::Auto => {
+            PartialClientSettingsMotionControllerOverride::Auto
+        }
     }
 }
 
@@ -285,5 +308,49 @@ fn fallback_session() -> wolf_api::sessions::Session {
         video_height: 1080,
         video_refresh_rate: 60,
         video_width: 1920,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn partial_client_settings_preserve_motion_controller_override() {
+        let cases = [
+            (
+                ClientSettingsMotionControllerOverride::Xbox,
+                PartialClientSettingsMotionControllerOverride::Xbox,
+            ),
+            (
+                ClientSettingsMotionControllerOverride::Ps,
+                PartialClientSettingsMotionControllerOverride::Ps,
+            ),
+            (
+                ClientSettingsMotionControllerOverride::Nintendo,
+                PartialClientSettingsMotionControllerOverride::Nintendo,
+            ),
+            (
+                ClientSettingsMotionControllerOverride::Auto,
+                PartialClientSettingsMotionControllerOverride::Auto,
+            ),
+        ];
+
+        for (source, expected) in cases {
+            let settings = ClientSettings {
+                controllers_override: Vec::new(),
+                h_scroll_acceleration: 1.0,
+                motion_controller_override: source,
+                mouse_acceleration: 2.0,
+                run_gid: 1000,
+                run_uid: 1000,
+                v_scroll_acceleration: 3.0,
+            };
+
+            assert_eq!(
+                partial_client_settings(&settings).motion_controller_override,
+                Some(expected)
+            );
+        }
     }
 }
