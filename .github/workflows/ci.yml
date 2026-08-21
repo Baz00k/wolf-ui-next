@@ -17,6 +17,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  dev-tooling:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up mise
+        uses: jdx/mise-action@v3
+        with:
+          install: false
+
+      - name: Validate development tooling
+        run: |
+          docker compose -f dev/compose.yml config -q
+          docker compose -f dev/compose.yml -f dev/compose.prod.yml config -q
+          mise tasks ls
+
   fmt:
     runs-on: ubuntu-latest
     steps:

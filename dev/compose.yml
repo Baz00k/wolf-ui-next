@@ -1,0 +1,22 @@
+name: wolf-ui-next-dev
+
+services:
+  wolf:
+    # This digest serves the vendored OpenAPI schema. Update both with
+    # `mise run update-schema` when changing the pinned Wolf version.
+    image: ghcr.io/games-on-whales/wolf:stable@sha256:28b525d0d596f17ec3b42fbd76257d1e9c7991c00a0898159c4d357a6cde49f8
+    pull_policy: if_not_present
+    environment:
+      HOST_APPS_STATE_FOLDER: /etc/wolf
+      WOLF_DOCKER_SOCKET: /var/run/docker.sock
+      WOLF_LOG_LEVEL: DEBUG
+      WOLF_STOP_CONTAINER_ON_EXIT: "TRUE"
+      # Keep Wolf on its XDG-derived socket path so it rewrites the socket mount
+      # to the host path when launching child app containers.
+      XDG_RUNTIME_DIR: /tmp/sockets
+    volumes:
+      - ./.state:/etc/wolf:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /tmp/sockets:/tmp/sockets:rw
+    network_mode: host
+    restart: unless-stopped

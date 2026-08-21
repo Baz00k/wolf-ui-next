@@ -1,0 +1,10 @@
+services:
+  wolf:
+    privileged: true
+    environment:
+      NVIDIA_DRIVER_CAPABILITIES: all
+      NVIDIA_VISIBLE_DEVICES: all
+      WOLF_RENDER_NODE: ${WOLF_RENDER_NODE:-/dev/dri/renderD128}
+    volumes:
+      - /dev:/dev:rw
+      - /run/udev:/run/udev:ro
