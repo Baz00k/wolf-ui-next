@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-socket_path="${repo_root}/dev/.state/run/wolf.sock"
+socket_path="/tmp/sockets/wolf.sock"
 render_node="${WOLF_RENDER_NODE:-/dev/dri/renderD128}"
 compose=(
   docker compose
@@ -28,7 +28,7 @@ bash "${repo_root}/dev/scripts/wolf-up.sh"
 
 for _ in {1..30}; do
   if [[ -S "${socket_path}" ]]; then
-    "${compose[@]}" exec -T wolf chmod 666 /var/run/wolf/wolf.sock >/dev/null 2>&1 || true
+    "${compose[@]}" exec -T wolf chmod 666 /tmp/sockets/wolf.sock >/dev/null 2>&1 || true
     if curl --fail --silent --max-time 2 \
       --unix-socket "${socket_path}" \
       http://localhost/api/v1/openapi-schema >/dev/null; then

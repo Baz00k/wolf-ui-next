@@ -10,12 +10,12 @@ services:
       HOST_APPS_STATE_FOLDER: /etc/wolf
       WOLF_DOCKER_SOCKET: /var/run/docker.sock
       WOLF_LOG_LEVEL: DEBUG
-      WOLF_SOCKET_PATH: /var/run/wolf/wolf.sock
       WOLF_STOP_CONTAINER_ON_EXIT: "TRUE"
+      # Keep Wolf on its XDG-derived socket path so it rewrites the socket mount
+      # to the host path when launching child app containers.
       XDG_RUNTIME_DIR: /tmp/sockets
     volumes:
       - ./.state:/etc/wolf:rw
-      - ./.state/run:/var/run/wolf:rw
       - /var/run/docker.sock:/var/run/docker.sock:rw
       - /tmp/sockets:/tmp/sockets:rw
     network_mode: host

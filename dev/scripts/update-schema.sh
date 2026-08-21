@@ -7,7 +7,7 @@ temporary="$(mktemp)"
 trap 'rm -f "${temporary}"' EXIT
 
 curl --fail --silent --show-error \
-  --unix-socket "${repo_root}/dev/.state/run/wolf.sock" \
+  --unix-socket /tmp/sockets/wolf.sock \
   http://localhost/api/v1/openapi-schema |
   jq . > "${temporary}"
 cat "${temporary}" > "${schema}"

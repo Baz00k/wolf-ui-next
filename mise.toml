@@ -5,7 +5,7 @@
 [tasks.dev]
 description = "Start seeded Wolf and serve Wolf UI with hot reload"
 depends = ["wolf-up"]
-env = { WOLF_SOCKET_PATH = "{{config_root}}/dev/.state/run/wolf.sock", WOLF_UI_SETTINGS_ENABLED = "true", WOLF_UI_AUTOUPDATE = "false", RUST_LOG = "wolf_ui=debug,wolf_api=debug" }
+env = { WOLF_SOCKET_PATH = "/tmp/sockets/wolf.sock", WOLF_UI_SETTINGS_ENABLED = "true", WOLF_UI_AUTOUPDATE = "false", RUST_LOG = "wolf_ui=debug,wolf_api=debug" }
 run = "bash dev/scripts/serve.sh"
 
 [tasks.serve]
