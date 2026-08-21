@@ -29,4 +29,4 @@ mise run prod
 
 Add the development host in Moonlight, pair it, and launch **Wolf UI**. Override the GPU with `WOLF_RENDER_NODE=/dev/dri/renderD129 mise run prod`.
 
-Stop Wolf with `mise run wolf-down`. `mise run update-schema` downloads the pinned Wolf schema, regenerates the Rust API types, and runs the workspace checks.
+Stop Wolf with `mise run wolf-down`. `mise run update-schema` downloads the pinned Wolf schema and regenerates the Rust API types. Review and adapt callers to schema changes, then run `mise run check`.

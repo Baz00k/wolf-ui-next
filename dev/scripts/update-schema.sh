@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-schema="${repo_root}/crates/wolf-api/openapi/wolf.openapi.json"
+schema="${repo_root}/crates/wolf-api-gen/openapi/wolf.openapi.json"
 temporary="$(mktemp)"
 trap 'rm -f "${temporary}"' EXIT
 
@@ -14,5 +14,4 @@ cat "${temporary}" > "${schema}"
 
 cd "${repo_root}"
 cargo run --locked -p wolf-api-gen
-mise run check
-echo "Wolf API schema and generated types updated; review the diff."
+echo "Wolf API schema and generated types updated; review the diff, adapt callers, then run mise run check."
