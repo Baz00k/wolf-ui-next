@@ -56,11 +56,16 @@ See the [Wolf configuration guide](https://games-on-whales.github.io/wolf/stable
 
 ## Development
 
-Install [Rust](https://rustup.rs/) and [Dioxus CLI](https://dioxuslabs.com/learn/0.7/getting_started/#install-the-dioxus-cli), then start the app:
+Linux development needs [rustup](https://rustup.rs/), Docker, [mise](https://mise.jdx.dev/), and these Debian/Ubuntu packages:
 
 ```bash
-dx serve
+sudo apt-get install build-essential ca-certificates curl jq libayatana-appindicator3-dev libgtk-3-dev libudev-dev librsvg2-dev libssl-dev libwebkit2gtk-4.1-dev libxdo-dev pkg-config
+mise install
+mise run dev
+mise run check
 ```
+
+`mise run dev` starts Wolf and runs the UI through Dioxus. See [development.md](docs/development.md) for external Wolf and production-container testing.
 
 ## Related Projects
 

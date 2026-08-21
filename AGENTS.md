@@ -83,6 +83,7 @@ Be concrete: explain what breaks and offer the simpler product-shaped solution.
 
 This app will always run in a Docker container. This is the only supported environment.
 Do not add any code that adds compatibility with other runtimes.
+Use `mise run dev` for the local development harness and `mise run check` before submitting changes.
 
 ## Useful references
 

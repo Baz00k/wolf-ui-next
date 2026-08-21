@@ -1,0 +1,53 @@
+# Keep the Dioxus CLI version in sync with Dockerfile.
+[tools]
+"cargo:dioxus-cli" = "0.7.10"
+
+[tasks.dev]
+description = "Start seeded Wolf and serve Wolf UI with hot reload"
+depends = ["wolf-up"]
+env = { WOLF_SOCKET_PATH = "{{config_root}}/dev/.state/run/wolf.sock", WOLF_SESSION_ID = "wolf-ui-dev", WOLF_UI_SETTINGS_ENABLED = "true", WOLF_UI_AUTOUPDATE = "false", RUST_LOG = "wolf_ui=debug,wolf_api=debug" }
+run = "bash dev/scripts/serve.sh"
+
+[tasks.serve]
+description = "Serve Wolf UI against caller-provided Wolf transport settings"
+env = { WOLF_SESSION_ID = "wolf-ui-dev", WOLF_UI_SETTINGS_ENABLED = "true", WOLF_UI_AUTOUPDATE = "false", RUST_LOG = "wolf_ui=debug,wolf_api=debug" }
+run = "bash dev/scripts/serve.sh"
+
+[tasks.wolf-up]
+description = "Start the seeded Wolf development API"
+run = "bash dev/scripts/wolf-up.sh"
+
+[tasks.wolf-down]
+description = "Stop the Wolf development API"
+run = "docker compose -f dev/compose.yml down"
+
+[tasks.wolf-logs]
+description = "Follow Wolf development API logs"
+run = "docker compose -f dev/compose.yml logs --follow wolf"
+
+[tasks.wolf-reset]
+description = "Stop Wolf and restore pristine seeded state on next start"
+run = "bash dev/scripts/wolf-reset.sh"
+
+[tasks.check]
+description = "Run the same formatting, lint, and test checks as CI"
+run = """
+mkdir -p crates/wolf-ui/assets/dist
+touch crates/wolf-ui/assets/dist/styles.css
+cargo fmt --all -- --check
+cargo clippy --workspace --no-default-features --features desktop --locked -- -D warnings
+cargo test --workspace --no-default-features --features desktop --locked
+"""
+
+[tasks.image]
+description = "Build the production Wolf UI image as wolf-ui-next:dev"
+run = "docker build -t wolf-ui-next:dev ."
+
+[tasks.prod]
+description = "Build and run the production container through Wolf and Moonlight"
+run = "bash dev/scripts/prod.sh"
+
+[tasks.update-schema]
+description = "Update the vendored API schema from the pinned Wolf image"
+depends = ["wolf-up"]
+run = "bash dev/scripts/update-schema.sh"

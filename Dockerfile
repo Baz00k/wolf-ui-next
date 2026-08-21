@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 
 ARG BASE_APP_IMAGE=ghcr.io/games-on-whales/base-app:edge
-ARG DIOXUS_CLI_VERSION=0.7.9
+# Keep the Dioxus CLI version in sync with mise.toml.
+ARG DIOXUS_CLI_VERSION=0.7.10
 
 FROM rust:trixie AS chef
 
