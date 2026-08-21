@@ -121,21 +121,20 @@ fn normalize_spec(mut spec: Value) -> Result<Value> {
     let mut definitions = Map::new();
 
     for (old_name, mut schema) in schemas {
-        rewrite_and_normalize(&mut schema, &renames)?;
+        rewrite_schema(&mut schema, &renames)?;
         let new_name = renames
             .get(&old_name)
             .ok_or_else(|| invalid_data(format!("missing rename for schema {old_name}")))?;
         definitions.insert(new_name.clone(), schema);
     }
 
-    for required in [APP_CMD_DEFINITION, APP_DOCKER_DEFINITION] {
-        if !definitions.contains_key(required) {
-            return Err(invalid_data(format!(
-                "runner definition {required} is missing from the Wolf schema"
-            ))
-            .into());
-        }
+    let reference_definitions = definitions.clone();
+    for schema in definitions.values_mut() {
+        normalize_unions(schema, &reference_definitions)?;
     }
+
+    validate_runner_definition(&definitions, APP_CMD_DEFINITION, "process")?;
+    validate_runner_definition(&definitions, APP_DOCKER_DEFINITION, "docker")?;
     if definitions.contains_key(RUNNER_DEFINITION) {
         return Err(invalid_data("the Wolf schema already defines Runner").into());
     }
@@ -204,11 +203,11 @@ fn normalized_schema_name(name: &str) -> Result<String> {
     Ok(normalized.to_string())
 }
 
-fn rewrite_and_normalize(value: &mut Value, renames: &BTreeMap<String, String>) -> Result<()> {
+fn rewrite_schema(value: &mut Value, renames: &BTreeMap<String, String>) -> Result<()> {
     match value {
         Value::Array(values) => {
             for value in values {
-                rewrite_and_normalize(value, renames)?;
+                rewrite_schema(value, renames)?;
             }
         }
         Value::Object(object) => {
@@ -217,14 +216,32 @@ fn rewrite_and_normalize(value: &mut Value, renames: &BTreeMap<String, String>) 
             normalize_numeric_constraint(object, "maxItems")?;
 
             for child in object.values_mut() {
-                rewrite_and_normalize(child, renames)?;
+                rewrite_schema(child, renames)?;
+            }
+        }
+        _ => {}
+    }
+
+    Ok(())
+}
+
+fn normalize_unions(value: &mut Value, definitions: &Map<String, Value>) -> Result<()> {
+    match value {
+        Value::Array(values) => {
+            for value in values {
+                normalize_unions(value, definitions)?;
+            }
+        }
+        Value::Object(object) => {
+            for child in object.values_mut() {
+                normalize_unions(child, definitions)?;
             }
 
             if let Some(any_of) = object.remove("anyOf") {
                 let variants = any_of
                     .as_array()
                     .ok_or_else(|| invalid_data("anyOf must be an array"))?;
-                if !is_nullable_union(variants) && !is_runner_union(variants) {
+                if !is_safe_nullable_union(variants, definitions)? && !is_runner_union(variants) {
                     return Err(invalid_data(format!(
                         "unsupported anyOf shape: {}",
                         Value::Array(variants.clone())
@@ -281,13 +298,143 @@ fn normalize_numeric_constraint(object: &mut Map<String, Value>, key: &str) -> R
     Ok(())
 }
 
-fn is_nullable_union(variants: &[Value]) -> bool {
-    variants.len() == 2
-        && variants
-            .iter()
-            .filter(|variant| variant.get("type").and_then(Value::as_str) == Some("null"))
-            .count()
-            == 1
+fn is_safe_nullable_union(variants: &[Value], definitions: &Map<String, Value>) -> Result<bool> {
+    if variants.len() != 2 {
+        return Ok(false);
+    }
+
+    let Some(null_index) = variants
+        .iter()
+        .position(|variant| variant.get("type").and_then(Value::as_str) == Some("null"))
+    else {
+        return Ok(false);
+    };
+    if variants
+        .iter()
+        .skip(null_index + 1)
+        .any(|variant| variant.get("type").and_then(Value::as_str) == Some("null"))
+    {
+        return Ok(false);
+    }
+
+    let non_null_variant = variants
+        .iter()
+        .enumerate()
+        .find_map(|(index, variant)| (index != null_index).then_some(variant))
+        .ok_or_else(|| invalid_data("nullable union has no non-null branch"))?;
+    schema_rejects_null(non_null_variant, definitions, &mut Vec::new())
+}
+
+fn schema_rejects_null(
+    schema: &Value,
+    definitions: &Map<String, Value>,
+    resolving: &mut Vec<String>,
+) -> Result<bool> {
+    let Some(object) = schema.as_object() else {
+        return Ok(schema == &Value::Bool(false));
+    };
+
+    if let Some(reference) = object.get("$ref").and_then(Value::as_str) {
+        let name = reference
+            .strip_prefix(DEFINITION_REF_PREFIX)
+            .ok_or_else(|| {
+                invalid_data(format!(
+                    "unsupported reference while checking nullability: {reference}"
+                ))
+            })?;
+        if resolving.iter().any(|current| current == name) {
+            return Ok(false);
+        }
+        let target = definitions.get(name).ok_or_else(|| {
+            invalid_data(format!("reference points to unknown definition {name}"))
+        })?;
+        resolving.push(name.to_string());
+        let rejects_null = schema_rejects_null(target, definitions, resolving)?;
+        resolving.pop();
+        return Ok(rejects_null);
+    }
+
+    if let Some(schema_type) = object.get("type") {
+        return Ok(match schema_type {
+            Value::String(schema_type) => schema_type != "null",
+            Value::Array(types) => !types.iter().any(|value| value.as_str() == Some("null")),
+            _ => false,
+        });
+    }
+    if let Some(values) = object.get("enum").and_then(Value::as_array) {
+        return Ok(!values.contains(&Value::Null));
+    }
+    if let Some(value) = object.get("const") {
+        return Ok(!value.is_null());
+    }
+    if let Some(all_of) = object.get("allOf").and_then(Value::as_array) {
+        for variant in all_of {
+            if schema_rejects_null(variant, definitions, resolving)? {
+                return Ok(true);
+            }
+        }
+    }
+    for union_key in ["anyOf", "oneOf"] {
+        if let Some(variants) = object.get(union_key).and_then(Value::as_array) {
+            for variant in variants {
+                if !schema_rejects_null(variant, definitions, resolving)? {
+                    return Ok(false);
+                }
+            }
+            return Ok(true);
+        }
+    }
+
+    Ok(false)
+}
+
+fn validate_runner_definition(
+    definitions: &Map<String, Value>,
+    name: &str,
+    expected_discriminator: &str,
+) -> Result<()> {
+    let schema = definitions.get(name).ok_or_else(|| {
+        invalid_data(format!(
+            "runner definition {name} is missing from the Wolf schema"
+        ))
+    })?;
+    let object = schema
+        .as_object()
+        .filter(|schema| schema.get("type").and_then(Value::as_str) == Some("object"))
+        .ok_or_else(|| invalid_data(format!("runner definition {name} must be an object")))?;
+    let requires_type = object
+        .get("required")
+        .and_then(Value::as_array)
+        .is_some_and(|required| required.iter().any(|field| field.as_str() == Some("type")));
+    if !requires_type {
+        return Err(invalid_data(format!(
+            "runner definition {name} must require its type discriminator"
+        ))
+        .into());
+    }
+
+    let discriminator = object
+        .get("properties")
+        .and_then(Value::as_object)
+        .and_then(|properties| properties.get("type"))
+        .and_then(Value::as_object)
+        .ok_or_else(|| invalid_data(format!("runner definition {name} has no type property")))?;
+    let matches_expected = discriminator.get("const").and_then(Value::as_str)
+        == Some(expected_discriminator)
+        || discriminator
+            .get("enum")
+            .and_then(Value::as_array)
+            .is_some_and(|values| {
+                values.len() == 1 && values[0].as_str() == Some(expected_discriminator)
+            });
+    if !matches_expected {
+        return Err(invalid_data(format!(
+            "runner definition {name} must use the {expected_discriminator:?} type discriminator"
+        ))
+        .into());
+    }
+
+    Ok(())
 }
 
 fn is_runner_union(variants: &[Value]) -> bool {
@@ -373,9 +520,73 @@ mod tests {
             ]
         });
 
-        let error =
-            rewrite_and_normalize(&mut schema, &BTreeMap::new()).expect_err("union must fail");
+        let error = normalize_unions(&mut schema, &Map::new()).expect_err("union must fail");
 
         assert!(error.to_string().contains("unsupported anyOf shape"));
+    }
+
+    #[test]
+    fn rejects_nullable_union_when_other_branch_can_accept_null() {
+        let mut schema = json!({
+            "anyOf": [
+                {},
+                {"type": "null"}
+            ]
+        });
+
+        let error = normalize_unions(&mut schema, &Map::new())
+            .expect_err("ambiguous nullable union must fail");
+
+        assert!(error.to_string().contains("unsupported anyOf shape"));
+    }
+
+    #[test]
+    fn checks_nullable_references_before_rewriting_union() -> Result<()> {
+        let definitions = Map::from_iter([("StringValue".to_string(), json!({"type": "string"}))]);
+        let mut schema = json!({
+            "anyOf": [
+                {"$ref": "#/definitions/StringValue"},
+                {"type": "null"}
+            ]
+        });
+
+        normalize_unions(&mut schema, &definitions)?;
+
+        assert!(schema.get("anyOf").is_none());
+        assert!(schema.get("oneOf").is_some());
+        Ok(())
+    }
+
+    #[test]
+    fn rejects_runner_without_required_discriminator() {
+        let definitions = Map::from_iter([(
+            APP_CMD_DEFINITION.to_string(),
+            json!({
+                "type": "object",
+                "properties": {"type": {"enum": ["process"]}}
+            }),
+        )]);
+
+        let error = validate_runner_definition(&definitions, APP_CMD_DEFINITION, "process")
+            .expect_err("optional discriminator must fail");
+
+        assert!(error.to_string().contains("must require"));
+    }
+
+    #[test]
+    fn rejects_runner_with_wrong_discriminator() {
+        let definitions = Map::from_iter([(
+            APP_DOCKER_DEFINITION.to_string(),
+            json!({
+                "type": "object",
+                "required": ["type"],
+                "properties": {"type": {"enum": ["container"]}}
+            }),
+        )]);
+
+        let error = validate_runner_definition(&definitions, APP_DOCKER_DEFINITION, "docker")
+            .expect_err("wrong discriminator must fail");
+
+        assert!(error.to_string().contains("\"docker\" type discriminator"));
     }
 }
