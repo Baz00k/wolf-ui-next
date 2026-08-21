@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use dioxus::prelude::*;
 use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::App;
-use wolf_api::types::{RflReflectorWolfCoreEventsAppReflTypeRunner, WolfConfigAppDockerTagged};
+use wolf_api::types::{AppDocker, Runner};
 
 use crate::api::ApiContext;
 use crate::components::{AppAction, AppCardData, AppStatus, AppStatusKind, AppStatusTone};
@@ -211,19 +211,10 @@ pub(crate) fn is_app_lobby(profile_id: &str, app: &App, lobby: &Lobby, multi_use
         && (lobby.name == app.title || runner_matches(&app.runner, &lobby.runner))
 }
 
-fn runner_matches(
-    app_runner: &RflReflectorWolfCoreEventsAppReflTypeRunner,
-    lobby_runner: &wolf_api::types::RflReflectorWolfCoreEventsLobbyReflTypeRunner,
-) -> bool {
+fn runner_matches(app_runner: &Runner, lobby_runner: &Runner) -> bool {
     match (app_runner, lobby_runner) {
-        (
-            RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(app),
-            wolf_api::types::RflReflectorWolfCoreEventsLobbyReflTypeRunner::WolfConfigAppDockerTagged(lobby),
-        ) => app.name == lobby.name,
-        (
-            RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(app),
-            wolf_api::types::RflReflectorWolfCoreEventsLobbyReflTypeRunner::WolfConfigAppCMDTagged(lobby),
-        ) => app.run_cmd == lobby.run_cmd,
+        (Runner::Docker(app), Runner::Docker(lobby)) => app.name == lobby.name,
+        (Runner::Cmd(app), Runner::Cmd(lobby)) => app.run_cmd == lobby.run_cmd,
         _ => false,
     }
 }
@@ -239,26 +230,24 @@ fn cover_path(app: &App) -> Option<String> {
         .cloned()
 }
 
-fn docker_runner(app: &App) -> Option<&WolfConfigAppDockerTagged> {
+fn docker_runner(app: &App) -> Option<&AppDocker> {
     match &app.runner {
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(runner) => {
-            Some(runner)
-        }
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(_) => None,
+        Runner::Docker(runner) => Some(runner),
+        Runner::Cmd(_) => None,
     }
 }
 
-fn runner_label(runner: &RflReflectorWolfCoreEventsAppReflTypeRunner) -> &'static str {
+fn runner_label(runner: &Runner) -> &'static str {
     match runner {
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(_) => "Docker",
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(_) => "Process",
+        Runner::Docker(_) => "Docker",
+        Runner::Cmd(_) => "Process",
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wolf_api::types::{RflReflectorWolfCoreEventsLobbyReflTypeRunner, WolfConfigAppCMDTagged};
+    use wolf_api::types::{AppCmd, AppCmdType, AppDockerType};
 
     #[test]
     fn sorted_apps_marks_running_and_missing_image_states() {
@@ -332,17 +321,16 @@ mod tests {
             id: id.to_string(),
             opus_gst_pipeline: String::new(),
             render_node: String::new(),
-            runner: RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(
-                WolfConfigAppDockerTagged {
-                    base_create_json: None,
-                    devices: Vec::new(),
-                    env: Vec::new(),
-                    image: image.to_string(),
-                    mounts: Vec::new(),
-                    name: name.to_string(),
-                    ports: Vec::new(),
-                },
-            ),
+            runner: Runner::Docker(AppDocker {
+                base_create_json: None,
+                devices: Vec::new(),
+                env: Vec::new(),
+                image: image.to_string(),
+                mounts: Vec::new(),
+                name: name.to_string(),
+                ports: Vec::new(),
+                type_: AppDockerType::Docker,
+            }),
             start_audio_server: false,
             start_virtual_compositor: false,
             support_hdr: false,
@@ -359,11 +347,10 @@ mod tests {
             id: id.to_string(),
             opus_gst_pipeline: String::new(),
             render_node: String::new(),
-            runner: RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(
-                WolfConfigAppCMDTagged {
-                    run_cmd: run_cmd.to_string(),
-                },
-            ),
+            runner: Runner::Cmd(AppCmd {
+                run_cmd: run_cmd.to_string(),
+                type_: AppCmdType::Process,
+            }),
             start_audio_server: false,
             start_virtual_compositor: false,
             support_hdr: false,
@@ -371,13 +358,7 @@ mod tests {
         }
     }
 
-    fn lobby(
-        id: &str,
-        profile_id: &str,
-        name: &str,
-        runner: RflReflectorWolfCoreEventsLobbyReflTypeRunner,
-        multi_user: bool,
-    ) -> Lobby {
+    fn lobby(id: &str, profile_id: &str, name: &str, runner: Runner, multi_user: bool) -> Lobby {
         Lobby {
             connected_sessions: Vec::new(),
             icon_png_path: None,
@@ -391,17 +372,16 @@ mod tests {
         }
     }
 
-    fn docker_lobby_runner(name: &str) -> RflReflectorWolfCoreEventsLobbyReflTypeRunner {
-        RflReflectorWolfCoreEventsLobbyReflTypeRunner::WolfConfigAppDockerTagged(
-            WolfConfigAppDockerTagged {
-                base_create_json: None,
-                devices: Vec::new(),
-                env: Vec::new(),
-                image: String::new(),
-                mounts: Vec::new(),
-                name: name.to_string(),
-                ports: Vec::new(),
-            },
-        )
+    fn docker_lobby_runner(name: &str) -> Runner {
+        Runner::Docker(AppDocker {
+            base_create_json: None,
+            devices: Vec::new(),
+            env: Vec::new(),
+            image: String::new(),
+            mounts: Vec::new(),
+            name: name.to_string(),
+            ports: Vec::new(),
+            type_: AppDockerType::Docker,
+        })
     }
 }

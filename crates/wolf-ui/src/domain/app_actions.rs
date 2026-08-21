@@ -1,9 +1,9 @@
 use dioxus::prelude::*;
 use wolf_api::ApiError;
 use wolf_api::types::{
-    RflReflectorWolfCoreEventsAppReflTypeRunner, RflReflectorWolfCoreEventsLobbyReflType,
-    WolfApiCreateLobbyRequest, WolfApiCreateLobbyRequestRunner, WolfApiPartialClientSettings,
-    WolfConfigAppCMDTagged, WolfCoreEventsAudioSettings, WolfCoreEventsVideoSettings,
+    AudioSettings, ClientSettings, ClientSettingsControllersOverrideItem, CreateLobbyRequest,
+    Lobby, PartialClientSettings, PartialClientSettingsControllersOverrideItem, Runner,
+    VideoSettings,
 };
 
 use crate::api::ApiContext;
@@ -169,7 +169,7 @@ async fn running_lobby(
     profile_id: &str,
     app: &AppCardData,
     multi_user: bool,
-) -> Result<Option<RflReflectorWolfCoreEventsLobbyReflType>, String> {
+) -> Result<Option<Lobby>, String> {
     let lobbies = api
         .lobbies()
         .list()
@@ -188,16 +188,14 @@ fn build_lobby(
     multi_user: bool,
     name: String,
     pin: Option<Vec<i64>>,
-) -> WolfApiCreateLobbyRequest {
+) -> CreateLobbyRequest {
     let runner_name = match &app.source.runner {
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(runner) => {
-            &runner.name
-        }
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(_) => &app.source.id,
+        Runner::Docker(runner) => &runner.name,
+        Runner::Cmd(_) => &app.source.id,
     };
 
-    WolfApiCreateLobbyRequest {
-        audio_settings: WolfCoreEventsAudioSettings {
+    CreateLobbyRequest {
+        audio_settings: AudioSettings {
             channel_count: session.audio_channel_count,
         },
         client_settings: session
@@ -209,10 +207,10 @@ fn build_lobby(
         name,
         pin,
         profile_id: profile_id.clone(),
-        runner: create_lobby_runner(&app.source.runner),
+        runner: app.source.runner.clone(),
         runner_state_folder: format!("profile-data/{profile_id}/{runner_name}"),
         stop_when_everyone_leaves: false,
-        video_settings: WolfCoreEventsVideoSettings {
+        video_settings: VideoSettings {
             height: session.video_height,
             refresh_rate: session.video_refresh_rate,
             runner_render_node: app.source.render_node.clone(),
@@ -237,31 +235,40 @@ async fn creator_lobby_name(api: &wolf_api::WolfApi, profile_id: &str) -> Result
     Ok(format!("{}'s lobby", profile.name))
 }
 
-fn create_lobby_runner(
-    runner: &RflReflectorWolfCoreEventsAppReflTypeRunner,
-) -> WolfApiCreateLobbyRequestRunner {
-    match runner {
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppDockerTagged(runner) => {
-            WolfApiCreateLobbyRequestRunner::WolfConfigAppDockerTagged(runner.clone())
-        }
-        RflReflectorWolfCoreEventsAppReflTypeRunner::WolfConfigAppCMDTagged(runner) => {
-            WolfApiCreateLobbyRequestRunner::WolfConfigAppCMDTagged(WolfConfigAppCMDTagged {
-                run_cmd: runner.run_cmd.clone(),
-            })
-        }
-    }
-}
-
-fn partial_client_settings(
-    settings: &wolf_api::types::WolfConfigClientSettings,
-) -> WolfApiPartialClientSettings {
-    WolfApiPartialClientSettings {
-        controllers_override: Some(settings.controllers_override.clone()),
+fn partial_client_settings(settings: &ClientSettings) -> PartialClientSettings {
+    PartialClientSettings {
+        controllers_override: Some(
+            settings
+                .controllers_override
+                .iter()
+                .copied()
+                .map(partial_controller_override)
+                .collect(),
+        ),
         h_scroll_acceleration: Some(settings.h_scroll_acceleration),
         mouse_acceleration: Some(settings.mouse_acceleration),
         run_gid: Some(settings.run_gid),
         run_uid: Some(settings.run_uid),
         v_scroll_acceleration: Some(settings.v_scroll_acceleration),
+    }
+}
+
+fn partial_controller_override(
+    controller: ClientSettingsControllersOverrideItem,
+) -> PartialClientSettingsControllersOverrideItem {
+    match controller {
+        ClientSettingsControllersOverrideItem::Xbox => {
+            PartialClientSettingsControllersOverrideItem::Xbox
+        }
+        ClientSettingsControllersOverrideItem::Ps => {
+            PartialClientSettingsControllersOverrideItem::Ps
+        }
+        ClientSettingsControllersOverrideItem::Nintendo => {
+            PartialClientSettingsControllersOverrideItem::Nintendo
+        }
+        ClientSettingsControllersOverrideItem::Auto => {
+            PartialClientSettingsControllersOverrideItem::Auto
+        }
     }
 }
 

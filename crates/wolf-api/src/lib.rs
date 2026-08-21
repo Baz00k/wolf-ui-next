@@ -1,6 +1,6 @@
 //! Generated Wolf API data bindings and a configured client for the local Wolf daemon.
 //!
-//! The Rust data model in [`types`] is generated directly from Wolf's OpenAPI 3.1 schema at build time.
+//! The Rust data model in [`types`] is generated from Wolf's vendored OpenAPI 3.1 schema.
 //! The hand-written [`WolfApi`] facade is the stable API application code should use.
 
 mod client;
@@ -9,12 +9,7 @@ mod endpoints;
 mod error;
 mod transport;
 
-pub mod types {
-    #![allow(clippy::all)]
-    #![allow(missing_docs)]
-
-    include!(concat!(env!("OUT_DIR"), "/types.rs"));
-}
+pub mod types;
 
 pub use endpoints::{apps, docker, events, lobbies, profiles, sessions};
 

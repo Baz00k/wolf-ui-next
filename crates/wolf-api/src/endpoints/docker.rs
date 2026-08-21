@@ -48,7 +48,7 @@ impl<'api> Docker<'api> {
             .api
             .post_stream(
                 "/api/v1/docker/images/pull",
-                &crate::types::WolfApiDockerPullImageRequest {
+                &crate::types::DockerPullImageRequest {
                     image_name: image_name.to_string(),
                 },
             )
