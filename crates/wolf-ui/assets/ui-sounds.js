@@ -3,9 +3,9 @@
     window.__wolfUiSoundsInstalled = true;
 
     const SOUND_GAINS = {
-        navigate: 0.2,
-        select: 0.6,
-        back: 0.3,
+        navigate: 0.15,
+        select: 0.18,
+        back: 0.13,
     };
     const DEFAULT_GAIN = 0.5;
 
