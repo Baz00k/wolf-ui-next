@@ -214,7 +214,7 @@ pub(crate) fn is_app_lobby(profile_id: &str, app: &App, lobby: &Lobby, multi_use
 fn runner_matches(app_runner: &Runner, lobby_runner: &Runner) -> bool {
     match (app_runner, lobby_runner) {
         (Runner::Docker(app), Runner::Docker(lobby)) => app.name == lobby.name,
-        (Runner::Cmd(app), Runner::Cmd(lobby)) => app.run_cmd == lobby.run_cmd,
+        (Runner::Cmd(_), Runner::Cmd(_)) => false,
         _ => false,
     }
 }
@@ -310,6 +310,37 @@ mod tests {
         assert!(is_app_lobby("profile-1", &app, &lobby, false));
         assert!(!is_app_lobby("other-profile", &app, &lobby, false));
         assert!(!is_app_lobby("profile-1", &app, &lobby, true));
+    }
+
+    #[test]
+    fn process_lobby_only_marks_the_named_app_as_playing() {
+        let run_cmd = "sh -c \"while :; do sleep 10; done\"";
+        let apps = vec![
+            cmd_app("process-1", "Process One", run_cmd),
+            cmd_app("process-2", "Process Two", run_cmd),
+        ];
+        let lobbies = vec![lobby(
+            "lobby-1",
+            "profile-1",
+            "Process One",
+            Runner::Cmd(AppCmd {
+                run_cmd: run_cmd.to_string(),
+                type_: AppCmdType::Process,
+            }),
+            false,
+        )];
+
+        let apps = sorted_apps(
+            "profile-1",
+            apps,
+            &lobbies,
+            &HashMap::new(),
+            &HashMap::new(),
+            AppFilter::Alphabetical,
+        );
+
+        assert!(matches!(apps[0].status.kind, AppStatusKind::Playing));
+        assert!(matches!(apps[1].status.kind, AppStatusKind::Ready));
     }
 
     fn docker_app(id: &str, title: &str, name: &str, image: &str) -> App {
