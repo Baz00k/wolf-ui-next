@@ -5,7 +5,14 @@ data types generated from Wolf's vendored OpenAPI 3.1 schema.
 
 ## Updating the Wolf schema
 
-From a machine with a running Wolf instance:
+With the development Wolf:
+
+```sh
+mise run update-schema
+```
+
+The task downloads the schema, regenerates `src/types.rs`, and runs the workspace
+checks. To use another running Wolf instance manually:
 
 ```sh
 curl --unix-socket /var/run/wolf/wolf.sock \

@@ -48,6 +48,6 @@ description = "Build and run the production container through Wolf and Moonlight
 run = "bash dev/scripts/prod.sh"
 
 [tasks.update-schema]
-description = "Update the vendored API schema from the pinned Wolf image"
+description = "Update the Wolf API schema and generated Rust types"
 depends = ["wolf-up"]
 run = "bash dev/scripts/update-schema.sh"

@@ -12,5 +12,7 @@ curl --fail --silent --show-error \
   jq . > "${temporary}"
 cat "${temporary}" > "${schema}"
 
+cd "${repo_root}"
+cargo run --locked -p wolf-api-gen
 mise run check
-echo "Wolf API schema updated; review the generated diff."
+echo "Wolf API schema and generated types updated; review the diff."
