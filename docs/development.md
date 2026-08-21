@@ -8,6 +8,8 @@ mise run check
 
 `mise run dev` starts Wolf in Docker and Wolf UI through Dioxus. The development Wolf has access to the host Docker daemon.
 
+Local development is detached from Moonlight; launching apps and session controls require the production-container workflow.
+
 Edit `dev/wolf/config.toml`, then run `mise run wolf-reset` to recreate Wolf state. Use `mise run wolf-logs` for startup errors.
 
 ## Other Wolf instances

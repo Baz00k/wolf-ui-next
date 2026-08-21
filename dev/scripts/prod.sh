@@ -3,6 +3,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 socket_path="${repo_root}/dev/.state/run/wolf.sock"
+render_node="${WOLF_RENDER_NODE:-/dev/dri/renderD128}"
 compose=(
   docker compose
   -f "${repo_root}/dev/compose.yml"
@@ -15,6 +16,11 @@ for path in /dev/dri /dev/uinput /dev/uhid /run/udev; do
     exit 1
   fi
 done
+
+if [[ ! -e "${render_node}" ]]; then
+  echo "Production testing requires render node ${render_node}." >&2
+  exit 1
+fi
 
 mise run image
 bash "${repo_root}/dev/scripts/wolf-up.sh"
