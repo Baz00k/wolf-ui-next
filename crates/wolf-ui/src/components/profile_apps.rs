@@ -7,7 +7,9 @@ use wolf_api::profiles::AppListResponse;
 use crate::components::primitives::{
     Button, ButtonSize, ButtonVariant, CardGrid, CardGridViewport, StatusAlert, StatusAlertVariant,
 };
-use crate::components::{AppCard, AppCardData, AppCardSkeleton, SessionShutdownControl};
+use crate::components::{
+    AppCard, AppCardData, AppCardSkeleton, BackButton, SessionShutdownControl,
+};
 use crate::domain::apps::{AppFilter, filter_label, sorted_apps};
 
 const LOADING_CARD_COUNT: usize = 8;
@@ -22,13 +24,14 @@ pub fn AppsHeader(
     rsx! {
         header {
             id: "apps-top-bar",
-            class: "grid grid-cols-[1fr_auto] items-start gap-4",
+            class: "grid grid-cols-1 items-center gap-4 sm:grid-cols-[minmax(0,1fr)_auto]",
             "data-focus-scope": "true",
             "data-focus-region": "top-bar",
-            div { class: "min-w-0",
-                h1 { class: "text-4xl font-bold tracking-tight sm:text-5xl", "Applications" }
+            div { class: "flex min-w-0 items-center gap-3 sm:gap-4",
+                BackButton {}
+                h1 { class: "truncate text-4xl font-bold tracking-tight sm:text-5xl", "Applications" }
             }
-            div { class: "flex min-w-0 items-center justify-end gap-3 sm:gap-4",
+            div { class: "flex min-w-0 flex-wrap items-center justify-start gap-3 sm:flex-nowrap sm:justify-end sm:gap-4",
                 AppsFilter { filter, selected_index, pending_focus_index }
                 SessionShutdownControl {}
             }

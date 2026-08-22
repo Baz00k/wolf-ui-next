@@ -3,6 +3,7 @@ pub mod action_footer;
 pub mod app_action_dialog;
 pub mod app_card;
 pub mod auto_update;
+pub mod back_button;
 pub mod lobby_action_dialog;
 pub mod persona_card;
 pub mod pin_dialog;
@@ -19,6 +20,7 @@ pub use app_card::{
     AppCard, AppCardData, AppCardSkeleton, AppStatus, AppStatusKind, AppStatusTone,
 };
 pub use auto_update::StartupAutoUpdate;
+pub use back_button::BackButton;
 pub use lobby_action_dialog::LobbyActionDialog;
 #[allow(unused_imports)]
 pub use pin_dialog::{PinInputDialog, PinProtectQuestionDialog};

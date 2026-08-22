@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::Route;
+use crate::components::BackButton;
 use crate::components::primitives::{Button, ButtonSize, ButtonVariant};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -36,7 +37,11 @@ pub fn SettingsLayout() -> Element {
 
     rsx! {
         div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-8 text-foreground sm:px-16 sm:pt-12",
-            header { class: "shrink-0 pb-6 sm:pb-8",
+            header {
+                class: "flex shrink-0 items-center gap-4 pb-6 sm:gap-6 sm:pb-8",
+                "data-focus-scope": "true",
+                "data-focus-region": "top-bar",
+                BackButton {}
                 h1 { class: "text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl",
                     "Settings"
                 }
