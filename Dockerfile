@@ -78,20 +78,35 @@ _BUILD_APP
 
 FROM ${BASE_APP_IMAGE} AS runtime
 
-ENV DEBIAN_FRONTEND=noninteractive
-
 RUN <<_INSTALL_RUNTIME_DEPS
 set -e
-apt-get update -y
-apt-get install -y --no-install-recommends \
-    ca-certificates \
-    libayatana-appindicator3-1 \
-    libgtk-3-0t64 \
-    libudev1 \
-    librsvg2-2 \
-    libwebkit2gtk-4.1-0 \
-    libxdo3
-rm -rf /var/lib/apt/lists/*
+if command -v apt-get >/dev/null; then
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -y
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        libayatana-appindicator3-1 \
+        libgtk-3-0t64 \
+        libudev1 \
+        librsvg2-2 \
+        libwebkit2gtk-4.1-0 \
+        libxdo3
+    rm -rf /var/lib/apt/lists/*
+elif command -v dnf >/dev/null; then
+    dnf install -y --setopt=install_weak_deps=False \
+        ca-certificates \
+        libayatana-appindicator-gtk3 \
+        gtk3 \
+        systemd-libs \
+        librsvg2 \
+        webkit2gtk4.1 \
+        libxdo
+    dnf clean all
+    rm -rf /var/cache/dnf
+else
+    echo "Unsupported base image: no supported package manager found." >&2
+    exit 1
+fi
 _INSTALL_RUNTIME_DEPS
 
 ENV PUID=0 \
@@ -106,7 +121,10 @@ RUN <<_WRAP_WEBKIT_HELPERS
 set -e
 for helper in /usr/lib/*/webkit2gtk-4.1/WebKitWebProcess \
               /usr/lib/*/webkit2gtk-4.1/WebKitNetworkProcess \
-              /usr/lib/*/webkit2gtk-4.1/WebKitGPUProcess; do
+              /usr/lib/*/webkit2gtk-4.1/WebKitGPUProcess \
+              /usr/libexec/webkit2gtk-4.1/WebKitWebProcess \
+              /usr/libexec/webkit2gtk-4.1/WebKitNetworkProcess \
+              /usr/libexec/webkit2gtk-4.1/WebKitGPUProcess; do
     if [ -x "$helper" ] && [ ! -e "$helper.real" ]; then
         mv "$helper" "$helper.real"
         cp /usr/local/bin/webkit-helper-wrapper.sh "$helper"
