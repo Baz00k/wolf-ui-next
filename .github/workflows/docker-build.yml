@@ -22,6 +22,15 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - variant: ubuntu
+            base_image: ghcr.io/games-on-whales/base-app:edge
+            tag_suffix: ""
+          - variant: fedora
+            base_image: ghcr.io/games-on-whales/base-app:edge-fedora
+            tag_suffix: -fedora
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -48,7 +57,13 @@ jobs:
             type=semver,pattern={{major}}
             type=edge,branch=main
             type=sha
-          flavor: latest=false
+          flavor: |
+            latest=false
+            suffix=${{ matrix.tag_suffix }}
+          labels: |
+            io.gamesonwhales.wolf-ui.runtime=${{ matrix.variant }}
+            org.opencontainers.image.base.name=${{ matrix.base_image }}
+            org.opencontainers.image.description=Wolf UI Next (${{ matrix.variant }} runtime)
 
       - name: Build and publish image
         uses: docker/build-push-action@v7
@@ -60,8 +75,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
+            BASE_APP_IMAGE=${{ matrix.base_image }}
             IMAGE_SOURCE=${{ github.server_url }}/${{ github.repository }}
             IMAGE_REVISION=${{ github.sha }}
             IMAGE_VERSION=${{ steps.meta.outputs.version }}
-          cache-from: type=gha,scope=wolf-ui-next-linux-amd64
-          cache-to: type=gha,scope=wolf-ui-next-linux-amd64,mode=max
+          cache-from: type=gha,scope=wolf-ui-next-linux-amd64-${{ matrix.variant }}
+          cache-to: type=gha,scope=wolf-ui-next-linux-amd64-${{ matrix.variant }},mode=max

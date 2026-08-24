@@ -15,7 +15,7 @@ Wolf UI Next is a drop-in replacement for the [original Wolf UI](https://github.
 
 ## Configuration
 
-In your Wolf `config.toml`, replace the existing Wolf UI app image with `ghcr.io/baz00k/wolf-ui-next:edge`. A minimal app configuration looks like this:
+In your Wolf `config.toml`, replace the existing Wolf UI app image with `ghcr.io/baz00k/wolf-ui-next:edge`. Fedora-based images are published with a `-fedora` suffix, for example `ghcr.io/baz00k/wolf-ui-next:edge-fedora`. A minimal app configuration looks like this:
 
 ```toml
 [[profiles.apps]]
