@@ -7,7 +7,7 @@ publish.workspace = true
 
 [dependencies]
 rustfmt-wrapper = "0.2"
-schemars = "0.8"
+schemars = "1.2"
 serde_json.workspace = true
 typify = "=0.7.0"
 
