@@ -3,106 +3,13 @@
 #![allow(clippy::all, clippy::pedantic, clippy::nursery)]
 #![allow(missing_docs)]
 
-#[doc = r" Error types."]
-pub mod error {
-    #[doc = r" Error from a `TryFrom` or `FromStr` implementation."]
-    pub struct ConversionError(::std::borrow::Cow<'static, str>);
-    impl ::std::error::Error for ConversionError {}
-    impl ::std::fmt::Display for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
-            ::std::fmt::Display::fmt(&self.0, f)
-        }
-    }
-    impl ::std::fmt::Debug for ConversionError {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
-            ::std::fmt::Debug::fmt(&self.0, f)
-        }
-    }
-    impl From<&'static str> for ConversionError {
-        fn from(value: &'static str) -> Self {
-            Self(value.into())
-        }
-    }
-    impl From<String> for ConversionError {
-        fn from(value: String) -> Self {
-            Self(value.into())
-        }
-    }
-}
 #[doc = "`App`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"av1_gst_pipeline\","]
-#[doc = "    \"h264_gst_pipeline\","]
-#[doc = "    \"hevc_gst_pipeline\","]
-#[doc = "    \"id\","]
-#[doc = "    \"opus_gst_pipeline\","]
-#[doc = "    \"render_node\","]
-#[doc = "    \"runner\","]
-#[doc = "    \"start_audio_server\","]
-#[doc = "    \"start_virtual_compositor\","]
-#[doc = "    \"support_hdr\","]
-#[doc = "    \"title\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"av1_gst_pipeline\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"h264_gst_pipeline\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"hevc_gst_pipeline\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"icon_png_path\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"string\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"opus_gst_pipeline\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"render_node\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"runner\": {"]
-#[doc = "      \"$ref\": \"#/definitions/Runner\""]
-#[doc = "    },"]
-#[doc = "    \"start_audio_server\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    },"]
-#[doc = "    \"start_virtual_compositor\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    },"]
-#[doc = "    \"support_hdr\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    },"]
-#[doc = "    \"title\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct App {
     pub av1_gst_pipeline: ::std::string::String,
     pub h264_gst_pipeline: ::std::string::String,
     pub hevc_gst_pipeline: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub icon_png_path: ::std::option::Option<::std::string::String>,
     pub id: ::std::string::String,
     pub opus_gst_pipeline: ::std::string::String,
@@ -114,30 +21,6 @@ pub struct App {
     pub title: ::std::string::String,
 }
 #[doc = "`AppCmd`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"run_cmd\","]
-#[doc = "    \"type\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"run_cmd\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"type\": {"]
-#[doc = "      \"type\": \"string\","]
-#[doc = "      \"enum\": ["]
-#[doc = "        \"process\""]
-#[doc = "      ]"]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct AppCmd {
     pub run_cmd: ::std::string::String,
@@ -145,18 +28,6 @@ pub struct AppCmd {
     pub type_: AppCmdType,
 }
 #[doc = "`AppCmdType`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"string\","]
-#[doc = "  \"enum\": ["]
-#[doc = "    \"process\""]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(
     :: serde :: Deserialize,
     :: serde :: Serialize,
@@ -195,14 +66,6 @@ impl ::std::convert::TryFrom<&str> for AppCmdType {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for AppCmdType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 impl ::std::convert::TryFrom<::std::string::String> for AppCmdType {
     type Error = self::error::ConversionError;
     fn try_from(
@@ -212,97 +75,14 @@ impl ::std::convert::TryFrom<::std::string::String> for AppCmdType {
     }
 }
 #[doc = "`AppDeleteRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"id\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct AppDeleteRequest {
     pub id: ::std::string::String,
 }
 #[doc = "`AppDocker`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"devices\","]
-#[doc = "    \"env\","]
-#[doc = "    \"image\","]
-#[doc = "    \"mounts\","]
-#[doc = "    \"name\","]
-#[doc = "    \"ports\","]
-#[doc = "    \"type\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"base_create_json\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"string\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"devices\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"type\": \"string\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"env\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"type\": \"string\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"image\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"mounts\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"type\": \"string\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"name\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"ports\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"type\": \"string\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"type\": {"]
-#[doc = "      \"type\": \"string\","]
-#[doc = "      \"enum\": ["]
-#[doc = "        \"docker\""]
-#[doc = "      ]"]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct AppDocker {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub base_create_json: ::std::option::Option<::std::string::String>,
     pub devices: ::std::vec::Vec<::std::string::String>,
     pub env: ::std::vec::Vec<::std::string::String>,
@@ -314,18 +94,6 @@ pub struct AppDocker {
     pub type_: AppDockerType,
 }
 #[doc = "`AppDockerType`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"string\","]
-#[doc = "  \"enum\": ["]
-#[doc = "    \"docker\""]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(
     :: serde :: Deserialize,
     :: serde :: Serialize,
@@ -364,14 +132,6 @@ impl ::std::convert::TryFrom<&str> for AppDockerType {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for AppDockerType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 impl ::std::convert::TryFrom<::std::string::String> for AppDockerType {
     type Error = self::error::ConversionError;
     fn try_from(
@@ -381,87 +141,12 @@ impl ::std::convert::TryFrom<::std::string::String> for AppDockerType {
     }
 }
 #[doc = "`AppListResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"apps\","]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"apps\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"$ref\": \"#/definitions/App\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct AppListResponse {
     pub apps: ::std::vec::Vec<App>,
     pub success: bool,
 }
 #[doc = "`AudioMode`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"bitrate\","]
-#[doc = "    \"channels\","]
-#[doc = "    \"coupled_streams\","]
-#[doc = "    \"sample_rate\","]
-#[doc = "    \"speakers\","]
-#[doc = "    \"streams\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"bitrate\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"channels\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"coupled_streams\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"sample_rate\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"speakers\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"type\": \"string\","]
-#[doc = "        \"enum\": ["]
-#[doc = "          \"FRONT_LEFT\","]
-#[doc = "          \"FRONT_RIGHT\","]
-#[doc = "          \"FRONT_CENTER\","]
-#[doc = "          \"LOW_FREQUENCY\","]
-#[doc = "          \"BACK_LEFT\","]
-#[doc = "          \"BACK_RIGHT\","]
-#[doc = "          \"SIDE_LEFT\","]
-#[doc = "          \"SIDE_RIGHT\","]
-#[doc = "          \"MAX_SPEAKERS\""]
-#[doc = "        ]"]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"streams\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct AudioMode {
     pub bitrate: i64,
@@ -472,26 +157,6 @@ pub struct AudioMode {
     pub streams: i64,
 }
 #[doc = "`AudioModeSpeakersItem`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"string\","]
-#[doc = "  \"enum\": ["]
-#[doc = "    \"FRONT_LEFT\","]
-#[doc = "    \"FRONT_RIGHT\","]
-#[doc = "    \"FRONT_CENTER\","]
-#[doc = "    \"LOW_FREQUENCY\","]
-#[doc = "    \"BACK_LEFT\","]
-#[doc = "    \"BACK_RIGHT\","]
-#[doc = "    \"SIDE_LEFT\","]
-#[doc = "    \"SIDE_RIGHT\","]
-#[doc = "    \"MAX_SPEAKERS\""]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(
     :: serde :: Deserialize,
     :: serde :: Serialize,
@@ -562,14 +227,6 @@ impl ::std::convert::TryFrom<&str> for AudioModeSpeakersItem {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for AudioModeSpeakersItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 impl ::std::convert::TryFrom<::std::string::String> for AudioModeSpeakersItem {
     type Error = self::error::ConversionError;
     fn try_from(
@@ -579,68 +236,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AudioModeSpeakersItem {
     }
 }
 #[doc = "`AudioSession`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"aes_iv\","]
-#[doc = "    \"aes_key\","]
-#[doc = "    \"audio_mode\","]
-#[doc = "    \"client_ip\","]
-#[doc = "    \"encrypt_audio\","]
-#[doc = "    \"gst_pipeline\","]
-#[doc = "    \"packet_duration\","]
-#[doc = "    \"port\","]
-#[doc = "    \"rtp_secret_payload\","]
-#[doc = "    \"session_id\","]
-#[doc = "    \"wait_for_ping\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"aes_iv\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"aes_key\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"audio_mode\": {"]
-#[doc = "      \"$ref\": \"#/definitions/AudioMode\""]
-#[doc = "    },"]
-#[doc = "    \"client_ip\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"encrypt_audio\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    },"]
-#[doc = "    \"gst_pipeline\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"packet_duration\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"port\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"rtp_secret_payload\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"type\": \"integer\""]
-#[doc = "      },"]
-#[doc = "      \"maxItems\": 16,"]
-#[doc = "      \"minItems\": 16"]
-#[doc = "    },"]
-#[doc = "    \"session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"wait_for_ping\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct AudioSession {
     pub aes_iv: ::std::string::String,
@@ -656,84 +251,11 @@ pub struct AudioSession {
     pub wait_for_ping: bool,
 }
 #[doc = "`AudioSettings`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"channel_count\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"channel_count\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct AudioSettings {
     pub channel_count: i64,
 }
 #[doc = "`ClientSettings`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"controllers_override\","]
-#[doc = "    \"h_scroll_acceleration\","]
-#[doc = "    \"motion_controller_override\","]
-#[doc = "    \"mouse_acceleration\","]
-#[doc = "    \"run_gid\","]
-#[doc = "    \"run_uid\","]
-#[doc = "    \"v_scroll_acceleration\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"controllers_override\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"type\": \"string\","]
-#[doc = "        \"enum\": ["]
-#[doc = "          \"XBOX\","]
-#[doc = "          \"PS\","]
-#[doc = "          \"NINTENDO\","]
-#[doc = "          \"AUTO\""]
-#[doc = "        ]"]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"h_scroll_acceleration\": {"]
-#[doc = "      \"type\": \"number\""]
-#[doc = "    },"]
-#[doc = "    \"motion_controller_override\": {"]
-#[doc = "      \"type\": \"string\","]
-#[doc = "      \"enum\": ["]
-#[doc = "        \"XBOX\","]
-#[doc = "        \"PS\","]
-#[doc = "        \"NINTENDO\","]
-#[doc = "        \"AUTO\""]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"mouse_acceleration\": {"]
-#[doc = "      \"type\": \"number\""]
-#[doc = "    },"]
-#[doc = "    \"run_gid\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"run_uid\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"v_scroll_acceleration\": {"]
-#[doc = "      \"type\": \"number\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct ClientSettings {
     pub controllers_override: ::std::vec::Vec<ClientSettingsControllersOverrideItem>,
@@ -745,21 +267,6 @@ pub struct ClientSettings {
     pub v_scroll_acceleration: f64,
 }
 #[doc = "`ClientSettingsControllersOverrideItem`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"string\","]
-#[doc = "  \"enum\": ["]
-#[doc = "    \"XBOX\","]
-#[doc = "    \"PS\","]
-#[doc = "    \"NINTENDO\","]
-#[doc = "    \"AUTO\""]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(
     :: serde :: Deserialize,
     :: serde :: Serialize,
@@ -810,14 +317,6 @@ impl ::std::convert::TryFrom<&str> for ClientSettingsControllersOverrideItem {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for ClientSettingsControllersOverrideItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 impl ::std::convert::TryFrom<::std::string::String> for ClientSettingsControllersOverrideItem {
     type Error = self::error::ConversionError;
     fn try_from(
@@ -827,21 +326,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ClientSettingsController
     }
 }
 #[doc = "`ClientSettingsMotionControllerOverride`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"string\","]
-#[doc = "  \"enum\": ["]
-#[doc = "    \"XBOX\","]
-#[doc = "    \"PS\","]
-#[doc = "    \"NINTENDO\","]
-#[doc = "    \"AUTO\""]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(
     :: serde :: Deserialize,
     :: serde :: Serialize,
@@ -892,14 +376,6 @@ impl ::std::convert::TryFrom<&str> for ClientSettingsMotionControllerOverride {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for ClientSettingsMotionControllerOverride {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 impl ::std::convert::TryFrom<::std::string::String> for ClientSettingsMotionControllerOverride {
     type Error = self::error::ConversionError;
     fn try_from(
@@ -909,99 +385,18 @@ impl ::std::convert::TryFrom<::std::string::String> for ClientSettingsMotionCont
     }
 }
 #[doc = "`CreateLobbyRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"audio_settings\","]
-#[doc = "    \"client_settings\","]
-#[doc = "    \"multi_user\","]
-#[doc = "    \"name\","]
-#[doc = "    \"pin\","]
-#[doc = "    \"profile_id\","]
-#[doc = "    \"runner\","]
-#[doc = "    \"runner_state_folder\","]
-#[doc = "    \"stop_when_everyone_leaves\","]
-#[doc = "    \"video_settings\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"audio_settings\": {"]
-#[doc = "      \"$ref\": \"#/definitions/AudioSettings\""]
-#[doc = "    },"]
-#[doc = "    \"client_settings\": {"]
-#[doc = "      \"description\": \"Client settings to update (only specified fields will be updated)\","]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"$ref\": \"#/definitions/PartialClientSettings\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"icon_png_path\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"string\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"multi_user\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    },"]
-#[doc = "    \"name\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"pin\": {"]
-#[doc = "      \"description\": \"If present, the pin that is required to join the lobby.If this is not set, then the lobby is open to everyone\","]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"array\","]
-#[doc = "          \"items\": {"]
-#[doc = "            \"type\": \"integer\""]
-#[doc = "          }"]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"profile_id\": {"]
-#[doc = "      \"description\": \"The profile that originally created the lobby\","]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"runner\": {"]
-#[doc = "      \"$ref\": \"#/definitions/Runner\""]
-#[doc = "    },"]
-#[doc = "    \"runner_state_folder\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"stop_when_everyone_leaves\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    },"]
-#[doc = "    \"video_settings\": {"]
-#[doc = "      \"$ref\": \"#/definitions/VideoSettings\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct CreateLobbyRequest {
     pub audio_settings: AudioSettings,
     #[doc = "Client settings to update (only specified fields will be updated)"]
+    #[serde(deserialize_with = "::std::option::Option::deserialize")]
     pub client_settings: ::std::option::Option<PartialClientSettings>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub icon_png_path: ::std::option::Option<::std::string::String>,
     pub multi_user: bool,
     pub name: ::std::string::String,
     #[doc = "If present, the pin that is required to join the lobby.If this is not set, then the lobby is open to everyone"]
+    #[serde(deserialize_with = "::std::option::Option::deserialize")]
     pub pin: ::std::option::Option<::std::vec::Vec<i64>>,
     #[doc = "The profile that originally created the lobby"]
     pub profile_id: ::std::string::String,
@@ -1011,31 +406,6 @@ pub struct CreateLobbyRequest {
     pub video_settings: VideoSettings,
 }
 #[doc = "`DisplayMode`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"height\","]
-#[doc = "    \"refreshRate\","]
-#[doc = "    \"width\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"height\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"refreshRate\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"width\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct DisplayMode {
     pub height: i64,
@@ -1044,260 +414,51 @@ pub struct DisplayMode {
     pub width: i64,
 }
 #[doc = "`DockerPullImageRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"image_name\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"image_name\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct DockerPullImageRequest {
     pub image_name: ::std::string::String,
 }
 #[doc = "`DockerPullImageResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct DockerPullImageResponse {
     pub success: bool,
 }
 #[doc = "`GenericErrorResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"error\","]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"error\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct GenericErrorResponse {
     pub error: ::std::string::String,
     pub success: bool,
 }
 #[doc = "`GenericSuccessResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct GenericSuccessResponse {
     pub success: bool,
 }
 #[doc = "`JoinLobbyEvent`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"lobby_id\","]
-#[doc = "    \"moonlight_session_id\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"lobby_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"moonlight_session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"pin\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"array\","]
-#[doc = "          \"items\": {"]
-#[doc = "            \"type\": \"integer\""]
-#[doc = "          }"]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct JoinLobbyEvent {
     pub lobby_id: ::std::string::String,
     pub moonlight_session_id: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub pin: ::std::option::Option<::std::vec::Vec<i64>>,
 }
 #[doc = "`LeaveLobbyEvent`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"lobby_id\","]
-#[doc = "    \"moonlight_session_id\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"lobby_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"moonlight_session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct LeaveLobbyEvent {
     pub lobby_id: ::std::string::String,
     pub moonlight_session_id: ::std::string::String,
 }
 #[doc = "`LobbiesResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"lobbies\","]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"lobbies\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"$ref\": \"#/definitions/Lobby\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct LobbiesResponse {
     pub lobbies: ::std::vec::Vec<Lobby>,
     pub success: bool,
 }
 #[doc = "`Lobby`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"connected_sessions\","]
-#[doc = "    \"id\","]
-#[doc = "    \"multi_user\","]
-#[doc = "    \"name\","]
-#[doc = "    \"pin_required\","]
-#[doc = "    \"runner\","]
-#[doc = "    \"started_by_profile_id\","]
-#[doc = "    \"stop_when_everyone_leaves\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"connected_sessions\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"type\": \"string\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"icon_png_path\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"string\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"multi_user\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    },"]
-#[doc = "    \"name\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"pin_required\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    },"]
-#[doc = "    \"runner\": {"]
-#[doc = "      \"$ref\": \"#/definitions/Runner\""]
-#[doc = "    },"]
-#[doc = "    \"started_by_profile_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"stop_when_everyone_leaves\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct Lobby {
     pub connected_sessions: ::std::vec::Vec<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub icon_png_path: ::std::option::Option<::std::string::String>,
     pub id: ::std::string::String,
     pub multi_user: bool,
@@ -1308,55 +469,12 @@ pub struct Lobby {
     pub stop_when_everyone_leaves: bool,
 }
 #[doc = "`LobbyCreateResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"lobby_id\","]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"lobby_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct LobbyCreateResponse {
     pub lobby_id: ::std::string::String,
     pub success: bool,
 }
 #[doc = "`PairRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"pair_secret\","]
-#[doc = "    \"pin\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"pair_secret\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"pin\": {"]
-#[doc = "      \"description\": \"The PIN created by the remote Moonlight client\","]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct PairRequest {
     pub pair_secret: ::std::string::String,
@@ -1364,31 +482,6 @@ pub struct PairRequest {
     pub pin: ::std::string::String,
 }
 #[doc = "`PairedClient`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"app_state_folder\","]
-#[doc = "    \"client_id\","]
-#[doc = "    \"settings\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"app_state_folder\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"client_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"settings\": {"]
-#[doc = "      \"$ref\": \"#/definitions/ClientSettings\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct PairedClient {
     pub app_state_folder: ::std::string::String,
@@ -1396,180 +489,32 @@ pub struct PairedClient {
     pub settings: ClientSettings,
 }
 #[doc = "`PairedClientsResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"clients\","]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"clients\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"$ref\": \"#/definitions/PairedClient\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct PairedClientsResponse {
     pub clients: ::std::vec::Vec<PairedClient>,
     pub success: bool,
 }
 #[doc = "`PartialClientSettings`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"controllers_override\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"array\","]
-#[doc = "          \"items\": {"]
-#[doc = "            \"type\": \"string\","]
-#[doc = "            \"enum\": ["]
-#[doc = "              \"XBOX\","]
-#[doc = "              \"PS\","]
-#[doc = "              \"NINTENDO\","]
-#[doc = "              \"AUTO\""]
-#[doc = "            ]"]
-#[doc = "          }"]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"h_scroll_acceleration\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"number\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"motion_controller_override\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"string\","]
-#[doc = "          \"enum\": ["]
-#[doc = "            \"XBOX\","]
-#[doc = "            \"PS\","]
-#[doc = "            \"NINTENDO\","]
-#[doc = "            \"AUTO\""]
-#[doc = "          ]"]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"mouse_acceleration\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"number\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"run_gid\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"integer\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"run_uid\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"integer\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"v_scroll_acceleration\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"number\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
-#[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
+#[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, Default, PartialEq)]
 pub struct PartialClientSettings {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub controllers_override:
         ::std::option::Option<::std::vec::Vec<PartialClientSettingsControllersOverrideItem>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub h_scroll_acceleration: ::std::option::Option<f64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub motion_controller_override:
         ::std::option::Option<PartialClientSettingsMotionControllerOverride>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub mouse_acceleration: ::std::option::Option<f64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub run_gid: ::std::option::Option<i64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub run_uid: ::std::option::Option<i64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub v_scroll_acceleration: ::std::option::Option<f64>,
 }
-impl ::std::default::Default for PartialClientSettings {
-    fn default() -> Self {
-        Self {
-            controllers_override: Default::default(),
-            h_scroll_acceleration: Default::default(),
-            motion_controller_override: Default::default(),
-            mouse_acceleration: Default::default(),
-            run_gid: Default::default(),
-            run_uid: Default::default(),
-            v_scroll_acceleration: Default::default(),
-        }
-    }
-}
 #[doc = "`PartialClientSettingsControllersOverrideItem`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"string\","]
-#[doc = "  \"enum\": ["]
-#[doc = "    \"XBOX\","]
-#[doc = "    \"PS\","]
-#[doc = "    \"NINTENDO\","]
-#[doc = "    \"AUTO\""]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(
     :: serde :: Deserialize,
     :: serde :: Serialize,
@@ -1620,16 +565,6 @@ impl ::std::convert::TryFrom<&str> for PartialClientSettingsControllersOverrideI
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String>
-    for PartialClientSettingsControllersOverrideItem
-{
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 impl ::std::convert::TryFrom<::std::string::String>
     for PartialClientSettingsControllersOverrideItem
 {
@@ -1641,21 +576,6 @@ impl ::std::convert::TryFrom<::std::string::String>
     }
 }
 #[doc = "`PartialClientSettingsMotionControllerOverride`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"string\","]
-#[doc = "  \"enum\": ["]
-#[doc = "    \"XBOX\","]
-#[doc = "    \"PS\","]
-#[doc = "    \"NINTENDO\","]
-#[doc = "    \"AUTO\""]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(
     :: serde :: Deserialize,
     :: serde :: Serialize,
@@ -1706,16 +626,6 @@ impl ::std::convert::TryFrom<&str> for PartialClientSettingsMotionControllerOver
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String>
-    for PartialClientSettingsMotionControllerOverride
-{
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 impl ::std::convert::TryFrom<::std::string::String>
     for PartialClientSettingsMotionControllerOverride
 {
@@ -1727,28 +637,6 @@ impl ::std::convert::TryFrom<::std::string::String>
     }
 }
 #[doc = "`PendingPairClient`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"client_ip\","]
-#[doc = "    \"pair_secret\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"client_ip\": {"]
-#[doc = "      \"description\": \"The IP of the remote Moonlight client\","]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"pair_secret\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct PendingPairClient {
     #[doc = "The IP of the remote Moonlight client"]
@@ -1756,159 +644,33 @@ pub struct PendingPairClient {
     pub pair_secret: ::std::string::String,
 }
 #[doc = "`PendingPairRequestsResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"requests\","]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"requests\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"$ref\": \"#/definitions/PendingPairClient\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct PendingPairRequestsResponse {
     pub requests: ::std::vec::Vec<PendingPairClient>,
     pub success: bool,
 }
 #[doc = "`Profile`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"apps\","]
-#[doc = "    \"icon_png_path\","]
-#[doc = "    \"id\","]
-#[doc = "    \"name\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"apps\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"$ref\": \"#/definitions/App\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"icon_png_path\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"name\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"pin\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"array\","]
-#[doc = "          \"items\": {"]
-#[doc = "            \"type\": \"integer\""]
-#[doc = "          }"]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct Profile {
     pub apps: ::std::vec::Vec<App>,
     pub icon_png_path: ::std::string::String,
     pub id: ::std::string::String,
     pub name: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub pin: ::std::option::Option<::std::vec::Vec<i64>>,
 }
 #[doc = "`ProfileListResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"profiles\","]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"profiles\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"$ref\": \"#/definitions/Profile\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct ProfileListResponse {
     pub profiles: ::std::vec::Vec<Profile>,
     pub success: bool,
 }
 #[doc = "`ProfileRemoveRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"id\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct ProfileRemoveRequest {
     pub id: ::std::string::String,
 }
 #[doc = "`Runner`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"oneOf\": ["]
-#[doc = "    {"]
-#[doc = "      \"$ref\": \"#/definitions/AppCMD\""]
-#[doc = "    },"]
-#[doc = "    {"]
-#[doc = "      \"$ref\": \"#/definitions/AppDocker\""]
-#[doc = "    }"]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum Runner {
@@ -1926,31 +688,6 @@ impl ::std::convert::From<AppDocker> for Runner {
     }
 }
 #[doc = "`RunnerStartRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"runner\","]
-#[doc = "    \"session_id\","]
-#[doc = "    \"stop_stream_when_over\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"runner\": {"]
-#[doc = "      \"$ref\": \"#/definitions/Runner\""]
-#[doc = "    },"]
-#[doc = "    \"session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"stop_stream_when_over\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct RunnerStartRequest {
     pub runner: Runner,
@@ -1958,129 +695,24 @@ pub struct RunnerStartRequest {
     pub stop_stream_when_over: bool,
 }
 #[doc = "`StopLobbyEvent`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"lobby_id\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"lobby_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"pin\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"array\","]
-#[doc = "          \"items\": {"]
-#[doc = "            \"type\": \"integer\""]
-#[doc = "          }"]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct StopLobbyEvent {
     pub lobby_id: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub pin: ::std::option::Option<::std::vec::Vec<i64>>,
 }
 #[doc = "`StreamSession`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"aes_iv\","]
-#[doc = "    \"aes_key\","]
-#[doc = "    \"audio_channel_count\","]
-#[doc = "    \"client_ip\","]
-#[doc = "    \"rtsp_fake_ip\","]
-#[doc = "    \"video_height\","]
-#[doc = "    \"video_refresh_rate\","]
-#[doc = "    \"video_width\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"aes_iv\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"aes_key\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"app_id\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"string\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"audio_channel_count\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"client_id\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"string\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"client_ip\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"client_settings\": {"]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"$ref\": \"#/definitions/ClientSettings\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"rtsp_fake_ip\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"video_height\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"video_refresh_rate\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"video_width\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct StreamSession {
     pub aes_iv: ::std::string::String,
     pub aes_key: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub app_id: ::std::option::Option<::std::string::String>,
     pub audio_channel_count: i64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub client_id: ::std::option::Option<::std::string::String>,
     pub client_ip: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(skip_serializing_if = "::std::option::Option::is_none")]
     pub client_settings: ::std::option::Option<ClientSettings>,
     pub rtsp_fake_ip: ::std::string::String,
     pub video_height: i64,
@@ -2088,55 +720,12 @@ pub struct StreamSession {
     pub video_width: i64,
 }
 #[doc = "`StreamSessionCreated`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"session_id\","]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct StreamSessionCreated {
     pub session_id: ::std::string::String,
     pub success: bool,
 }
 #[doc = "`StreamSessionHandleInputRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"input_packet_hex\","]
-#[doc = "    \"session_id\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"input_packet_hex\": {"]
-#[doc = "      \"description\": \"A HEX encoded Moonlight input packet, for the full format see: games-on-whales.github.io/wolf/stable/protocols/input-data.html\","]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct StreamSessionHandleInputRequest {
     #[doc = "A HEX encoded Moonlight input packet, for the full format see: games-on-whales.github.io/wolf/stable/protocols/input-data.html"]
@@ -2144,83 +733,17 @@ pub struct StreamSessionHandleInputRequest {
     pub session_id: ::std::string::String,
 }
 #[doc = "`StreamSessionListResponse`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"sessions\","]
-#[doc = "    \"success\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"sessions\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"$ref\": \"#/definitions/StreamSession\""]
-#[doc = "      }"]
-#[doc = "    },"]
-#[doc = "    \"success\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct StreamSessionListResponse {
     pub sessions: ::std::vec::Vec<StreamSession>,
     pub success: bool,
 }
 #[doc = "`StreamSessionPauseRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"session_id\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct StreamSessionPauseRequest {
     pub session_id: ::std::string::String,
 }
 #[doc = "`StreamSessionStartRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"audio_session\","]
-#[doc = "    \"session_id\","]
-#[doc = "    \"video_session\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"audio_session\": {"]
-#[doc = "      \"$ref\": \"#/definitions/AudioSession\""]
-#[doc = "    },"]
-#[doc = "    \"session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"video_session\": {"]
-#[doc = "      \"$ref\": \"#/definitions/VideoSession\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct StreamSessionStartRequest {
     pub audio_session: AudioSession,
@@ -2228,199 +751,29 @@ pub struct StreamSessionStartRequest {
     pub video_session: VideoSession,
 }
 #[doc = "`StreamSessionStopRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"session_id\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct StreamSessionStopRequest {
     pub session_id: ::std::string::String,
 }
 #[doc = "`UnpairClientRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"client_id\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"client_id\": {"]
-#[doc = "      \"description\": \"The client ID to unpair\","]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct UnpairClientRequest {
     #[doc = "The client ID to unpair"]
     pub client_id: ::std::string::String,
 }
 #[doc = "`UpdateClientSettingsRequest`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"app_state_folder\","]
-#[doc = "    \"client_id\","]
-#[doc = "    \"settings\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"app_state_folder\": {"]
-#[doc = "      \"description\": \"New app state folder path (optional)\","]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"type\": \"string\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"client_id\": {"]
-#[doc = "      \"description\": \"The client ID to identify the client (derived from certificate)\","]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"settings\": {"]
-#[doc = "      \"description\": \"Client settings to update (only specified fields will be updated)\","]
-#[doc = "      \"oneOf\": ["]
-#[doc = "        {"]
-#[doc = "          \"$ref\": \"#/definitions/PartialClientSettings\""]
-#[doc = "        },"]
-#[doc = "        {"]
-#[doc = "          \"type\": \"null\""]
-#[doc = "        }"]
-#[doc = "      ]"]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct UpdateClientSettingsRequest {
     #[doc = "New app state folder path (optional)"]
+    #[serde(deserialize_with = "::std::option::Option::deserialize")]
     pub app_state_folder: ::std::option::Option<::std::string::String>,
     #[doc = "The client ID to identify the client (derived from certificate)"]
     pub client_id: ::std::string::String,
     #[doc = "Client settings to update (only specified fields will be updated)"]
+    #[serde(deserialize_with = "::std::option::Option::deserialize")]
     pub settings: ::std::option::Option<PartialClientSettings>,
 }
 #[doc = "`VideoSession`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"bitrate_kbps\","]
-#[doc = "    \"client_ip\","]
-#[doc = "    \"color_range\","]
-#[doc = "    \"color_space\","]
-#[doc = "    \"display_mode\","]
-#[doc = "    \"fec_percentage\","]
-#[doc = "    \"frames_with_invalid_ref_threshold\","]
-#[doc = "    \"gst_pipeline\","]
-#[doc = "    \"min_required_fec_packets\","]
-#[doc = "    \"packet_size\","]
-#[doc = "    \"port\","]
-#[doc = "    \"render_node\","]
-#[doc = "    \"rtp_secret_payload\","]
-#[doc = "    \"session_id\","]
-#[doc = "    \"slices_per_frame\","]
-#[doc = "    \"timeout_ms\","]
-#[doc = "    \"wait_for_ping\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"bitrate_kbps\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"client_ip\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"color_range\": {"]
-#[doc = "      \"type\": \"string\","]
-#[doc = "      \"enum\": ["]
-#[doc = "        \"JPEG\","]
-#[doc = "        \"MPEG\""]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"color_space\": {"]
-#[doc = "      \"type\": \"string\","]
-#[doc = "      \"enum\": ["]
-#[doc = "        \"BT601\","]
-#[doc = "        \"BT709\","]
-#[doc = "        \"BT2020\""]
-#[doc = "      ]"]
-#[doc = "    },"]
-#[doc = "    \"display_mode\": {"]
-#[doc = "      \"$ref\": \"#/definitions/DisplayMode\""]
-#[doc = "    },"]
-#[doc = "    \"fec_percentage\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"frames_with_invalid_ref_threshold\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"gst_pipeline\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"min_required_fec_packets\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"packet_size\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"port\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"render_node\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"rtp_secret_payload\": {"]
-#[doc = "      \"type\": \"array\","]
-#[doc = "      \"items\": {"]
-#[doc = "        \"type\": \"integer\""]
-#[doc = "      },"]
-#[doc = "      \"maxItems\": 16,"]
-#[doc = "      \"minItems\": 16"]
-#[doc = "    },"]
-#[doc = "    \"session_id\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"slices_per_frame\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"timeout_ms\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"wait_for_ping\": {"]
-#[doc = "      \"type\": \"boolean\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct VideoSession {
     pub bitrate_kbps: i64,
@@ -2442,19 +795,6 @@ pub struct VideoSession {
     pub wait_for_ping: bool,
 }
 #[doc = "`VideoSessionColorRange`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"string\","]
-#[doc = "  \"enum\": ["]
-#[doc = "    \"JPEG\","]
-#[doc = "    \"MPEG\""]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(
     :: serde :: Deserialize,
     :: serde :: Serialize,
@@ -2497,14 +837,6 @@ impl ::std::convert::TryFrom<&str> for VideoSessionColorRange {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for VideoSessionColorRange {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 impl ::std::convert::TryFrom<::std::string::String> for VideoSessionColorRange {
     type Error = self::error::ConversionError;
     fn try_from(
@@ -2514,20 +846,6 @@ impl ::std::convert::TryFrom<::std::string::String> for VideoSessionColorRange {
     }
 }
 #[doc = "`VideoSessionColorSpace`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"string\","]
-#[doc = "  \"enum\": ["]
-#[doc = "    \"BT601\","]
-#[doc = "    \"BT709\","]
-#[doc = "    \"BT2020\""]
-#[doc = "  ]"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(
     :: serde :: Deserialize,
     :: serde :: Serialize,
@@ -2574,14 +892,6 @@ impl ::std::convert::TryFrom<&str> for VideoSessionColorSpace {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for VideoSessionColorSpace {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 impl ::std::convert::TryFrom<::std::string::String> for VideoSessionColorSpace {
     type Error = self::error::ConversionError;
     fn try_from(
@@ -2591,43 +901,6 @@ impl ::std::convert::TryFrom<::std::string::String> for VideoSessionColorSpace {
     }
 }
 #[doc = "`VideoSettings`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"type\": \"object\","]
-#[doc = "  \"required\": ["]
-#[doc = "    \"height\","]
-#[doc = "    \"refresh_rate\","]
-#[doc = "    \"runner_render_node\","]
-#[doc = "    \"video_producer_buffer_caps\","]
-#[doc = "    \"wayland_render_node\","]
-#[doc = "    \"width\""]
-#[doc = "  ],"]
-#[doc = "  \"properties\": {"]
-#[doc = "    \"height\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"refresh_rate\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    },"]
-#[doc = "    \"runner_render_node\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"video_producer_buffer_caps\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"wayland_render_node\": {"]
-#[doc = "      \"type\": \"string\""]
-#[doc = "    },"]
-#[doc = "    \"width\": {"]
-#[doc = "      \"type\": \"integer\""]
-#[doc = "    }"]
-#[doc = "  }"]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 pub struct VideoSettings {
     pub height: i64,
@@ -2638,16 +911,6 @@ pub struct VideoSettings {
     pub width: i64,
 }
 #[doc = "`WolfApiTypes`"]
-#[doc = r""]
-#[doc = r" <details><summary>JSON schema</summary>"]
-#[doc = r""]
-#[doc = r" ```json"]
-#[doc = "{"]
-#[doc = "  \"title\": \"WolfApiTypes\","]
-#[doc = "  \"type\": \"object\""]
-#[doc = "}"]
-#[doc = r" ```"]
-#[doc = r" </details>"]
 #[derive(:: serde :: Deserialize, :: serde :: Serialize, Clone, Debug, PartialEq)]
 #[serde(transparent)]
 pub struct WolfApiTypes(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -2669,5 +932,31 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 {
     fn from(value: ::serde_json::Map<::std::string::String, ::serde_json::Value>) -> Self {
         Self(value)
+    }
+}
+#[doc = " Error types."]
+pub mod error {
+    #[doc = r" Error from a `TryFrom` or `FromStr` implementation."]
+    pub struct ConversionError(::std::borrow::Cow<'static, str>);
+    impl ::std::error::Error for ConversionError {}
+    impl ::std::fmt::Display for ConversionError {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+            ::std::fmt::Display::fmt(&self.0, f)
+        }
+    }
+    impl ::std::fmt::Debug for ConversionError {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> Result<(), ::std::fmt::Error> {
+            ::std::fmt::Debug::fmt(&self.0, f)
+        }
+    }
+    impl From<&'static str> for ConversionError {
+        fn from(value: &'static str) -> Self {
+            Self(value.into())
+        }
+    }
+    impl From<String> for ConversionError {
+        fn from(value: String) -> Self {
+            Self(value.into())
+        }
     }
 }

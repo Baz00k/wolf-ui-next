@@ -7,7 +7,6 @@ use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use schemars::schema::RootSchema;
 use serde_json::{Map, Value, json};
 use typify::{TypeSpace, TypeSpaceSettings};
 
@@ -65,7 +64,7 @@ fn generate_types(schema_path: &Path) -> Result<String> {
     let source = fs::read_to_string(schema_path)?;
     let spec: Value = serde_json::from_str(&source)?;
     let normalized = normalize_spec(spec)?;
-    let root: RootSchema = serde_json::from_value(normalized)?;
+    let root = serde_json::from_value(normalized)?;
 
     let mut settings = TypeSpaceSettings::default();
     settings.with_derive("PartialEq".to_string());
