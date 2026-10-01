@@ -93,10 +93,12 @@ if command -v apt-get >/dev/null; then
         libxdo3
     rm -rf /var/lib/apt/lists/*
 elif command -v dnf >/dev/null; then
+    # WebKitGTK only recommends the plugins needed for WebAudio on Fedora.
     dnf install -y --setopt=install_weak_deps=False \
         ca-certificates \
         libayatana-appindicator-gtk3 \
         gtk3 \
+        gstreamer1-plugins-good \
         systemd-libs \
         librsvg2 \
         webkit2gtk4.1 \
