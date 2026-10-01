@@ -1,6 +1,7 @@
 use serde_json::{Value, json};
 use wolf_api::types::{
-    App, AppCmd, AppCmdType, AppDocker, AppDockerType, GenericErrorResponse, Runner, StopLobbyEvent,
+    App, AppCmd, AppCmdType, AppDocker, AppDockerType, GenericErrorResponse, Runner,
+    StopLobbyEvent, UpdateClientSettingsRequest,
 };
 
 #[test]
@@ -39,7 +40,7 @@ fn runner_variants_round_trip_with_wire_discriminators() {
 }
 
 #[test]
-fn app_accepts_null_for_nullable_icon() {
+fn app_accepts_absent_or_null_nullable_icon() {
     let mut value = serde_json::to_value(App {
         av1_gst_pipeline: String::new(),
         h264_gst_pipeline: String::new(),
@@ -58,6 +59,10 @@ fn app_accepts_null_for_nullable_icon() {
         title: "Game".to_string(),
     })
     .expect("app should serialize");
+    assert!(value.get("icon_png_path").is_none());
+    let app = serde_json::from_value::<App>(value.clone()).expect("absent icon should deserialize");
+    assert_eq!(app.icon_png_path, None);
+
     value
         .as_object_mut()
         .expect("app should serialize as an object")
@@ -66,6 +71,40 @@ fn app_accepts_null_for_nullable_icon() {
     let app = serde_json::from_value::<App>(value).expect("null icon should deserialize");
 
     assert_eq!(app.icon_png_path, None);
+}
+
+#[test]
+fn required_nullable_client_settings_fields_must_be_present() {
+    let value = json!({
+        "client_id": "client",
+        "app_state_folder": null,
+        "settings": null,
+    });
+    let request = serde_json::from_value::<UpdateClientSettingsRequest>(value.clone())
+        .expect("required nullable fields should accept null");
+
+    assert_eq!(request.app_state_folder, None);
+    assert_eq!(request.settings, None);
+    assert_eq!(
+        serde_json::to_value(request).expect("client settings request should serialize"),
+        value
+    );
+
+    for field in ["app_state_folder", "settings"] {
+        let mut missing_field = value.clone();
+        missing_field
+            .as_object_mut()
+            .expect("request should be an object")
+            .remove(field);
+        let error = serde_json::from_value::<UpdateClientSettingsRequest>(missing_field)
+            .expect_err("missing required nullable field should be rejected");
+
+        assert!(
+            error
+                .to_string()
+                .contains(&format!("missing field `{field}`"))
+        );
+    }
 }
 
 #[test]
