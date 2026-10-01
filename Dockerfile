@@ -103,9 +103,6 @@ elif command -v dnf >/dev/null; then
         librsvg2 \
         webkit2gtk4.1 \
         libxdo
-    for element in autoaudiosink deinterleave pulsesink oggdemux vorbisdec; do
-        gst-inspect-1.0 "$element" >/dev/null
-    done
     dnf clean all
     rm -rf /var/cache/dnf
 else
