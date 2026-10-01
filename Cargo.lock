@@ -6015,7 +6015,6 @@ name = "wolf-api-gen"
 version = "0.1.0"
 dependencies = [
  "rustfmt-wrapper",
- "schemars",
  "serde_json",
  "typify",
 ]
