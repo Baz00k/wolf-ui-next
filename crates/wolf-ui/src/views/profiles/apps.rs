@@ -5,12 +5,14 @@ use tokio::time::sleep;
 use wolf_api::lobbies::Lobby;
 use wolf_api::profiles::AppListResponse;
 
+use crate::api::ApiContext;
 use crate::components::primitives::{Button, ButtonSize, StatusAlert, StatusAlertVariant};
 use crate::components::{
     AppAction, AppActionDialog, AppCardData, AppsContent, AppsHeader, AppsLoading,
 };
-use crate::domain::app_actions::run_app_action;
+use crate::domain::app_actions::{connect_app, pull_image, start_app, stop_app};
 use crate::domain::apps::{AppFilter, app_actions, listen_for_lobby_events, load_apps_state};
+use crate::domain::session::current_session_id;
 use crate::input::{ActionHint, UiCommand, UiHint, action_hints, use_ui_action_hint};
 
 const ACTIVE_POLL_DELAY: Duration = Duration::from_secs(15);
@@ -137,6 +139,36 @@ pub fn ProfileApps(profile_id: String) -> Element {
                 }
             }
         }
+    }
+}
+
+async fn run_app_action(
+    profile_id: String,
+    app: AppCardData,
+    action: AppAction,
+    pin: Option<Vec<i64>>,
+    on_progress: impl FnMut(f64),
+) -> Result<bool, String> {
+    match action {
+        AppAction::Start | AppAction::StartCoop => {
+            let api = ApiContext::consume();
+            let session_id = current_session_id()?;
+            let video_buffer_caps = std::env::var("WOLF_VIDEO_BUFFER_CAPS").unwrap_or_default();
+            let multi_user = action == AppAction::StartCoop;
+            start_app(
+                &api,
+                profile_id,
+                &app.source,
+                session_id,
+                video_buffer_caps,
+                multi_user,
+                if multi_user { pin } else { None },
+            )
+            .await
+        }
+        AppAction::Connect => connect_app(&profile_id, &app).await,
+        AppAction::Stop => stop_app(&profile_id, &app).await,
+        AppAction::CheckUpdate | AppAction::Download => pull_image(&app, on_progress).await,
     }
 }
 
