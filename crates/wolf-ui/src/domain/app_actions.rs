@@ -1,42 +1,27 @@
-use dioxus::prelude::*;
 use wolf_api::ApiError;
 use wolf_api::types::{
-    AudioSettings, ClientSettings, ClientSettingsControllersOverrideItem,
+    App, AudioSettings, ClientSettings, ClientSettingsControllersOverrideItem,
     ClientSettingsMotionControllerOverride, CreateLobbyRequest, Lobby, PartialClientSettings,
     PartialClientSettingsControllersOverrideItem, PartialClientSettingsMotionControllerOverride,
     Runner, VideoSettings,
 };
 
 use crate::api::ApiContext;
-use crate::components::{AppAction, AppCardData};
+use crate::components::AppCardData;
 use crate::domain::apps::{docker_image, is_app_lobby};
 use crate::domain::session::current_session_id;
 
-pub(crate) async fn run_app_action(
+/// Owns the whole launch: resolve stream settings, reuse or create a lobby, then join.
+/// Context and environment values are supplied by the UI adapter, not read mid-launch.
+pub(crate) async fn start_app(
+    api: &wolf_api::WolfApi,
     profile_id: String,
-    app: AppCardData,
-    action: AppAction,
-    pin: Option<Vec<i64>>,
-    on_progress: impl FnMut(f64),
-) -> Result<bool, String> {
-    match action {
-        AppAction::Start => start_app(profile_id, &app, false, None).await,
-        AppAction::Connect => connect_app(&profile_id, &app).await,
-        AppAction::StartCoop => start_app(profile_id, &app, true, pin).await,
-        AppAction::Stop => stop_app(&profile_id, &app).await,
-        AppAction::CheckUpdate => pull_image(&app, on_progress).await,
-        AppAction::Download => pull_image(&app, on_progress).await,
-    }
-}
-
-async fn start_app(
-    profile_id: String,
-    app: &AppCardData,
+    app: &App,
+    session_id: String,
+    video_buffer_caps: String,
     multi_user: bool,
     pin: Option<Vec<i64>>,
 ) -> Result<bool, String> {
-    let api = ApiContext::consume();
-    let session_id = current_session_id()?;
     let session = api
         .sessions()
         .by_client_id(&session_id)
@@ -46,7 +31,7 @@ async fn start_app(
     let lobby_id = if multi_user {
         None
     } else {
-        running_lobby(&api, &profile_id, app, false)
+        running_lobby(api, &profile_id, app, false)
             .await?
             .map(|lobby| lobby.id)
     };
@@ -54,7 +39,7 @@ async fn start_app(
         Some(lobby_id) => lobby_id,
         None => {
             let lobby_name = if multi_user {
-                creator_lobby_name(&api, &profile_id)
+                creator_lobby_name(api, &profile_id)
                     .await
                     .unwrap_or_else(|_| app.title.clone())
             } else {
@@ -67,6 +52,7 @@ async fn start_app(
                 multi_user,
                 lobby_name,
                 pin.clone(),
+                video_buffer_caps,
             );
             api.lobbies()
                 .create(&lobby)
@@ -118,7 +104,10 @@ fn api_error_message(error: ApiError) -> String {
     }
 }
 
-async fn pull_image(app: &AppCardData, on_progress: impl FnMut(f64)) -> Result<bool, String> {
+pub(crate) async fn pull_image(
+    app: &AppCardData,
+    on_progress: impl FnMut(f64),
+) -> Result<bool, String> {
     let image =
         docker_image(&app.source).ok_or_else(|| "This app has no Docker image.".to_string())?;
 
@@ -140,10 +129,10 @@ async fn pull_image(app: &AppCardData, on_progress: impl FnMut(f64)) -> Result<b
     Ok(downloaded)
 }
 
-async fn connect_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
+pub(crate) async fn connect_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
     let api = ApiContext::consume();
     let session_id = current_session_id()?;
-    let lobby = running_lobby(&api, profile_id, app, false)
+    let lobby = running_lobby(&api, profile_id, &app.source, false)
         .await?
         .ok_or_else(|| "No running lobby found for this app.".to_string())?;
     api.lobbies()
@@ -153,9 +142,9 @@ async fn connect_app(profile_id: &str, app: &AppCardData) -> Result<bool, String
     Ok(true)
 }
 
-async fn stop_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
+pub(crate) async fn stop_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
     let api = ApiContext::consume();
-    let lobby = running_lobby(&api, profile_id, app, false)
+    let lobby = running_lobby(&api, profile_id, &app.source, false)
         .await?
         .ok_or_else(|| "No running lobby found for this app.".to_string())?;
     api.lobbies()
@@ -168,7 +157,7 @@ async fn stop_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
 async fn running_lobby(
     api: &wolf_api::WolfApi,
     profile_id: &str,
-    app: &AppCardData,
+    app: &App,
     multi_user: bool,
 ) -> Result<Option<Lobby>, String> {
     let lobbies = api
@@ -179,20 +168,21 @@ async fn running_lobby(
     Ok(lobbies
         .lobbies
         .into_iter()
-        .find(|lobby| is_app_lobby(profile_id, &app.source, lobby, multi_user)))
+        .find(|lobby| is_app_lobby(profile_id, app, lobby, multi_user)))
 }
 
 fn build_lobby(
     profile_id: String,
-    app: &AppCardData,
+    app: &App,
     session: &wolf_api::sessions::Session,
     multi_user: bool,
     name: String,
     pin: Option<Vec<i64>>,
+    video_buffer_caps: String,
 ) -> CreateLobbyRequest {
-    let runner_name = match &app.source.runner {
+    let runner_name = match &app.runner {
         Runner::Docker(runner) => &runner.name,
-        Runner::Cmd(_) => &app.source.id,
+        Runner::Cmd(_) => &app.id,
     };
 
     CreateLobbyRequest {
@@ -203,20 +193,20 @@ fn build_lobby(
             .client_settings
             .as_ref()
             .map(partial_client_settings),
-        icon_png_path: app.source.icon_png_path.clone(),
+        icon_png_path: app.icon_png_path.clone(),
         multi_user,
         name,
         pin,
         profile_id: profile_id.clone(),
-        runner: app.source.runner.clone(),
+        runner: app.runner.clone(),
         runner_state_folder: format!("profile-data/{profile_id}/{runner_name}"),
         stop_when_everyone_leaves: false,
         video_settings: VideoSettings {
             height: session.video_height,
             refresh_rate: session.video_refresh_rate,
-            runner_render_node: app.source.render_node.clone(),
-            video_producer_buffer_caps: std::env::var("WOLF_VIDEO_BUFFER_CAPS").unwrap_or_default(),
-            wayland_render_node: app.source.render_node.clone(),
+            runner_render_node: app.render_node.clone(),
+            video_producer_buffer_caps: video_buffer_caps,
+            wayland_render_node: app.render_node.clone(),
             width: session.video_width,
         },
     }
@@ -312,45 +302,4 @@ fn fallback_session() -> wolf_api::sessions::Session {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn partial_client_settings_preserve_motion_controller_override() {
-        let cases = [
-            (
-                ClientSettingsMotionControllerOverride::Xbox,
-                PartialClientSettingsMotionControllerOverride::Xbox,
-            ),
-            (
-                ClientSettingsMotionControllerOverride::Ps,
-                PartialClientSettingsMotionControllerOverride::Ps,
-            ),
-            (
-                ClientSettingsMotionControllerOverride::Nintendo,
-                PartialClientSettingsMotionControllerOverride::Nintendo,
-            ),
-            (
-                ClientSettingsMotionControllerOverride::Auto,
-                PartialClientSettingsMotionControllerOverride::Auto,
-            ),
-        ];
-
-        for (source, expected) in cases {
-            let settings = ClientSettings {
-                controllers_override: Vec::new(),
-                h_scroll_acceleration: 1.0,
-                motion_controller_override: source,
-                mouse_acceleration: 2.0,
-                run_gid: 1000,
-                run_uid: 1000,
-                v_scroll_acceleration: 3.0,
-            };
-
-            assert_eq!(
-                partial_client_settings(&settings).motion_controller_override,
-                Some(expected)
-            );
-        }
-    }
-}
+mod tests;
