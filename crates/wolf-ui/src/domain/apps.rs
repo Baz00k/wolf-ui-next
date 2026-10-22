@@ -77,15 +77,15 @@ pub(crate) fn app_actions(app: &AppCardData) -> Vec<AppAction> {
         return vec![AppAction::Download];
     }
 
-    if app.status.kind == AppStatusKind::Playing {
-        return vec![AppAction::Connect, AppAction::Stop, AppAction::CheckUpdate];
+    let mut actions = if app.status.kind == AppStatusKind::Playing {
+        vec![AppAction::Connect, AppAction::Stop]
+    } else {
+        vec![AppAction::Start, AppAction::StartCoop]
+    };
+    if docker_image(&app.source).is_some() {
+        actions.push(AppAction::CheckUpdate);
     }
-
-    vec![
-        AppAction::Start,
-        AppAction::StartCoop,
-        AppAction::CheckUpdate,
-    ]
+    actions
 }
 
 pub(crate) fn filter_label(filter: AppFilter) -> &'static str {
@@ -128,14 +128,14 @@ async fn image_availability(api: &wolf_api::WolfApi, apps: &[App]) -> HashMap<St
         });
 
     let checks = images.into_iter().map(|image| async move {
-        let exists = match api.docker().image_exists(&image).await {
+        let exists = match api.docker().image_exists(image).await {
             Ok(exists) => exists,
             Err(error) => {
                 tracing::warn!(image, %error, "failed to inspect Docker image");
                 true
             }
         };
-        (image, exists)
+        (image.to_string(), exists)
     });
 
     futures_util::future::join_all(checks)
@@ -167,7 +167,6 @@ fn app_card_data(
 ) -> AppCardData {
     let image = docker_image(&app);
     let image_exists = image
-        .as_ref()
         .and_then(|image| images.get(image))
         .copied()
         .unwrap_or(true);
@@ -219,8 +218,8 @@ fn runner_matches(app_runner: &Runner, lobby_runner: &Runner) -> bool {
     }
 }
 
-pub(crate) fn docker_image(app: &App) -> Option<String> {
-    docker_runner(app).map(|runner| runner.image.clone())
+pub(crate) fn docker_image(app: &App) -> Option<&str> {
+    docker_runner(app).map(|runner| runner.image.as_str())
 }
 
 fn cover_path(app: &App) -> Option<String> {
@@ -294,6 +293,35 @@ mod tests {
 
         assert!(matches!(app.status.kind, AppStatusKind::MissingImage));
         assert_eq!(app_actions(&app), vec![AppAction::Download]);
+    }
+
+    #[test]
+    fn only_docker_apps_offer_update_action() {
+        let apps = vec![
+            docker_app("steam", "Steam", "steam", "ghcr.io/wolf/steam"),
+            cmd_app("retroarch", "RetroArch", "retroarch"),
+        ];
+        let apps = sorted_apps(
+            "profile-1",
+            apps,
+            &[],
+            &HashMap::new(),
+            &HashMap::new(),
+            AppFilter::Alphabetical,
+        );
+
+        assert_eq!(
+            app_actions(&apps[0]),
+            vec![AppAction::Start, AppAction::StartCoop]
+        );
+        assert_eq!(
+            app_actions(&apps[1]),
+            vec![
+                AppAction::Start,
+                AppAction::StartCoop,
+                AppAction::CheckUpdate
+            ]
+        );
     }
 
     #[test]

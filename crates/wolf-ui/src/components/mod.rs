@@ -4,6 +4,7 @@ pub mod app_action_dialog;
 pub mod app_card;
 pub mod auto_update;
 pub mod back_button;
+pub mod image_pull_progress;
 pub mod lobby_action_dialog;
 pub mod persona_card;
 pub mod pin_dialog;
@@ -21,6 +22,7 @@ pub use app_card::{
 };
 pub use auto_update::StartupAutoUpdate;
 pub use back_button::BackButton;
+pub use image_pull_progress::ImagePullProgress;
 pub use lobby_action_dialog::LobbyActionDialog;
 #[allow(unused_imports)]
 pub use pin_dialog::{PinInputDialog, PinProtectQuestionDialog};

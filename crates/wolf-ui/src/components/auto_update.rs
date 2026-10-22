@@ -1,11 +1,11 @@
 use dioxus::prelude::*;
 
-use crate::components::primitives::{ToastOptions, use_toasts};
-use crate::domain::settings::{auto_update_enabled, run_startup_auto_update};
+use crate::domain::image_pulls::{PullKind, use_image_pulls};
+use crate::domain::settings::{WOLF_UI_IMAGE_TITLE, auto_update_enabled, load_wolf_ui_image_state};
 
 #[component]
 pub fn StartupAutoUpdate() -> Element {
-    let mut toasts = use_toasts();
+    let pulls = use_image_pulls();
 
     use_hook(move || {
         if !auto_update_enabled() {
@@ -13,12 +13,12 @@ pub fn StartupAutoUpdate() -> Element {
         }
 
         spawn(async move {
-            match run_startup_auto_update().await {
-                Ok(true) => toasts.show(
-                    "A new Wolf UI image was downloaded. Restart to apply the update.",
-                    ToastOptions::default().persistent(),
+            match load_wolf_ui_image_state().await {
+                Ok(state) => pulls.start(
+                    state.source,
+                    PullKind::StartupUpdate,
+                    WOLF_UI_IMAGE_TITLE.to_string(),
                 ),
-                Ok(false) => {}
                 Err(error) => tracing::warn!(error, "startup auto-update failed"),
             }
         });

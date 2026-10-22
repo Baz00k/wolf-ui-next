@@ -7,9 +7,11 @@ use dioxus_free_icons::icons::hi_solid_icons::{
 use crate::components::app_card::AppCardData;
 use crate::components::pin_dialog::{PinInputDialog, PinProtectQuestionDialog};
 use crate::components::primitives::{
-    CardContent, CardFooter, ProgressPanel, ProgressTone, ToastContext, ToastOptions, use_toasts,
+    CardContent, CardFooter, ToastContext, ToastOptions, use_toasts,
 };
 use crate::components::{ActionDialog, ActionDialogItem, DialogCancelButton};
+use crate::domain::apps::docker_image;
+use crate::domain::image_pulls::{ImagePulls, PullKind, use_image_pulls};
 use crate::input::{UiCommand, use_ui_action};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -22,21 +24,23 @@ pub enum AppAction {
     Download,
 }
 
-type ActionRunner = Action<
-    (
-        AppCardData,
-        AppAction,
-        Option<Vec<i64>>,
-        Signal<Option<f64>>,
-    ),
-    bool,
->;
+impl AppAction {
+    const fn pull_kind(self) -> Option<PullKind> {
+        match self {
+            Self::CheckUpdate => Some(PullKind::Update),
+            Self::Download => Some(PullKind::Download),
+            Self::Start | Self::Connect | Self::StartCoop | Self::Stop => None,
+        }
+    }
+}
+
+type ActionRunner = Action<(AppCardData, AppAction, Option<Vec<i64>>), ()>;
 
 #[derive(Clone, Copy)]
 struct DialogActionContext {
     loading_action: Signal<Option<AppAction>>,
-    progress: Signal<Option<f64>>,
     action_runner: ActionRunner,
+    pulls: ImagePulls,
     toasts: ToastContext,
     onclose: EventHandler<()>,
 }
@@ -49,11 +53,13 @@ pub fn AppActionDialog(
     onclose: EventHandler<()>,
 ) -> Element {
     let loading_action = use_signal(|| None::<AppAction>);
-    let progress = use_signal(|| None::<f64>);
     let mut pin_prompt = use_signal(|| None::<PinPrompt>);
     let is_loading = loading_action().is_some();
-    let progress_value = progress().unwrap_or(0.0).round() as u8;
-    let progress_action = loading_action().filter(|action| shows_progress(*action));
+    let pulls = use_image_pulls();
+    let pulling = docker_image(&app.source).is_some_and(|image| pulls.kind(image).is_some());
+    let is_pulling = |action: AppAction| pulling && action.pull_kind().is_some();
+    let is_disabled = |action: AppAction| is_loading || is_pulling(action);
+    let autofocus_index = actions.iter().position(|action| !is_disabled(*action));
     let toasts = use_toasts();
     let close_actions = use_ui_action(UiCommand::Cancel, "Cancel", move || {
         if loading_action().is_none() {
@@ -62,8 +68,8 @@ pub fn AppActionDialog(
     });
     let ctx = DialogActionContext {
         loading_action,
-        progress,
         action_runner,
+        pulls,
         toasts,
         onclose,
     };
@@ -77,9 +83,9 @@ pub fn AppActionDialog(
                 for (index, action) in actions.iter().copied().enumerate() {
                     ActionDialogItem {
                         label: action_label(action),
-                        autofocus: index == 0,
-                        loading: loading_action() == Some(action),
-                        disabled: is_loading,
+                        autofocus: autofocus_index == Some(index),
+                        loading: loading_action() == Some(action) || is_pulling(action),
+                        disabled: is_disabled(action),
                         onclick: {
                             let app = app.clone();
                             move |_| {
@@ -87,15 +93,6 @@ pub fn AppActionDialog(
                             }
                         },
                         ActionIcon { action }
-                    }
-                }
-                div { class: "h-16 pt-2",
-                    if let Some(action) = progress_action {
-                        ProgressPanel {
-                            label: progress_message(action),
-                            progress: progress_value,
-                            tone: ProgressTone::Warning,
-                        }
                     }
                 }
             }
@@ -173,8 +170,8 @@ fn start_dialog_action(
 ) {
     let DialogActionContext {
         mut loading_action,
-        mut progress,
         mut action_runner,
+        pulls,
         mut toasts,
         onclose,
     } = ctx;
@@ -183,29 +180,26 @@ fn start_dialog_action(
         return;
     }
 
+    if let Some(kind) = action.pull_kind() {
+        if let Some(image) = docker_image(&app.source) {
+            pulls.start(image.to_string(), kind, app.title);
+        }
+        onclose.call(());
+        return;
+    }
+
     loading_action.set(Some(action));
-    progress.set(if shows_progress(action) {
-        Some(0.0)
-    } else {
-        None
-    });
     action_runner.reset();
 
     spawn(async move {
-        action_runner.call(app, action, pin, progress).await;
+        action_runner.call(app, action, pin).await;
         let result = action_runner
             .value()
             .unwrap_or_else(|| Err(std::io::Error::other("Action did not complete.").into()));
         loading_action.set(None);
-        progress.set(None);
 
-        match result {
-            Ok(downloaded) => {
-                if let Some(message) = success_message(action, downloaded()) {
-                    toasts.show(message, None);
-                }
-            }
-            Err(error) => toasts.show(error_message(action, &error), ToastOptions::error()),
+        if let Err(error) = result {
+            toasts.show(error_message(action, &error), ToastOptions::error());
         }
 
         onclose.call(());
@@ -269,15 +263,6 @@ fn action_label(action: AppAction) -> &'static str {
     }
 }
 
-fn success_message(action: AppAction, downloaded: bool) -> Option<&'static str> {
-    match action {
-        AppAction::CheckUpdate if downloaded => Some("Image updated."),
-        AppAction::CheckUpdate if !downloaded => Some("Image is up to date."),
-        AppAction::Download => Some("Image downloaded."),
-        _ => None,
-    }
-}
-
 fn error_message(action: AppAction, error: &impl std::fmt::Display) -> String {
     let message = error.to_string();
     if message.eq_ignore_ascii_case("Request timed out") {
@@ -312,16 +297,4 @@ fn pin_submit_label(action: AppAction) -> &'static str {
         AppAction::StartCoop => "Create",
         _ => "Submit",
     }
-}
-
-fn progress_message(action: AppAction) -> &'static str {
-    match action {
-        AppAction::CheckUpdate => "Updating image",
-        AppAction::Download => "Downloading image",
-        _ => "Working",
-    }
-}
-
-fn shows_progress(action: AppAction) -> bool {
-    matches!(action, AppAction::CheckUpdate | AppAction::Download)
 }
