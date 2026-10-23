@@ -62,7 +62,7 @@ pub fn AppCard(
             autofocus,
             onfocus,
             onclick,
-            Card { class: "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-80 shadow-black/25 transition duration-300 ease-out group-focus-visible:text-card-foreground group-focus-visible:opacity-100 group-focus-visible:shadow-[0_1.5rem_3rem_oklch(0_0_0/0.5)]",
+            Card { class: "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-80 duration-300 ease-out group-focus-visible:text-card-foreground group-focus-visible:opacity-100",
                 div { class: "pointer-events-none absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:inset-x-6 sm:top-6",
                     if show_runner {
                         span { "{app.runner}" }
@@ -158,7 +158,7 @@ fn PullProgressBar(image: String) -> Element {
 #[component]
 pub fn AppCardSkeleton() -> Element {
     rsx! {
-        article { class: "flex aspect-[3/4] w-full animate-pulse flex-col overflow-hidden rounded-4xl border border-border bg-card/60 opacity-70 shadow-2xl shadow-black/20",
+        article { class: "flex aspect-[3/4] w-full animate-pulse flex-col overflow-hidden rounded-4xl border border-border bg-card/60 opacity-70",
             div { class: "relative flex flex-1 items-center justify-center rounded-4xl",
                 Skeleton { class: "absolute inset-0 rounded-4xl" }
                 div { class: "absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 sm:inset-x-6 sm:top-6",

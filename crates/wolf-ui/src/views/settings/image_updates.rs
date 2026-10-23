@@ -41,7 +41,7 @@ fn UpdatePanel(state: WolfUiImageState) -> Element {
     let outcome = pulls.outcome(&state.source);
 
     rsx! {
-        Card { class: "overflow-hidden rounded-2xl bg-card shadow-black/35",
+        Card { class: "overflow-hidden rounded-2xl bg-card",
             CardContent { class: "space-y-6 px-6 py-6 sm:px-10 sm:py-8",
                 PageHeader {}
                 div { class: "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4",
