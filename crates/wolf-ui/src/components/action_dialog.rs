@@ -17,7 +17,7 @@ pub fn ActionDialog(
     #[props(default)] class: String,
     children: Element,
 ) -> Element {
-    let class = tw_merge!("w-full max-w-lg overflow-hidden shadow-black/50", class);
+    let class = tw_merge!("w-full max-w-lg overflow-hidden", class);
 
     rsx! {
         Dialog { scope_actions,
