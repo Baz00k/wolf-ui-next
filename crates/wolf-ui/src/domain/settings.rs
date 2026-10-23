@@ -6,6 +6,8 @@ use crate::api::ApiContext;
 
 pub(crate) const SETTINGS_ENABLED_ENV: &str = "WOLF_UI_SETTINGS_ENABLED";
 pub(crate) const AUTO_UPDATE_ENV: &str = "WOLF_UI_AUTOUPDATE";
+/// How update toasts name the Wolf UI image.
+pub(crate) const WOLF_UI_IMAGE_TITLE: &str = "Wolf UI image";
 
 #[derive(Clone, PartialEq, Eq)]
 pub(crate) struct WolfUiImageState {
@@ -70,36 +72,6 @@ pub(crate) async fn load_wolf_ui_image_state() -> Result<WolfUiImageState, Strin
         source: image,
         installed,
     })
-}
-
-pub(crate) async fn update_wolf_ui_image(
-    image: String,
-    on_progress: impl FnMut(f64),
-) -> Result<bool, String> {
-    let api = ApiContext::consume();
-    let downloaded = api
-        .docker()
-        .pull_image(&image, on_progress)
-        .await
-        .map_err(|_| {
-            "Wolf UI image update failed while pulling the configured image.".to_string()
-        })?;
-    let installed = api.docker().image_exists(&image).await.map_err(|_| {
-        "Wolf UI image update finished, but the configured image could not be verified.".to_string()
-    })?;
-
-    if !installed {
-        return Err(
-            "Wolf reported pull success, but the configured image is still missing.".to_string(),
-        );
-    }
-
-    Ok(downloaded)
-}
-
-pub(crate) async fn run_startup_auto_update() -> Result<bool, String> {
-    let state = load_wolf_ui_image_state().await?;
-    update_wolf_ui_image(state.source, |_| {}).await
 }
 
 fn is_wolf_ui_app(app: &App) -> bool {

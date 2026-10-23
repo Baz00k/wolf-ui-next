@@ -10,7 +10,8 @@ use crate::components::primitives::{
 use crate::components::{
     AppCard, AppCardData, AppCardSkeleton, BackButton, SessionShutdownControl,
 };
-use crate::domain::apps::{AppFilter, filter_label, sorted_apps};
+use crate::domain::apps::{AppFilter, docker_image, filter_label, sorted_apps};
+use crate::domain::image_pulls::use_image_pulls;
 
 const LOADING_CARD_COUNT: usize = 8;
 const APP_GRID_COLUMNS: usize = 6;
@@ -85,7 +86,7 @@ pub fn AppsContent(
     response: AppListResponse,
     profile_id: String,
     lobbies: Vec<Lobby>,
-    images: HashMap<String, bool>,
+    mut images: HashMap<String, bool>,
     covers: HashMap<String, String>,
     filter: AppFilter,
     mut selected_index: Signal<usize>,
@@ -104,6 +105,8 @@ pub fn AppsContent(
         };
     }
 
+    let pulls = use_image_pulls();
+    pulls.mark_pulled(&mut images);
     let apps = sorted_apps(
         &profile_id,
         response.apps,
@@ -134,6 +137,7 @@ pub fn AppsContent(
                 for (index, app) in apps.iter().cloned().enumerate() {
                     AppCard {
                         key: "{app.id}",
+                        pull: docker_image(&app.source).and_then(|image| pulls.kind(image)),
                         app: app.clone(),
                         index,
                         autofocus: index == 0,
