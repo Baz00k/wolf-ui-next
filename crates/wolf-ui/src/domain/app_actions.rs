@@ -9,23 +9,24 @@ use wolf_api::types::{
 
 use crate::api::ApiContext;
 use crate::components::{AppAction, AppCardData};
-use crate::domain::apps::{docker_image, is_app_lobby};
+use crate::domain::apps::is_app_lobby;
 use crate::domain::session::current_session_id;
 
+/// Runs a lobby action.
 pub(crate) async fn run_app_action(
     profile_id: String,
     app: AppCardData,
     action: AppAction,
     pin: Option<Vec<i64>>,
-    on_progress: impl FnMut(f64),
-) -> Result<bool, String> {
+) -> Result<(), String> {
     match action {
         AppAction::Start => start_app(profile_id, &app, false, None).await,
         AppAction::Connect => connect_app(&profile_id, &app).await,
         AppAction::StartCoop => start_app(profile_id, &app, true, pin).await,
         AppAction::Stop => stop_app(&profile_id, &app).await,
-        AppAction::CheckUpdate => pull_image(&app, on_progress).await,
-        AppAction::Download => pull_image(&app, on_progress).await,
+        AppAction::CheckUpdate | AppAction::Download => {
+            Err("Image pulls run in the background.".to_string())
+        }
     }
 }
 
@@ -34,7 +35,7 @@ async fn start_app(
     app: &AppCardData,
     multi_user: bool,
     pin: Option<Vec<i64>>,
-) -> Result<bool, String> {
+) -> Result<(), String> {
     let api = ApiContext::consume();
     let session_id = current_session_id()?;
     let session = api
@@ -80,7 +81,7 @@ async fn start_app(
         .join(lobby_id, session_id, pin)
         .await
         .map_err(api_error_message)?;
-    Ok(true)
+    Ok(())
 }
 
 pub(crate) async fn join_lobby(
@@ -118,29 +119,7 @@ fn api_error_message(error: ApiError) -> String {
     }
 }
 
-async fn pull_image(app: &AppCardData, on_progress: impl FnMut(f64)) -> Result<bool, String> {
-    let image =
-        docker_image(&app.source).ok_or_else(|| "This app has no Docker image.".to_string())?;
-
-    let api = ApiContext::consume();
-    let downloaded = api
-        .docker()
-        .pull_image(&image, on_progress)
-        .await
-        .map_err(|error| error.to_string())?;
-
-    let exists = api
-        .docker()
-        .image_exists(&image)
-        .await
-        .map_err(|error| error.to_string())?;
-    if !exists {
-        return Err("Wolf reported pull success, but the image is still missing.".to_string());
-    }
-    Ok(downloaded)
-}
-
-async fn connect_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
+async fn connect_app(profile_id: &str, app: &AppCardData) -> Result<(), String> {
     let api = ApiContext::consume();
     let session_id = current_session_id()?;
     let lobby = running_lobby(&api, profile_id, app, false)
@@ -150,10 +129,10 @@ async fn connect_app(profile_id: &str, app: &AppCardData) -> Result<bool, String
         .join(lobby.id, session_id, None)
         .await
         .map_err(|error| error.to_string())?;
-    Ok(true)
+    Ok(())
 }
 
-async fn stop_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
+async fn stop_app(profile_id: &str, app: &AppCardData) -> Result<(), String> {
     let api = ApiContext::consume();
     let lobby = running_lobby(&api, profile_id, app, false)
         .await?
@@ -162,7 +141,7 @@ async fn stop_app(profile_id: &str, app: &AppCardData) -> Result<bool, String> {
         .stop(lobby.id, None)
         .await
         .map_err(|error| error.to_string())?;
-    Ok(true)
+    Ok(())
 }
 
 async fn running_lobby(

@@ -78,6 +78,7 @@ fn init_logging() {
 fn App() -> Element {
     ApiContext::provide();
     components::primitives::use_toast_provider();
+    domain::image_pulls::use_image_pulls_provider();
 
     rsx! {
         document::Stylesheet { href: STYLES_CSS }

@@ -1,33 +1,21 @@
 use dioxus::prelude::*;
 use tw_merge::tw_merge;
 
+use crate::components::ImagePullProgress;
 use crate::components::primitives::{
-    Button, ButtonSize, Card, CardContent, ProgressPanel, Spinner, StatusAlert, StatusAlertVariant,
-    ToastContext, ToastOptions, use_toasts,
+    Button, ButtonSize, Card, CardContent, Spinner, StatusAlert, StatusAlertVariant,
 };
-use crate::domain::settings::{WolfUiImageState, load_wolf_ui_image_state, update_wolf_ui_image};
+use crate::domain::image_pulls::{PullKind, PullOutcome, use_image_pulls};
+use crate::domain::settings::{WOLF_UI_IMAGE_TITLE, WolfUiImageState, load_wolf_ui_image_state};
 
 #[component]
 pub fn SettingsImageUpdates() -> Element {
     let mut image_state = use_resource(load_wolf_ui_image_state);
-    let progress = use_signal(|| None::<f64>);
-    let update_runner = use_action(
-        move |image: String, mut progress: Signal<Option<f64>>| async move {
-            update_wolf_ui_image(image, move |value| progress.set(Some(value)))
-                .await
-                .map_err(std::io::Error::other)
-        },
-    );
 
     rsx! {
         match &*image_state.read_unchecked() {
             Some(Ok(state)) => rsx! {
-                UpdatePanel {
-                    state: state.clone(),
-                    progress,
-                    update_runner,
-                    onupdated: move |_| image_state.restart(),
-                }
+                UpdatePanel { state: state.clone() }
             },
             Some(Err(message)) => rsx! {
                 StatusAlert {
@@ -47,22 +35,10 @@ pub fn SettingsImageUpdates() -> Element {
 }
 
 #[component]
-fn UpdatePanel(
-    state: WolfUiImageState,
-    progress: Signal<Option<f64>>,
-    mut update_runner: Action<(String, Signal<Option<f64>>), bool>,
-    onupdated: EventHandler<()>,
-) -> Element {
-    let pending = update_runner.pending();
-    let progress_value = progress().unwrap_or(0.0).round() as u8;
-    let update_result = update_runner.value();
-    let update_downloaded = update_result
-        .as_ref()
-        .and_then(|result| result.as_ref().ok().map(|downloaded| downloaded()));
-    let update_failed = matches!(update_result, Some(Err(_)));
-    let image_status = image_status(&state, update_downloaded);
-    let update_disabled = pending || update_downloaded.is_some();
-    let progress_visible = pending || progress().is_some();
+fn UpdatePanel(state: WolfUiImageState) -> Element {
+    let pulls = use_image_pulls();
+    let pull = pulls.kind(&state.source);
+    let outcome = pulls.outcome(&state.source);
 
     rsx! {
         Card { class: "overflow-hidden rounded-2xl bg-card shadow-black/35",
@@ -80,20 +56,11 @@ fn UpdatePanel(
                     }
                     ImageInfoTile {
                         label: "Image status".to_string(),
-                        value: image_status.to_string(),
-                        failed: update_failed,
+                        value: image_status(state.installed, outcome).to_string(),
+                        failed: outcome == Some(PullOutcome::Failed),
                     }
                 }
-                UpdateAction {
-                    image: state.source.clone(),
-                    disabled: update_disabled,
-                    pending,
-                    progress,
-                    progress_value,
-                    progress_visible,
-                    update_runner,
-                    onupdated,
-                }
+                UpdateAction { image: state.source.clone(), pull }
             }
         }
     }
@@ -141,17 +108,8 @@ fn ImageInfoTile(
 }
 
 #[component]
-fn UpdateAction(
-    image: String,
-    disabled: bool,
-    pending: bool,
-    progress: Signal<Option<f64>>,
-    progress_value: u8,
-    progress_visible: bool,
-    update_runner: Action<(String, Signal<Option<f64>>), bool>,
-    onupdated: EventHandler<()>,
-) -> Element {
-    let toasts = use_toasts();
+fn UpdateAction(image: String, pull: Option<PullKind>) -> Element {
+    let pulls = use_image_pulls();
 
     rsx! {
         div { class: "flex flex-col gap-4",
@@ -160,11 +118,14 @@ fn UpdateAction(
                     size: ButtonSize::Xl,
                     class: "font-bold",
                     action_label: "Update image",
-                    disabled,
-                    onclick: move |_| {
-                        start_image_update(image.clone(), progress, update_runner, toasts, onupdated);
+                    disabled: pull.is_some(),
+                    onclick: {
+                        let image = image.clone();
+                        move |_| {
+                            pulls.start(image.clone(), PullKind::Update, WOLF_UI_IMAGE_TITLE.to_string());
+                        }
                     },
-                    if pending {
+                    if pull.is_some() {
                         Spinner { class: "h-5 w-5" }
                         "Updating"
                     } else {
@@ -172,54 +133,19 @@ fn UpdateAction(
                     }
                 }
             }
-            if progress_visible {
-                ProgressPanel {
-                    label: "Downloading image".to_string(),
-                    progress: progress_value,
-                }
+            if let Some(kind) = pull {
+                ImagePullProgress { image, kind }
             }
         }
     }
 }
 
-fn image_status(state: &WolfUiImageState, downloaded: Option<bool>) -> &'static str {
-    match (state.installed, downloaded) {
-        (false, _) => "Missing",
-        (true, Some(_)) => "Up to date",
-        (true, None) => "Installed",
+fn image_status(installed: bool, outcome: Option<PullOutcome>) -> &'static str {
+    match outcome {
+        Some(PullOutcome::Downloaded) => "Restart to apply",
+        Some(PullOutcome::UpToDate) => "Up to date",
+        Some(PullOutcome::Failed) => "Update failed",
+        None if installed => "Installed",
+        None => "Missing",
     }
-}
-
-fn start_image_update(
-    image: String,
-    mut progress: Signal<Option<f64>>,
-    mut update_runner: Action<(String, Signal<Option<f64>>), bool>,
-    mut toasts: ToastContext,
-    onupdated: EventHandler<()>,
-) {
-    if update_runner.pending() {
-        return;
-    }
-
-    progress.set(Some(0.0));
-    update_runner.reset();
-
-    spawn(async move {
-        update_runner.call(image, progress).await;
-        let result = update_runner
-            .value()
-            .unwrap_or_else(|| Err(std::io::Error::other("Image update did not complete.").into()));
-        progress.set(None);
-
-        match result {
-            Ok(downloaded) if downloaded() => toasts.show("Wolf UI image updated.", None),
-            Ok(_) => toasts.show("Wolf UI image is already up to date.", None),
-            Err(_) => toasts.show(
-                "Wolf UI image update failed. Try again.",
-                ToastOptions::error(),
-            ),
-        }
-
-        onupdated.call(());
-    });
 }
