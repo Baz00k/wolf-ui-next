@@ -56,7 +56,7 @@ pub fn AppCard(
 
     rsx! {
         CardTrigger {
-            class: "text-left transition-transform duration-300",
+            class: "text-left",
             action_label: "Actions",
             index,
             autofocus,

@@ -82,7 +82,7 @@ pub fn CardTrigger(
     children: Element,
 ) -> Element {
     let class = tw_merge!(
-        "group relative flex aspect-[3/4] w-full border-0 p-0 outline-none transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:-translate-y-1 active:scale-95",
+        "group relative flex aspect-[3/4] w-full border-0 p-0 outline-none transition-transform duration-150 ease-out hover:-translate-y-1 focus-visible:-translate-y-1 active:scale-95",
         class,
     );
 
