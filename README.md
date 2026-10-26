@@ -4,7 +4,9 @@ A lightweight, modern launcher for [Wolf](https://github.com/games-on-whales/wol
 
 Wolf UI Next is a drop-in replacement for the [original Wolf UI](https://github.com/games-on-whales/wolf-ui), rebuilt with Rust and Dioxus.
 
-![Wolf UI Next screenshot placeholder](https://placehold.co/1200x675/111827/e5e7eb?text=Wolf+UI+Next+Screenshot)
+![Wolf UI profile selection screen](docs/images/profiles.png)
+
+![Wolf UI app selection screen](docs/images/apps.png)
 
 ## Features
 
