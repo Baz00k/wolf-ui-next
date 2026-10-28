@@ -114,7 +114,7 @@ pub fn AppCard(
                     }
                 }
             }
-            h2 { class: "mt-4 h-8 truncate px-2 text-2xl font-bold leading-8 tracking-tight sm:h-9 sm:text-3xl sm:leading-9 text-foreground opacity-0 transition-opacity duration-150 group-focus-visible:opacity-100",
+            h2 { class: "mt-4 h-8 truncate px-2 text-2xl font-bold leading-8 tracking-tight sm:h-9 sm:text-3xl sm:leading-9 text-foreground opacity-0 group-focus-visible:opacity-100",
                 "{app.title}"
             }
         }
