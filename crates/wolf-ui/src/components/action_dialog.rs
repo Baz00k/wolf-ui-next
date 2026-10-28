@@ -22,7 +22,7 @@ pub fn ActionDialog(
     rsx! {
         Dialog { scope_actions,
             Card { class,
-                CardHeader {
+                CardHeader { class: "px-8",
                     DialogHeader {
                         DialogTitle { "{title}" }
                         if let Some(description) = description {
@@ -50,7 +50,7 @@ pub fn ActionDialogItem(
         Button {
             variant: ButtonVariant::Ghost,
             size: ButtonSize::Xl,
-            class: "w-full justify-start",
+            class: "w-full justify-start px-4",
             action_label: label.clone(),
             autofocus,
             disabled,

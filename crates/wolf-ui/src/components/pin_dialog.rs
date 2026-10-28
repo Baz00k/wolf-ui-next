@@ -103,7 +103,7 @@ pub fn PinProtectQuestionDialog(
 
     rsx! {
         ActionDialog { title: "Protect lobby?".to_string(), scope_actions: close_actions,
-            CardContent { class: "space-y-4",
+            CardContent { class: "space-y-4 px-8 py-6",
                 p { class: "text-base font-medium leading-7 text-muted-foreground",
                     "Add a PIN so other players must enter it before joining this co-op lobby."
                 }
@@ -140,7 +140,7 @@ pub fn PinProtectQuestionDialog(
 #[component]
 fn PinDisplay(len: usize) -> Element {
     rsx! {
-        div { class: "overflow-hidden rounded-2xl border border-border bg-background/70 px-6 py-4 text-center shadow-inner shadow-black/20 sm:py-5",
+        div { class: "overflow-hidden rounded-lg border border-border bg-background/70 px-6 py-4 text-center sm:py-5",
             div { class: "mx-auto flex max-w-full items-center justify-center gap-3 sm:gap-4",
                 for index in 0..MAX_PIN_DIGITS {
                     span { class: if index < len { "h-3 w-3 rounded-full bg-foreground sm:h-4 sm:w-4" } else { "h-3 w-3 rounded-full border border-muted-foreground/40 sm:h-4 sm:w-4" } }

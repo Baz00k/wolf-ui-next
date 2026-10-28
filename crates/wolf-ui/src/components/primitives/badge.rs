@@ -24,7 +24,7 @@ pub fn Badge(
         }
     };
     let class = tw_merge!(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-widest",
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold uppercase tracking-wider",
         tone,
         class,
     );

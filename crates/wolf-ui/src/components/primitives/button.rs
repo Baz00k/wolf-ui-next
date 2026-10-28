@@ -53,9 +53,9 @@ impl ButtonSize {
     fn class(self) -> &'static str {
         match self {
             ButtonSize::Default => "h-12 px-6 py-3 text-base sm:h-14",
-            ButtonSize::Sm => "h-10 rounded-lg px-4 py-2 text-base sm:h-12",
-            ButtonSize::Lg => "h-14 rounded-xl px-8 py-4 text-lg sm:h-16",
-            ButtonSize::Xl => "h-16 rounded-xl px-8 py-4 text-lg font-semibold sm:h-18",
+            ButtonSize::Sm => "h-10 px-4 py-2 text-base sm:h-12",
+            ButtonSize::Lg => "h-14 px-8 py-4 text-lg sm:h-16",
+            ButtonSize::Xl => "h-16 px-8 py-4 text-xl font-semibold",
             ButtonSize::IconSm => "h-10 w-10 rounded-full text-base sm:h-12 sm:w-12",
             ButtonSize::Icon => "h-12 w-12 text-base sm:h-14 sm:w-14",
             ButtonSize::IconLg => "h-14 w-14 text-lg sm:h-16 sm:w-16",
@@ -76,7 +76,7 @@ pub fn Button(
     children: Element,
 ) -> Element {
     let class = tw_merge!(
-        "inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-lg border border-transparent font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-lg border border-transparent font-medium leading-none outline-none transition-colors focus-visible:outline-solid focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:pointer-events-none disabled:opacity-50",
         variant.class(),
         size.class(),
         class,

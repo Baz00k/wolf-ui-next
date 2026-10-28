@@ -56,14 +56,14 @@ pub fn AppCard(
 
     rsx! {
         CardTrigger {
-            class: "text-left",
+            class: "aspect-auto flex-col text-left",
             action_label: "Actions",
             index,
             autofocus,
             onfocus,
             onclick,
-            Card { class: "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-80 duration-300 ease-out group-focus-visible:text-card-foreground group-focus-visible:opacity-100",
-                div { class: "pointer-events-none absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:inset-x-6 sm:top-6",
+            Card { class: "relative aspect-[3/4] w-full overflow-visible border-border/70 text-muted-foreground opacity-80 duration-300 ease-out group-focus-visible:text-card-foreground group-focus-visible:opacity-100",
+                div { class: "pointer-events-none absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:inset-x-6 sm:top-6",
                     if show_runner {
                         span { "{app.runner}" }
                     } else {
@@ -83,34 +83,39 @@ pub fn AppCard(
                         }
                     }
                 }
-                div { class: "relative flex h-full items-center justify-center overflow-hidden rounded-4xl",
+                div { class: "relative flex h-full items-center justify-center overflow-hidden rounded-lg",
                     if let Some(cover_src) = app.cover_src.as_ref() {
                         img {
-                            class: "absolute inset-0 h-full w-full rounded-4xl object-cover transition duration-300",
+                            class: "absolute inset-0 h-full w-full rounded-lg object-cover transition duration-300",
                             class: if is_unavailable { "grayscale brightness-40" },
                             src: cover_src.clone(),
                             loading: "lazy",
                             draggable: "false",
                         }
                     } else {
-                        div { class: "flex h-20 w-20 items-center justify-center rounded-3xl border border-border/70 bg-background/70 text-muted-foreground shadow-inner transition duration-300 sm:h-32 sm:w-32 md:h-36 md:w-36",
-                            Icon {
-                                icon: HiCube,
-                                class: "w-24 h-24",
-                                width: None,
-                                height: None,
+                        // Without art the card is unrecognisable, so keep the
+                        // name on it for inputs that never focus or hover.
+                        div { class: "flex flex-col items-center gap-4 px-6 text-center",
+                            div { class: "flex h-20 w-20 items-center justify-center text-muted-foreground sm:h-32 sm:w-32 md:h-36 md:w-36",
+                                Icon {
+                                    icon: HiCube,
+                                    class: "w-24 h-24",
+                                    width: None,
+                                    height: None,
+                                }
+                            }
+                            p { class: "line-clamp-2 text-2xl font-bold leading-tight tracking-tight",
+                                "{app.title}"
                             }
                         }
                     }
-                    div { class: "pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-6 pb-6 pt-8 sm:px-8",
-                        h2 { class: "overflow-hidden truncate line-clamp-2 text-3xl font-black leading-tight tracking-tight text-white",
-                            "{app.title}"
-                        }
-                        if let Some((_, image)) = pull {
-                            PullProgressBar { image }
-                        }
+                    if let Some((_, image)) = pull {
+                        PullProgressBar { image }
                     }
                 }
+            }
+            h2 { class: "mt-4 h-8 truncate px-2 text-2xl font-bold leading-8 tracking-tight sm:h-9 sm:text-3xl sm:leading-9 text-foreground opacity-0 transition-opacity duration-150 group-focus-visible:opacity-100",
+                "{app.title}"
             }
         }
     }
@@ -121,9 +126,9 @@ fn StatusBadge(label: &'static str, #[props(default)] pulse: bool) -> Element {
     rsx! {
         Badge { variant: BadgeVariant::Overlay, class: "gap-2 py-1.5",
             if pulse {
-                span { class: "h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" }
+                span { class: "h-2 w-2 animate-pulse rounded-full bg-emerald-400" }
             }
-            span { class: "text-xs font-semibold uppercase tracking-widest text-muted-foreground",
+            span { class: "text-sm font-semibold uppercase tracking-wider text-muted-foreground",
                 "{label}"
             }
         }
@@ -150,7 +155,7 @@ fn PullProgressBar(image: String) -> Element {
         Progress {
             value: progress,
             tone: ProgressTone::Warning,
-            class: "mt-3 h-2 bg-white/20",
+            class: "pointer-events-none absolute inset-x-4 bottom-4 z-10 h-2 bg-black/60 sm:inset-x-6 sm:bottom-6",
         }
     }
 }
@@ -158,18 +163,19 @@ fn PullProgressBar(image: String) -> Element {
 #[component]
 pub fn AppCardSkeleton() -> Element {
     rsx! {
-        article { class: "flex aspect-[3/4] w-full animate-pulse flex-col overflow-hidden rounded-4xl border border-border bg-card/60 opacity-70",
-            div { class: "relative flex flex-1 items-center justify-center rounded-4xl",
-                Skeleton { class: "absolute inset-0 rounded-4xl" }
-                div { class: "absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 sm:inset-x-6 sm:top-6",
-                    Skeleton { class: "h-5 w-16 rounded-full" }
-                    Skeleton { class: "h-7 w-28 rounded-full" }
-                }
-                Skeleton { class: "h-20 w-20 rounded-3xl sm:h-32 sm:w-32 md:h-36 md:w-36" }
-                div { class: "absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-6 pb-6 pt-8 sm:px-8",
-                    Skeleton { class: "h-9 w-3/5 rounded-full" }
+        div { class: "flex w-full flex-col",
+            article { class: "flex aspect-[3/4] w-full animate-pulse flex-col overflow-hidden rounded-xl border border-border bg-card/60 opacity-70",
+                div { class: "relative flex flex-1 items-center justify-center rounded-lg",
+                    Skeleton { class: "absolute inset-0 rounded-lg" }
+                    div { class: "absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 sm:inset-x-6 sm:top-6",
+                        Skeleton { class: "h-5 w-16 rounded-full" }
+                        Skeleton { class: "h-7 w-28 rounded-full" }
+                    }
+                    Skeleton { class: "h-20 w-20 rounded-xl sm:h-32 sm:w-32 md:h-36 md:w-36" }
                 }
             }
+            // Reserve the caption row so loaded cards don't shift the grid.
+            div { class: "mt-4 h-8 sm:h-9" }
         }
     }
 }
@@ -183,13 +189,20 @@ mod tests {
     use crate::domain::image_pulls::use_image_pulls_provider;
 
     #[component]
-    fn TestCard(status: AppStatusKind, pull: Option<PullKind>) -> Element {
+    fn TestCard(
+        status: AppStatusKind,
+        pull: Option<PullKind>,
+        #[props(default)] cover_src: Option<String>,
+    ) -> Element {
         use_toast_provider();
         use_image_pulls_provider();
 
         rsx! {
             AppCard {
-                app: steam(status),
+                app: AppCardData {
+                    cover_src,
+                    ..steam(status)
+                },
                 index: 0,
                 autofocus: false,
                 pull,
@@ -200,9 +213,36 @@ mod tests {
     }
 
     fn render(status: AppStatusKind, pull: Option<PullKind>) -> String {
-        let mut dom = VirtualDom::new_with_props(TestCard, TestCardProps { status, pull });
+        render_card(TestCardProps {
+            status,
+            pull,
+            cover_src: None,
+        })
+    }
+
+    fn render_card(props: TestCardProps) -> String {
+        let mut dom = VirtualDom::new_with_props(TestCard, props);
         dom.rebuild_in_place();
         dioxus_ssr::render(&dom)
+    }
+
+    #[test]
+    fn cover_card_shows_title_only_in_focus_caption() {
+        let html = render_card(TestCardProps {
+            status: AppStatusKind::Ready,
+            pull: None,
+            cover_src: Some("cover.png".to_string()),
+        });
+
+        assert_eq!(html.matches(">Steam<").count(), 1);
+        assert!(html.contains("group-focus-visible:opacity-100"));
+    }
+
+    #[test]
+    fn coverless_card_keeps_title_on_card() {
+        let html = render(AppStatusKind::Ready, None);
+
+        assert_eq!(html.matches(">Steam<").count(), 2);
     }
 
     #[test]

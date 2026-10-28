@@ -56,7 +56,7 @@ pub fn DialogHeader(#[props(default)] class: String, children: Element) -> Eleme
 
 #[component]
 pub fn DialogTitle(#[props(default)] class: String, children: Element) -> Element {
-    let class = tw_merge!("truncate text-2xl font-bold tracking-tight", class);
+    let class = tw_merge!("truncate text-3xl font-bold tracking-tight", class);
 
     rsx! {
         h2 { class, {children} }
@@ -66,7 +66,7 @@ pub fn DialogTitle(#[props(default)] class: String, children: Element) -> Elemen
 #[component]
 pub fn DialogDescription(#[props(default)] class: String, children: Element) -> Element {
     let class = tw_merge!(
-        "font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground",
+        "mt-1 text-sm font-semibold uppercase tracking-wider text-muted-foreground",
         class,
     );
 

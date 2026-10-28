@@ -36,13 +36,13 @@ pub fn SettingsLayout() -> Element {
     let active = SettingsCategory::from_route(&route);
 
     rsx! {
-        div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-8 text-foreground sm:px-16 sm:pt-12",
+        div { class: "flex h-full min-h-0 flex-col bg-background px-6 pt-6 text-foreground sm:px-12 sm:pt-10",
             header {
-                class: "flex shrink-0 items-center gap-4 pb-6 sm:gap-6 sm:pb-8",
+                class: "flex shrink-0 items-center gap-3 pb-4 sm:gap-4 sm:pb-6",
                 "data-focus-scope": "true",
                 "data-focus-region": "top-bar",
                 BackButton {}
-                h1 { class: "text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl",
+                h1 { class: "truncate text-4xl font-bold tracking-tight sm:text-5xl",
                     "Settings"
                 }
             }
@@ -62,7 +62,7 @@ pub fn SettingsLayout() -> Element {
 #[component]
 fn SettingsSidebar(active: SettingsCategory) -> Element {
     rsx! {
-        nav { class: "shrink-0 rounded-2xl border border-border bg-card p-2 mb-4 shadow-2xl shadow-black/25 sm:w-72",
+        nav { class: "shrink-0 rounded-xl border border-border bg-card p-2 mb-4 sm:w-72",
             SettingsNavItem { category: SettingsCategory::ImageUpdates, active }
         }
     }

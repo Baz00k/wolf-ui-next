@@ -25,14 +25,14 @@ pub fn AppsHeader(
     rsx! {
         header {
             id: "apps-top-bar",
-            class: "grid grid-cols-1 items-center gap-4 sm:grid-cols-[minmax(0,1fr)_auto]",
+            class: "flex flex-wrap items-center justify-between gap-4",
             "data-focus-scope": "true",
             "data-focus-region": "top-bar",
             div { class: "flex min-w-0 items-center gap-3 sm:gap-4",
                 BackButton {}
                 h1 { class: "truncate text-4xl font-bold tracking-tight sm:text-5xl", "Applications" }
             }
-            div { class: "flex min-w-0 flex-wrap items-center justify-start gap-3 sm:flex-nowrap sm:justify-end sm:gap-4",
+            div { class: "ml-auto flex items-center gap-3 sm:gap-4",
                 AppsFilter { filter, selected_index, pending_focus_index }
                 SessionShutdownControl {}
             }
@@ -49,12 +49,11 @@ fn AppsFilter(
     rsx! {
         div {
             id: "apps-filter",
-            class: "flex gap-2 rounded-lg border border-border bg-card/70 p-1 shadow-lg shadow-black/20",
+            class: "flex gap-2 rounded-xl border border-border bg-card/70 p-1",
             for item in [AppFilter::Available, AppFilter::Alphabetical] {
                 Button {
                     variant: if filter() == item { ButtonVariant::Default } else { ButtonVariant::Ghost },
                     size: ButtonSize::Sm,
-                    class: "font-mono font-semibold uppercase tracking-wider",
                     action_label: filter_label(item),
                     onclick: move |_| {
                         selected_index.set(0);

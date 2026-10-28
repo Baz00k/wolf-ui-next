@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @source "./src/**/*.{rs,html,css}";
 
+@theme {
+    --font-sans: "Bai Jamjuree", ui-sans-serif, system-ui, sans-serif;
+}
+
 @theme inline {
     --breakpoint-sm: 80rem;
     --breakpoint-md: 96rem;
@@ -35,7 +39,7 @@
 
 :root {
     color-scheme: dark;
-    --radius: 1rem;
+    --radius: 0.5rem;
     --background: oklch(0 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.13 0 0);

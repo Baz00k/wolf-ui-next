@@ -35,6 +35,10 @@ const UI_SOUNDS_JS: Asset = asset!("/assets/ui-sounds.js");
 const NAVIGATION_SOUND: Asset = asset!("/assets/audio/navigation.ogg");
 const SELECT_SOUND: Asset = asset!("/assets/audio/select.ogg");
 const BACK_SOUND: Asset = asset!("/assets/audio/back.ogg");
+const FONT_REGULAR: Asset = asset!("/assets/fonts/bai-jamjuree-regular.woff2");
+const FONT_MEDIUM: Asset = asset!("/assets/fonts/bai-jamjuree-medium.woff2");
+const FONT_SEMIBOLD: Asset = asset!("/assets/fonts/bai-jamjuree-semibold.woff2");
+const FONT_BOLD: Asset = asset!("/assets/fonts/bai-jamjuree-bold.woff2");
 
 fn main() {
     init_logging();
@@ -82,6 +86,12 @@ fn App() -> Element {
 
     rsx! {
         document::Stylesheet { href: STYLES_CSS }
+        document::Style {
+            "@font-face {{ font-family: 'Bai Jamjuree'; font-weight: 400; font-display: block; src: url('{FONT_REGULAR}') format('woff2'); }}
+            @font-face {{ font-family: 'Bai Jamjuree'; font-weight: 500; font-display: block; src: url('{FONT_MEDIUM}') format('woff2'); }}
+            @font-face {{ font-family: 'Bai Jamjuree'; font-weight: 600; font-display: block; src: url('{FONT_SEMIBOLD}') format('woff2'); }}
+            @font-face {{ font-family: 'Bai Jamjuree'; font-weight: 700; font-display: block; src: url('{FONT_BOLD}') format('woff2'); }}"
+        }
         script {
             "window.__wolfUiSoundUrls = {{ navigate: '{NAVIGATION_SOUND}', select: '{SELECT_SOUND}', back: '{BACK_SOUND}' }};"
         }
