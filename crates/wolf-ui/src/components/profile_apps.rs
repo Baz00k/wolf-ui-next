@@ -25,14 +25,14 @@ pub fn AppsHeader(
     rsx! {
         header {
             id: "apps-top-bar",
-            class: "grid grid-cols-1 items-center gap-4 sm:grid-cols-[minmax(0,1fr)_auto]",
+            class: "flex flex-wrap items-center justify-between gap-4",
             "data-focus-scope": "true",
             "data-focus-region": "top-bar",
             div { class: "flex min-w-0 items-center gap-3 sm:gap-4",
                 BackButton {}
                 h1 { class: "truncate text-4xl font-bold tracking-tight sm:text-5xl", "Applications" }
             }
-            div { class: "flex min-w-0 flex-wrap items-center justify-start gap-3 sm:flex-nowrap sm:justify-end sm:gap-4",
+            div { class: "ml-auto flex items-center gap-3 sm:gap-4",
                 AppsFilter { filter, selected_index, pending_focus_index }
                 SessionShutdownControl {}
             }
