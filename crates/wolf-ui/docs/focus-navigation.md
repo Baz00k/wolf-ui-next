@@ -223,6 +223,17 @@ in the requested direction.
 - If no element is focused, navigation focuses the first visible candidate in the
   active scope.
 
+## Mouse
+
+Moving the mouse over a focusable element focuses it, so mouse, gamepad,
+keyboard, and remote share one focus state. Hover focus never scrolls, stays
+inside an active focus trap, and ignores touch and the synthetic pointer moves
+WebKit sends when content scrolls under a parked cursor. Moving into a gap
+keeps the current focus.
+
+Style interactive state with `focus-visible:` (or `group-focus-visible:`), not
+`hover:`.
+
 ## Practical Guidelines
 
 - Use `Focusable` first.

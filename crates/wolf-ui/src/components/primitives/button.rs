@@ -17,18 +17,20 @@ pub enum ButtonVariant {
 impl ButtonVariant {
     fn class(self) -> &'static str {
         match self {
-            ButtonVariant::Default => "bg-primary text-primary-foreground hover:bg-primary/90",
+            ButtonVariant::Default => {
+                "bg-primary text-primary-foreground focus-visible:bg-primary/90"
+            }
             ButtonVariant::Secondary => {
-                "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                "bg-secondary text-secondary-foreground focus-visible:bg-secondary/80"
             }
             ButtonVariant::Outline => {
-                "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                "border border-input bg-background focus-visible:bg-accent focus-visible:text-accent-foreground"
             }
             ButtonVariant::Destructive => {
-                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                "bg-destructive text-destructive-foreground focus-visible:bg-destructive/90"
             }
             ButtonVariant::Ghost => {
-                "hover:border-foreground/30 hover:bg-accent hover:text-accent-foreground focus-visible:border-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
+                "focus-visible:border-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
             }
         }
     }
