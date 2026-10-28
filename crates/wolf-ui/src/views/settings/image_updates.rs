@@ -41,7 +41,7 @@ fn UpdatePanel(state: WolfUiImageState) -> Element {
     let outcome = pulls.outcome(&state.source);
 
     rsx! {
-        Card { class: "overflow-hidden rounded-2xl bg-card",
+        Card { class: "overflow-hidden rounded-xl bg-card",
             CardContent { class: "space-y-6 px-6 py-6 sm:px-10 sm:py-8",
                 PageHeader {}
                 div { class: "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4",
@@ -81,7 +81,7 @@ fn ImageInfoTile(
     #[props(default)] failed: bool,
 ) -> Element {
     let class = tw_merge!(
-        "rounded-2xl border border-border/80 bg-background/35 p-5",
+        "rounded-lg border border-border/80 bg-background/35 p-5",
         if wide {
             "sm:col-span-2 lg:col-span-2"
         } else {

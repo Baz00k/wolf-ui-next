@@ -76,7 +76,7 @@ pub fn Button(
     children: Element,
 ) -> Element {
     let class = tw_merge!(
-        "inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-lg border border-transparent font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-lg border border-transparent font-medium leading-none outline-none transition-colors focus-visible:outline-solid focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:pointer-events-none disabled:opacity-50",
         variant.class(),
         size.class(),
         class,

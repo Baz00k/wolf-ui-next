@@ -62,7 +62,7 @@ pub fn SettingsLayout() -> Element {
 #[component]
 fn SettingsSidebar(active: SettingsCategory) -> Element {
     rsx! {
-        nav { class: "shrink-0 rounded-2xl border border-border bg-card p-2 mb-4 shadow-2xl shadow-black/25 sm:w-72",
+        nav { class: "shrink-0 rounded-xl border border-border bg-card p-2 mb-4 sm:w-72",
             SettingsNavItem { category: SettingsCategory::ImageUpdates, active }
         }
     }

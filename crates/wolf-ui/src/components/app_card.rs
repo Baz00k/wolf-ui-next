@@ -63,7 +63,7 @@ pub fn AppCard(
             onfocus,
             onclick,
             Card { class: "relative h-full w-full overflow-visible border-border/70 text-muted-foreground opacity-80 duration-300 ease-out group-focus-visible:text-card-foreground group-focus-visible:opacity-100",
-                div { class: "pointer-events-none absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:inset-x-6 sm:top-6",
+                div { class: "pointer-events-none absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:inset-x-6 sm:top-6",
                     if show_runner {
                         span { "{app.runner}" }
                     } else {
@@ -83,17 +83,17 @@ pub fn AppCard(
                         }
                     }
                 }
-                div { class: "relative flex h-full items-center justify-center overflow-hidden rounded-4xl",
+                div { class: "relative flex h-full items-center justify-center overflow-hidden rounded-lg",
                     if let Some(cover_src) = app.cover_src.as_ref() {
                         img {
-                            class: "absolute inset-0 h-full w-full rounded-4xl object-cover transition duration-300",
+                            class: "absolute inset-0 h-full w-full rounded-lg object-cover transition duration-300",
                             class: if is_unavailable { "grayscale brightness-40" },
                             src: cover_src.clone(),
                             loading: "lazy",
                             draggable: "false",
                         }
                     } else {
-                        div { class: "flex h-20 w-20 items-center justify-center rounded-3xl border border-border/70 bg-background/70 text-muted-foreground shadow-inner transition duration-300 sm:h-32 sm:w-32 md:h-36 md:w-36",
+                        div { class: "flex h-20 w-20 items-center justify-center text-muted-foreground sm:h-32 sm:w-32 md:h-36 md:w-36",
                             Icon {
                                 icon: HiCube,
                                 class: "w-24 h-24",
@@ -102,8 +102,8 @@ pub fn AppCard(
                             }
                         }
                     }
-                    div { class: "pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-6 pb-6 pt-8 sm:px-8",
-                        h2 { class: "overflow-hidden truncate line-clamp-2 text-3xl font-black leading-tight tracking-tight text-white",
+                    div { class: "pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-black/75 px-6 py-5 sm:px-8",
+                        h2 { class: "overflow-hidden truncate line-clamp-2 text-3xl font-bold leading-tight tracking-tight text-white",
                             "{app.title}"
                         }
                         if let Some((_, image)) = pull {
@@ -121,9 +121,9 @@ fn StatusBadge(label: &'static str, #[props(default)] pulse: bool) -> Element {
     rsx! {
         Badge { variant: BadgeVariant::Overlay, class: "gap-2 py-1.5",
             if pulse {
-                span { class: "h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" }
+                span { class: "h-2 w-2 animate-pulse rounded-full bg-emerald-400" }
             }
-            span { class: "text-xs font-semibold uppercase tracking-widest text-muted-foreground",
+            span { class: "text-sm font-semibold uppercase tracking-wider text-muted-foreground",
                 "{label}"
             }
         }
@@ -158,16 +158,16 @@ fn PullProgressBar(image: String) -> Element {
 #[component]
 pub fn AppCardSkeleton() -> Element {
     rsx! {
-        article { class: "flex aspect-[3/4] w-full animate-pulse flex-col overflow-hidden rounded-4xl border border-border bg-card/60 opacity-70",
-            div { class: "relative flex flex-1 items-center justify-center rounded-4xl",
-                Skeleton { class: "absolute inset-0 rounded-4xl" }
+        article { class: "flex aspect-[3/4] w-full animate-pulse flex-col overflow-hidden rounded-xl border border-border bg-card/60 opacity-70",
+            div { class: "relative flex flex-1 items-center justify-center rounded-lg",
+                Skeleton { class: "absolute inset-0 rounded-lg" }
                 div { class: "absolute inset-x-4 top-4 z-20 flex items-start justify-between gap-3 sm:inset-x-6 sm:top-6",
-                    Skeleton { class: "h-5 w-16 rounded-full" }
-                    Skeleton { class: "h-7 w-28 rounded-full" }
+                    Skeleton { class: "h-5 w-16 rounded-sm" }
+                    Skeleton { class: "h-7 w-28 rounded-sm" }
                 }
-                Skeleton { class: "h-20 w-20 rounded-3xl sm:h-32 sm:w-32 md:h-36 md:w-36" }
-                div { class: "absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-6 pb-6 pt-8 sm:px-8",
-                    Skeleton { class: "h-9 w-3/5 rounded-full" }
+                Skeleton { class: "h-20 w-20 rounded-xl sm:h-32 sm:w-32 md:h-36 md:w-36" }
+                div { class: "absolute inset-x-0 bottom-0 bg-black/75 px-6 py-5 sm:px-8",
+                    Skeleton { class: "h-9 w-3/5 rounded-md" }
                 }
             }
         }

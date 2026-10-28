@@ -49,7 +49,7 @@ fn AppsFilter(
     rsx! {
         div {
             id: "apps-filter",
-            class: "flex gap-2 rounded-lg border border-border bg-card/70 p-1 shadow-lg shadow-black/20",
+            class: "flex gap-2 rounded-lg border border-border bg-card/70 p-1",
             for item in [AppFilter::Available, AppFilter::Alphabetical] {
                 Button {
                     variant: if filter() == item { ButtonVariant::Default } else { ButtonVariant::Ghost },

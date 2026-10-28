@@ -62,7 +62,7 @@ pub fn PersonaCardSkeleton() -> Element {
                 Skeleton { class: "mb-6 h-44 w-44 rounded-full" }
             }
             PersonaCardLabel {
-                Skeleton { class: "h-10 w-40 rounded-full" }
+                Skeleton { class: "h-10 w-40 rounded-md" }
             }
         }
     }
