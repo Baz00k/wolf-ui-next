@@ -369,6 +369,30 @@
         dispatchActionHintsChanged(event.target);
     });
 
+    // Hovering with the mouse moves focus, so every input shares one focus state.
+    let lastPointerX = null;
+    let lastPointerY = null;
+    document.addEventListener(
+        "pointermove",
+        (event) => {
+            if (event.pointerType !== "mouse") return;
+            // WebKit repeats the last position after scrolling; a parked cursor must not take focus.
+            const moved = lastPointerX !== null && (event.screenX !== lastPointerX || event.screenY !== lastPointerY);
+            lastPointerX = event.screenX;
+            lastPointerY = event.screenY;
+            if (!moved || !(event.target instanceof Element)) return;
+
+            const element = event.target.closest(FOCUSABLE_SELECTOR);
+            if (!element || element === document.activeElement || !isVisible(element)) return;
+            const trap = activeFocusTrap();
+            if (trap && !trap.contains(element)) return;
+
+            // No scroll: moving content under the cursor would fight the mouse.
+            element.focus({ preventScroll: true, focusVisible: true });
+        },
+        { capture: true, passive: true },
+    );
+
     document.addEventListener("focusout", () => {
         queueMicrotask(() => dispatchActionHintsChanged(document.activeElement));
     });
