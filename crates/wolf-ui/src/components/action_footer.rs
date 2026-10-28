@@ -56,7 +56,7 @@ fn ActionGlyph(source: InputSource, action: UiHint) -> Element {
 
     rsx! {
         span { class: "inline-flex items-center gap-1.5",
-            kbd { class: "inline-flex min-h-8 min-w-8 items-center justify-center rounded-md border border-border/80 bg-card px-2.5 text-sm font-bold uppercase leading-none text-card-foreground shadow-[inset_0_-1px_0_oklch(1_0_0/0.12)]",
+            kbd { class: "inline-flex min-h-8 min-w-8 items-center justify-center rounded-md border border-border/80 bg-card px-2.5 font-mono text-sm font-bold uppercase leading-none text-card-foreground shadow-[inset_0_-1px_0_oklch(1_0_0/0.12)]",
                 "{label}"
             }
         }

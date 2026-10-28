@@ -114,7 +114,7 @@ pub fn AppCard(
                     }
                 }
             }
-            h2 { class: "mt-3 h-8 truncate px-1 text-2xl font-bold leading-8 tracking-tight text-foreground opacity-0 transition-opacity duration-150 group-focus-visible:opacity-100",
+            h2 { class: "mt-4 h-8 truncate px-2 text-2xl font-bold leading-8 tracking-tight sm:h-9 sm:text-3xl sm:leading-9 text-foreground opacity-0 transition-opacity duration-150 group-focus-visible:opacity-100",
                 "{app.title}"
             }
         }
@@ -175,7 +175,7 @@ pub fn AppCardSkeleton() -> Element {
                 }
             }
             // Reserve the caption row so loaded cards don't shift the grid.
-            div { class: "mt-3 h-8" }
+            div { class: "mt-4 h-8 sm:h-9" }
         }
     }
 }

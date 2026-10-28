@@ -49,12 +49,12 @@ fn AppsFilter(
     rsx! {
         div {
             id: "apps-filter",
-            class: "flex gap-2 rounded-lg border border-border bg-card/70 p-1",
+            class: "flex gap-2 rounded-xl border border-border bg-card/70 p-1",
             for item in [AppFilter::Available, AppFilter::Alphabetical] {
                 Button {
                     variant: if filter() == item { ButtonVariant::Default } else { ButtonVariant::Ghost },
                     size: ButtonSize::Sm,
-                    class: "font-mono font-semibold uppercase tracking-wider",
+                    class: "font-semibold uppercase tracking-wider",
                     action_label: filter_label(item),
                     onclick: move |_| {
                         selected_index.set(0);
