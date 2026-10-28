@@ -11,10 +11,10 @@ impl ProgressTone {
     fn panel_class(self) -> &'static str {
         match self {
             ProgressTone::Primary => {
-                "rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-foreground"
+                "rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-foreground"
             }
             ProgressTone::Warning => {
-                "rounded-xl border border-yellow-300/30 bg-yellow-300/10 px-4 py-3"
+                "rounded-lg border border-yellow-300/30 bg-yellow-300/10 px-4 py-3"
             }
         }
     }

@@ -54,7 +54,6 @@ fn AppsFilter(
                 Button {
                     variant: if filter() == item { ButtonVariant::Default } else { ButtonVariant::Ghost },
                     size: ButtonSize::Sm,
-                    class: "font-semibold uppercase tracking-wider",
                     action_label: filter_label(item),
                     onclick: move |_| {
                         selected_index.set(0);

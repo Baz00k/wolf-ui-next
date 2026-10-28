@@ -103,7 +103,7 @@ pub fn PinProtectQuestionDialog(
 
     rsx! {
         ActionDialog { title: "Protect lobby?".to_string(), scope_actions: close_actions,
-            CardContent { class: "space-y-4",
+            CardContent { class: "space-y-4 px-8 py-6",
                 p { class: "text-base font-medium leading-7 text-muted-foreground",
                     "Add a PIN so other players must enter it before joining this co-op lobby."
                 }
