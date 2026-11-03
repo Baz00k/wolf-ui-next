@@ -73,3 +73,4 @@ mise run check
 
 - [Wolf](https://github.com/games-on-whales/wolf)
 - [Original Wolf UI](https://github.com/games-on-whales/wolf-ui)
+- [GoW Collection](https://github.com/Baz00k/gow-collection) - a growing set of ready-to-use Docker images for Wolf apps such as Steam, Prism Launcher, and Eden.
